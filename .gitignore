@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Logs
 logs
 *.log
@@ -22,3 +23,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+=======
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+backend/venv/
+
+# Django
+db.sqlite3
+.env
+
+# VS Code
+.vscode/
+>>>>>>> 8dfa198157412bd624d8f2b03821e5a99e42f867

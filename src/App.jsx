@@ -3,6 +3,7 @@ import Login from './pages/Auth/Login';
 import Home from './pages/Client/Home';
 import PitchDetail from './pages/Client/PitchDetail';
 import PitchManager from './pages/Admin/PitchManager';
+import Register from './pages/Auth/Register';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         {/* Đường dẫn mặc định "/" sẽ vào trang Login */}
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
         <Route path="/pitch/:id" element={<PitchDetail />} />
         <Route path="/admin/pitches" element={<PitchManager />} />

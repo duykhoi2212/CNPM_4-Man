@@ -1,12 +1,12 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Import hook điều hướng
+import { useNavigate, Link } from 'react-router-dom'; // 1. Thêm import Link
 import { Form, Input, Button, Card, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
 const Login = () => {
-  const navigate = useNavigate(); // 2. Khai báo hook để sử dụng
+  const navigate = useNavigate();
 
   // Hàm xử lý khi bấm nút Đăng nhập
   const onFinish = (values) => {
@@ -15,10 +15,10 @@ const Login = () => {
     // Giả lập đăng nhập thành công
     message.success('Đăng nhập thành công! Đang chuyển trang...');
     
-    // 3. Chuyển hướng sang trang Home
+    // Chuyển hướng sang trang Home
     setTimeout(() => {
       navigate('/home'); 
-    }, 1000); // Đợi 1 giây cho user đọc thông báo rồi mới chuyển
+    }, 1000);
   };
 
   return (
@@ -62,7 +62,8 @@ const Login = () => {
           </Form.Item>
           
           <div className="text-center">
-            <Text>Chưa có tài khoản? <a href="#" className="text-blue-500">Đăng ký ngay</a></Text>
+            {/* 2. Sửa thẻ a thành Link để chuyển trang không bị load lại */}
+            <Text>Chưa có tài khoản? <Link to="/register" className="text-blue-500">Đăng ký ngay</Link></Text>
           </div>
         </Form>
       </Card>
