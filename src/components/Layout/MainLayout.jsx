@@ -1,7 +1,6 @@
 import React from 'react';
-import { Layout, Menu, Button } from 'antd';
+import { Layout } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 
 const { Header, Content, Footer } = Layout;
 
@@ -9,37 +8,62 @@ const MainLayout = ({ children }) => {
   const navigate = useNavigate();
 
   return (
-    <Layout className="min-h-screen">
-      <Header className="flex justify-between items-center bg-blue-700 px-8">
-        {/* Logo / Tên App */}
-        <div className="text-white text-xl font-bold cursor-pointer" onClick={() => navigate('/home')}>
-          ⚽ DAU FOOTBALL
-        </div>
+    <Layout style={{ minHeight: "100vh" }}>
 
-        {/* Menu bên phải */}
-        <div className="flex items-center gap-4">
-          <span className="text-white"><UserOutlined /> Sinh viên DAU</span>
-          <Button 
-            type="text" 
-            className="text-white hover:bg-blue-600"
-            icon={<LogoutOutlined />}
-            onClick={() => navigate('/')} // Quay về Login
-          >
-            Đăng xuất
-          </Button>
+      {/* HEADER */}
+      <Header
+        style={{
+          background: "#e22538",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 40px",
+          height: "64px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+        }}
+      >
+        {/* Logo */}
+        <div
+          style={{
+            color: "white",
+            fontSize: "20px",
+            fontWeight: "bold",
+            cursor: "pointer"
+          }}
+          onClick={() => navigate('/home')}
+        >
+          ⚽ DAU FOOTBALL
         </div>
       </Header>
 
-      {/* Phần nội dung thay đổi theo từng trang */}
-      <Content className="p-8 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
+      {/* CONTENT */}
+      <Content
+        style={{
+          padding: "40px",
+          background: "#f3f4f6",
+          flex: 1
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto"
+          }}
+        >
           {children}
         </div>
       </Content>
 
-      <Footer className="text-center bg-gray-200">
-        DAU Football Booking ©2026 - Đồ án Tốt nghiệp CNTT
+      {/* FOOTER */}
+      <Footer
+        style={{
+          textAlign: "center",
+          background: "#e5e7eb",
+          color: "#6b7280"
+        }}
+      >
+        DAU Football Booking ©2026 - Đồ án Chuyên Ngành Công Nghệ Phần Mềm
       </Footer>
+
     </Layout>
   );
 };

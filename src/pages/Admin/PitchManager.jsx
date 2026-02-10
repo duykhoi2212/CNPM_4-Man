@@ -5,9 +5,9 @@ import AdminLayout from '../../components/Layout/AdminLayout';
 
 // Dữ liệu giả lập ban đầu
 const INITIAL_DATA = [
-  { key: '1', name: "Sân DAU 1", type: "5 người", price: 200000, status: "Hoạt động", image: "https://conhantao.net/wp-content/uploads/2019/12/kich-thuoc-san-bong-da-5-nguoi.jpg" },
-  { key: '2', name: "Sân DAU 2", type: "7 người", price: 300000, status: "Hoạt động", image: "https://phuongthanhngoc.com/media/news/1709_kich-thuoc-san-bong-da-7-nguoi-tieu-chuan-fifa.jpg" },
-  { key: '3', name: "Sân Futsal VIP", type: "Futsal", price: 250000, status: "Bảo trì", image: "https://thicongsanthethao.com.vn/Content/Images/kich-thuoc-san-bong-da-futsal-min.jpg" },
+  { key: '1', name: "Sân DAU 1", type: "5 người", price: 200000, status: "Hoạt động", image: "https://chihaosport.vn/wp-content/uploads/2022/08/thiet-ke-san-bong-da-dat-chuan.jpg" },
+  { key: '2', name: "Sân DAU 2", type: "7 người", price: 300000, status: "Hoạt động", image: "https://bizweb.dktcdn.net/100/017/070/files/kich-thuoc-san-bong-da-1-jpeg.jpg?v=1671246300021" },
+  { key: '3', name: "Sân Futsal VIP", type: "Futsal", price: 250000, status: "Bảo trì", image: "https://i.ytimg.com/vi/_zT-g-J30WA/maxresdefault.jpg" },
 ];
 
 const PitchManager = () => {
