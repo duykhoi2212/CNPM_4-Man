@@ -4,6 +4,7 @@ import Home from './pages/Client/Home';
 import PitchDetail from './pages/Client/PitchDetail';
 import PitchManager from './pages/Admin/PitchManager';
 import Register from './pages/Auth/Register';
+import Profile from './pages/Client/Profile';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/pitch/:id" element={<PitchDetail />} />
         <Route path="/admin/pitches" element={<PitchManager />} />
         <Route path="/admin/dashboard" element={<PitchManager />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </>
   )
