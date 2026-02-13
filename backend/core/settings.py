@@ -37,8 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.accounts',
     'rest_framework',
+    # Local apps
+    'apps.accounts.apps.AccountsConfig',
+    'apps.fields.apps.FieldsConfig',
+    'apps.bookings.apps.BookingsConfig',
+    'apps.payments.apps.PaymentsConfig',
+    'apps.reviews.apps.ReviewsConfig',
 ]
 
 MIDDLEWARE = [
@@ -76,8 +81,16 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'football_booking_db',
+        'USER': 'root',                    # ← Thay bằng MySQL user của bạn
+        'PASSWORD': 'khoi888',  # ← Thay bằng password thật
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
     }
 }
 

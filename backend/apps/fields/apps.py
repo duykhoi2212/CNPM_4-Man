@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
-class AccountsConfig(AppConfig):
+class FieldsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.accounts'  # ← Thêm apps. ở đầu
+    name = 'apps.fields'  # ← Thêm apps. ở đầu
