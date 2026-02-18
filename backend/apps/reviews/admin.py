@@ -9,10 +9,12 @@ class ReviewImageInline(admin.TabularInline):
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'field', 'rating', 'created_at']
     list_filter = ['rating', 'field']
-    search_fields = ['user__username', 'comment']
+    search_fields = ['user__username', 'comment','field__name']
     readonly_fields = ['created_at', 'updated_at']
     inlines = [ReviewImageInline]
+    raw_id_fields = ['booking']
 
+    
 @admin.register(ReviewImage)
 class ReviewImageAdmin(admin.ModelAdmin):
     list_display = ['id', 'review', 'uploaded_at']
