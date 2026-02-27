@@ -1,31 +1,45 @@
 import { Routes, Route } from 'react-router-dom';
+import MainLayout from '../components/layout/MainLayout';
 
-// Chú thích: Sau này Ẩn và Hậu sẽ import các Pages thật vào đây
-// import Home from '../pages/public/Home';
-// import Login from '../pages/auth/Login';
+// Public Pages
+import Home from '../pages/public/Home';
+import PitchList from '../pages/public/PitchList';
+import PitchDetail from '../pages/public/PitchDetail';
+
+// Auth Pages
+import Login from '../pages/auth/Login';
+import Register from '../pages/auth/Register';
+
+// User Pages
+import Checkout from '../pages/user/Checkout';
+import History from '../pages/user/History';
+
+// Admin Pages
+import Dashboard from '../pages/admin/Dashboard';
+import ManagePitches from '../pages/admin/ManagePitches';
 
 const AppRouter = () => {
   return (
     <Routes>
-      {/* 1. PUBLIC ROUTES (Dành cho Guest - Ẩn đảm nhiệm) */}
-      <Route path="/" element={<div className="p-4 text-center"><h1>Trang chủ (Đang xây dựng)</h1></div>} />
-      <Route path="/pitches" element={<div>Danh sách sân</div>} />
-      <Route path="/pitches/:id" element={<div>Chi tiết sân</div>} />
+      <Route element={<MainLayout />}>
+        {/* Các trang Public */}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/pitches" element={<PitchList />} />
+        <Route path="/pitches/:id" element={<PitchDetail />} />
+        
+        {/* Các trang cho User đã đăng nhập */}
+        <Route path="/user/history" element={<History />} />
+        <Route path="/checkout" element={<Checkout />} />
+      </Route>
 
-      {/* 2. AUTH ROUTES (Đăng nhập/Đăng ký - Ẩn đảm nhiệm) */}
-      <Route path="/login" element={<div>Đăng nhập</div>} />
-      <Route path="/register" element={<div>Đăng ký</div>} />
-
-      {/* 3. USER ROUTES (Dành cho Khách đã đăng nhập - Hậu đảm nhiệm) */}
-      <Route path="/user/history" element={<div>Lịch sử đặt sân</div>} />
-      <Route path="/checkout" element={<div>Thanh toán cọc</div>} />
-
-      {/* 4. ADMIN ROUTES (Trang quản trị cho Chủ sân - Hậu đảm nhiệm) */}
-      <Route path="/admin/dashboard" element={<div>Dashboard Thống kê</div>} />
-      <Route path="/admin/pitches" element={<div>Quản lý Sân bóng</div>} />
+      {/* Các trang dành cho Admin (Không dùng chung Header của khách) */}
+      <Route path="/admin/dashboard" element={<Dashboard />} />
+      <Route path="/admin/pitches" element={<ManagePitches />} />
       
-      {/* Route 404 - Bắt lỗi nếu nhập sai link */}
-      <Route path="*" element={<h2>404 - Không tìm thấy trang</h2>} />
+      {/* Route bắt lỗi nhập sai link */}
+      <Route path="*" element={<h2 className="p-16 text-center text-red-500 font-bold text-3xl">404 - Không tìm thấy trang</h2>} />
     </Routes>
   );
 };
