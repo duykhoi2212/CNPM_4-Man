@@ -18,7 +18,7 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Sân bóng'
     )
-    booking = models.ForeignKey(
+    booking = models.OneToOneField(
         Booking,
         on_delete=models.SET_NULL,
         null=True,

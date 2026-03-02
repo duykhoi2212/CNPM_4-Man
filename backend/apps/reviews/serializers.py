@@ -107,10 +107,10 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
                 })
             
             # Validate booking chưa được review
-            if hasattr(booking, 'review'):
+            if Review.objects.filter(booking=booking).exists():
                 raise serializers.ValidationError({
                     'booking_id': 'This booking has already been reviewed'
-                })
+    })
             
             attrs['_booking'] = booking
         
