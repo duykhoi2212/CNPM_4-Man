@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config, Csv
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-o!=c0x=@tjk_3xex*_+fuza&v5t01yks^gjl&ie0ua(1wwothe'
+#SECRET_KEY = 'django-insecure-o!=c0x=@tjk_3xex*_+fuza&v5t01yks^gjl&ie0ua(1wwothe'
+SECRET_KEY = config('DJANGO_SECRET_KEY', default='unsafe-dev-secret')
+DEBUG = config('DJANGO_DEBUG', default=True, cast=bool)
+ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -76,14 +77,12 @@ MIDDLEWARE = [
 ]
 # CORS CONFIGURATION (cho Frontend ReactJS)
 # ==============================================================================
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",  # React dev server
-#     "http://localhost:5173",  # Vite dev server
-#     "http://127.0.0.1:3000",
-#     "http://127.0.0.1:5173",
-# ]
-
-# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:3000,http://127.0.0.1:3000',
+    cast=Csv()
+)
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'core.urls'
 
@@ -105,23 +104,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'football_booking_db',
-        'USER': 'root',                    # ← Thay bằng MySQL user của bạn
-        'PASSWORD': 'khoi888',  # ← Thay bằng password thật
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': config('DB_NAME', default='football_booking_db'),
+        'USER': config('DB_USER', default='root'),
+        'PASSWORD': config('DB_PASSWORD', default=''),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default='3306'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
         },
     }
 }
+
 # MEDIA FILES (để upload ảnh)
 # ==============================================================================
 MEDIA_URL = '/media/'
