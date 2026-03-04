@@ -63,7 +63,7 @@ Content-Type: application/json
 
 ```powershell
 .\venv\Scripts\python.exe manage.py check
-.\venv\Scripts\python.exe manage.py test
+.\venv\Scripts\python.exe manage.py test --settings=core.settings_test
 ```
 
 ## Notes
