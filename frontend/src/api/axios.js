@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Tạo một instance của axios với cấu hình mặc định
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api', // Địa chỉ Backend Django (Khôi sẽ viết API ở đây)
+  baseURL: 'http://127.0.0.1:8000/api', // ← SỬA: localhost → 127.0.0.1
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -14,7 +14,7 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers['Authorization'] = `Token ${token}`; // ← SỬA: Bearer → Token
     }
     return config;
   },
