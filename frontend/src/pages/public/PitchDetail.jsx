@@ -1,66 +1,226 @@
-import { useParams, Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import axiosInstance from '../../api/axios';
+import { isAuthenticated } from '../../utils/auth';
+
+const getTomorrow = () => {
+  const next = new Date();
+  next.setDate(next.getDate() + 1);
+  return next.toISOString().split('T')[0];
+};
 
 const PitchDetail = () => {
-  // Lấy ID sân từ URL
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [pitch, setPitch] = useState(null);
+  const [availability, setAvailability] = useState([]);
+  const [bookingDate, setBookingDate] = useState(getTomorrow());
+  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchPitch = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get(`/fields/${id}/`);
+        setPitch(response.data);
+      } catch (requestError) {
+        setError(requestError.response?.data?.error || 'Khong the tai chi tiet san.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPitch();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        setLoadingSlots(true);
+        const response = await axiosInstance.get(`/fields/${id}/availability/`, {
+          params: { date: bookingDate },
+        });
+        setAvailability(response.data.timeslots || []);
+      } catch (requestError) {
+        setAvailability([]);
+        setError(requestError.response?.data?.error || 'Khong the tai lich trong cua san.');
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    if (bookingDate) {
+      fetchAvailability();
+    }
+  }, [bookingDate, id]);
+
+  const selectedSlotDetails = useMemo(
+    () => availability.filter((slot) => selectedSlots.includes(slot.timeslot_id)),
+    [availability, selectedSlots]
+  );
+
+  const totalAmount = selectedSlotDetails.reduce((sum, slot) => sum + Number(slot.price), 0);
+  const depositAmount = pitch ? (totalAmount * Number(pitch.deposit_percent || 0)) / 100 : 0;
+
+  const toggleSlot = (slotId) => {
+    setSelectedSlots((prev) =>
+      prev.includes(slotId) ? prev.filter((idValue) => idValue !== slotId) : [...prev, slotId]
+    );
+  };
+
+  const handleBooking = () => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    if (!selectedSlotDetails.length) {
+      setError('Vui long chon it nhat mot khung gio.');
+      return;
+    }
+
+    navigate('/checkout', {
+      state: {
+        pitch,
+        bookingDate,
+        selectedSlots: selectedSlotDetails,
+        totalAmount,
+        depositAmount,
+      },
+    });
+  };
+
+  if (loading) {
+    return <div className="max-w-7xl mx-auto px-4 py-12 text-center text-primary font-bold">Dang tai chi tiet san...</div>;
+  }
+
+  if (error && !pitch) {
+    return <div className="max-w-7xl mx-auto px-4 py-12 text-center text-red-500">{error}</div>;
+  }
+
+  const primaryImage = pitch?.images?.find((image) => image.is_primary)?.image_url || pitch?.images?.[0]?.image_url;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="md:flex">
-          {/* Hình ảnh sân */}
           <div className="md:w-1/2">
-            <img 
-              src={`https://via.placeholder.com/800x600/14b8a6/ffffff?text=Hinh+Anh+San+${id}`} 
-              alt="Chi tiết sân" 
-              className="w-full h-full object-cover min-h-[300px]" 
+            <img
+              src={primaryImage || `https://via.placeholder.com/800x600/14b8a6/ffffff?text=${encodeURIComponent(pitch.name)}`}
+              alt={pitch.name}
+              className="w-full h-full object-cover min-h-[300px]"
             />
           </div>
-          
-          {/* Thông tin chi tiết */}
+
           <div className="p-8 md:w-1/2 flex flex-col justify-center">
             <div className="uppercase tracking-wide text-sm text-primary font-bold mb-1">
-              Thông tin sân bóng
+              {pitch.field_type?.name || 'Thong tin san'}
             </div>
-            <h2 className="text-3xl font-extrabold text-gray-900 mb-4">
-              Sân bóng Demo {id}
-            </h2>
-            
+            <h2 className="text-3xl font-extrabold text-gray-900 mb-4">{pitch.name}</h2>
+
             <p className="text-gray-600 text-lg mb-6 leading-relaxed">
-              Sân cỏ nhân tạo đạt chuẩn FIFA, hệ thống đèn LED chiếu sáng chống lóa ban đêm. 
-              Khu vực nghỉ ngơi rộng rãi, miễn phí nước uống và giữ xe an toàn. 
-              Phù hợp cho các giải đấu phong trào và giao lưu công ty.
+              {pitch.description || 'San hien dang hoat dong va san sang cho dat lich.'}
             </p>
-            
+
             <div className="border-t border-gray-100 pt-6 mb-8">
               <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Giá thuê tham khảo</dt>
-                  <dd className="mt-1 text-xl font-bold text-gray-900">300,000đ / giờ</dd>
+                  <dt className="text-sm font-medium text-gray-500">Gia gio thuong</dt>
+                  <dd className="mt-1 text-xl font-bold text-gray-900">{Number(pitch.price_per_hour).toLocaleString('vi-VN')} d / gio</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Giờ hoạt động</dt>
-                  <dd className="mt-1 text-xl font-bold text-gray-900">06:00 - 23:00</dd>
+                  <dt className="text-sm font-medium text-gray-500">Gia gio cao diem</dt>
+                  <dd className="mt-1 text-xl font-bold text-gray-900">{Number(pitch.peak_hour_price).toLocaleString('vi-VN')} d / gio</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Loại sân</dt>
-                  <dd className="mt-1 text-lg font-medium text-gray-900">Sân 7 người</dd>
+                  <dt className="text-sm font-medium text-gray-500">Dia chi</dt>
+                  <dd className="mt-1 text-lg font-medium text-gray-900">{pitch.location}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Đánh giá</dt>
-                  <dd className="mt-1 text-lg font-medium text-yellow-500">⭐⭐⭐⭐⭐ (4.8/5)</dd>
+                  <dt className="text-sm font-medium text-gray-500">Danh gia</dt>
+                  <dd className="mt-1 text-lg font-medium text-yellow-500">{pitch.avg_rating} / 5</dd>
                 </div>
               </dl>
             </div>
-            
-            {/* Nút Đặt sân */}
-            <div>
-              <Link 
-                to="/checkout" 
-                className="w-full flex justify-center items-center px-8 py-4 border border-transparent text-lg font-bold rounded-xl text-white bg-primary hover:bg-teal-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-              >
-                Đặt sân ngay
-              </Link>
+
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Chon ngay dat san
+                <input
+                  type="date"
+                  value={bookingDate}
+                  min={getTomorrow()}
+                  onChange={(event) => {
+                    setBookingDate(event.target.value);
+                    setSelectedSlots([]);
+                    setError('');
+                  }}
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary outline-none"
+                />
+              </label>
+
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-3">Khung gio trong</p>
+                {loadingSlots ? (
+                  <p className="text-sm text-primary">Dang kiem tra lich trong...</p>
+                ) : availability.length ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {availability.map((slot) => (
+                      <button
+                        key={slot.timeslot_id}
+                        type="button"
+                        disabled={!slot.is_available}
+                        onClick={() => toggleSlot(slot.timeslot_id)}
+                        className={`rounded-lg border px-3 py-3 text-sm text-left transition ${
+                          selectedSlots.includes(slot.timeslot_id)
+                            ? 'border-primary bg-teal-50 text-primary'
+                            : slot.is_available
+                              ? 'border-gray-200 hover:border-primary'
+                              : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        <div className="font-semibold">{slot.start_time} - {slot.end_time}</div>
+                        <div>{Number(slot.price).toLocaleString('vi-VN')} d</div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">Khong co khung gio trong cho ngay da chon.</p>
+                )}
+              </div>
+
+              {selectedSlotDetails.length > 0 && (
+                <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
+                  <p className="font-semibold text-gray-900 mb-2">Tam tinh</p>
+                  <p>Tong tien: {totalAmount.toLocaleString('vi-VN')} d</p>
+                  <p>Tien coc: {depositAmount.toLocaleString('vi-VN')} d</p>
+                </div>
+              )}
+
+              {error && (
+                <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={handleBooking}
+                  className="w-full flex justify-center items-center px-8 py-4 border border-transparent text-lg font-bold rounded-xl text-white bg-primary hover:bg-teal-600 transition-all shadow-lg hover:shadow-xl"
+                >
+                  Dat san ngay
+                </button>
+                <Link
+                  to="/pitches"
+                  className="px-6 py-4 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50"
+                >
+                  Quay lai
+                </Link>
+              </div>
             </div>
           </div>
         </div>
