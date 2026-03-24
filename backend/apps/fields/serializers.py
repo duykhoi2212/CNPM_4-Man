@@ -88,7 +88,27 @@ class FieldCreateUpdateSerializer(serializers.ModelSerializer):
             'price_per_hour', 'peak_hour_price', 'deposit_percent',
             'is_active'
         ]
-    
+
+    # --- ĐOẠN CODE BẠN THÊM VÀO BẮT ĐẦU TỪ ĐÂY ---
+    # 1. Validation: Tên sân không được quá ngắn
+    def validate_name(self, value):
+        if len(value.strip()) < 5:
+            raise serializers.ValidationError("Tên sân bóng phải có ít nhất 5 ký tự.")
+        return value
+
+    # 2. Validation: Giá thuê không được là số âm
+    def validate_price_per_hour(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Giá thuê sân mỗi giờ phải lớn hơn 0.")
+        return value
+
+    # 3. Validation: Phần trăm cọc phải hợp lý (từ 0 đến 100)
+    def validate_deposit_percent(self, value):
+        if value < 0 or value > 100:
+            raise serializers.ValidationError("Phần trăm đặt cọc phải nằm trong khoảng từ 0 đến 100.")
+        return value
+    # --- KẾT THÚC ĐOẠN CODE THÊM VÀO ---
+
     def validate(self, attrs):
         """Validate giá cao điểm >= giá thường"""
         if attrs.get('peak_hour_price') and attrs.get('price_per_hour'):
@@ -97,7 +117,6 @@ class FieldCreateUpdateSerializer(serializers.ModelSerializer):
                     'peak_hour_price': 'Peak hour price must be greater than or equal to regular price'
                 })
         return attrs
-
 
 class TimeSlotAvailabilitySerializer(serializers.Serializer):
     """

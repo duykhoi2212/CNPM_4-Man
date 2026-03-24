@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Tạo một instance của axios với cấu hình mặc định
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8000/api', // Địa chỉ Backend Django (Khôi sẽ viết API ở đây)
+  baseURL: 'http://localhost:8000/api', // Địa chỉ Backend Django
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
