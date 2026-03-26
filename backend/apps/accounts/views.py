@@ -5,12 +5,20 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from .models import UserProfile
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     UserProfileDetailSerializer,
     UpdateProfileSerializer
 )
+
+
+def _get_user_phone(user):
+    try:
+        return user.profile.phone
+    except UserProfile.DoesNotExist:
+        return None
 
 
 class RegisterView(generics.CreateAPIView):
@@ -49,15 +57,15 @@ class RegisterView(generics.CreateAPIView):
         
         return Response({
             'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'phone': user.profile.phone,
-            },
-            'token': token.key,
-            'message': 'User created successfully'
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'phone': _get_user_phone(user),
+        },
+        'token': token.key,
+        'message': 'User created successfully'
         }, status=status.HTTP_201_CREATED)
 
 
@@ -109,7 +117,7 @@ def login_view(request):
             'email': user.email,
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'phone': user.profile.phone,
+            'phone': _get_user_phone(user),
             'is_staff': user.is_staff,
         },
         'token': token.key,

@@ -24,12 +24,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserProfileDetailSerializer(serializers.ModelSerializer):
     """Serializer đầy đủ: User + Profile"""
-    profile = UserProfileSerializer(read_only=True)
+    profile = serializers.SerializerMethodField()
     
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'profile']
         read_only_fields = ['id', 'username']
+
+    def get_profile(self, obj):
+        try:
+            profile = obj.profile
+        except UserProfile.DoesNotExist:
+            return None
+        return UserProfileSerializer(profile).data
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -140,7 +147,19 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         instance.save()
         
         # Update profile
-        profile = instance.profile
+        try:
+            profile = instance.profile
+        except UserProfile.DoesNotExist:
+            if phone is None:
+                raise serializers.ValidationError({
+                    'phone': 'Phone number is required when creating a missing profile.'
+                })
+            UserProfile.objects.create(
+                user=instance,
+                phone=phone,
+                address=address or ''
+            )
+            return instance
         if phone is not None:
             profile.phone = phone
         if address is not None:
