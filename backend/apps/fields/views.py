@@ -7,11 +7,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from datetime import datetime, date
 
-from .models import Field, FieldType, TimeSlot
+from .models import Field, FieldType, TimeSlot, FieldImage
 from .serializers import (
     FieldListSerializer,
     FieldDetailSerializer,
     FieldCreateUpdateSerializer,
+    FieldImageSerializer,
     FieldTypeSerializer,
     TimeSlotAvailabilitySerializer
 )
@@ -54,7 +55,10 @@ class FieldListView(generics.ListAPIView):
     ordering = ['-avg_rating']  # Default ordering
     
     def get_queryset(self):
-        queryset = Field.objects.filter(is_active=True).select_related('field_type')
+        queryset = Field.objects.select_related('field_type')
+
+        if not self.request.user.is_authenticated or not self.request.user.is_staff:
+            queryset = queryset.filter(is_active=True)
         
         # Filter by field type
         field_type = self.request.query_params.get('type')
@@ -131,6 +135,71 @@ class FieldDeleteView(generics.DestroyAPIView):
     """
     queryset = Field.objects.all()
     permission_classes = [permissions.IsAdminUser]
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAdminUser])
+def field_image_upload_view(request, pk):
+    try:
+        field = Field.objects.get(pk=pk)
+    except Field.DoesNotExist:
+        return Response({'error': 'Field not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    image_file = request.FILES.get('image')
+    if not image_file:
+        return Response({'error': 'Image file is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    is_primary = str(request.data.get('is_primary', '')).lower() in ['true', '1', 'yes', 'on']
+    order = request.data.get('order', 0)
+
+    field_image = FieldImage.objects.create(
+        field=field,
+        image_url=image_file,
+        is_primary=is_primary,
+        order=order or 0
+    )
+
+    serializer = FieldImageSerializer(field_image, context={'request': request})
+    return Response(
+        {
+            'message': 'Field image uploaded successfully',
+            'image': serializer.data,
+        },
+        status=status.HTTP_201_CREATED
+    )
+
+
+@api_view(['PATCH'])
+@permission_classes([permissions.IsAdminUser])
+def field_image_set_primary_view(request, pk, image_id):
+    try:
+        field_image = FieldImage.objects.get(pk=image_id, field_id=pk)
+    except FieldImage.DoesNotExist:
+        return Response({'error': 'Field image not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    field_image.is_primary = True
+    field_image.save()
+
+    serializer = FieldImageSerializer(field_image, context={'request': request})
+    return Response(
+        {
+            'message': 'Primary image updated successfully',
+            'image': serializer.data,
+        },
+        status=status.HTTP_200_OK
+    )
+
+
+@api_view(['DELETE'])
+@permission_classes([permissions.IsAdminUser])
+def field_image_delete_view(request, pk, image_id):
+    try:
+        field_image = FieldImage.objects.get(pk=image_id, field_id=pk)
+    except FieldImage.DoesNotExist:
+        return Response({'error': 'Field image not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    field_image.delete()
+    return Response({'message': 'Field image deleted successfully'}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

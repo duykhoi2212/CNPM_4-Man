@@ -1,70 +1,583 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 
+const emptyForm = {
+  field_type: '',
+  name: '',
+  description: '',
+  location: '',
+  price_per_hour: '',
+  peak_hour_price: '',
+  deposit_percent: '30',
+  is_active: true,
+};
+
 const ManagePitches = () => {
   const [pitches, setPitches] = useState([]);
+  const [fieldTypes, setFieldTypes] = useState([]);
+  const [pitchImages, setPitchImages] = useState([]);
+  const [formData, setFormData] = useState(emptyForm);
+  const [imageFile, setImageFile] = useState(null);
+  const [imageOrder, setImageOrder] = useState('0');
+  const [imageIsPrimary, setImageIsPrimary] = useState(false);
+  const [editingPitchId, setEditingPitchId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
+  const [imageError, setImageError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const isEditing = useMemo(() => Boolean(editingPitchId), [editingPitchId]);
+
+  const loadPitches = async () => {
+    const response = await axiosInstance.get('/fields/');
+    setPitches(response.data.results || []);
+  };
 
   useEffect(() => {
-    const fetchPitches = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axiosInstance.get('/fields/');
-        setPitches(response.data.results || []);
+        setError('');
+
+        const [pitchResponse, typeResponse] = await Promise.all([
+          axiosInstance.get('/fields/'),
+          axiosInstance.get('/fields/types/'),
+        ]);
+
+        setPitches(pitchResponse.data.results || []);
+        setFieldTypes(typeResponse.data.results || typeResponse.data || []);
       } catch (requestError) {
-        setError(requestError.response?.data?.error || 'Khong the tai danh sach san cho admin.');
+        setError(requestError.response?.data?.error || 'Khong the tai du lieu quan ly san.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPitches();
+    fetchData();
   }, []);
+
+  const resetForm = () => {
+    setFormData(emptyForm);
+    setEditingPitchId(null);
+    setPitchImages([]);
+    setImageFile(null);
+    setImageOrder('0');
+    setImageIsPrimary(false);
+    setFormError('');
+    setImageError('');
+  };
+
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+
+  const handleEdit = async (pitchId) => {
+    try {
+      setFormError('');
+      setSuccessMessage('');
+      const response = await axiosInstance.get(`/fields/${pitchId}/`);
+      const pitch = response.data;
+
+      setEditingPitchId(pitch.id);
+      setPitchImages(pitch.images || []);
+      setFormData({
+        field_type: String(pitch.field_type?.id || ''),
+        name: pitch.name || '',
+        description: pitch.description || '',
+        location: pitch.location || '',
+        price_per_hour: pitch.price_per_hour || '',
+        peak_hour_price: pitch.peak_hour_price || '',
+        deposit_percent: pitch.deposit_percent || '30',
+        is_active: Boolean(pitch.is_active),
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (requestError) {
+      setFormError(requestError.response?.data?.error || 'Khong the tai thong tin san de chinh sua.');
+    }
+  };
+
+  const refreshEditingPitchImages = async (pitchId = editingPitchId) => {
+    if (!pitchId) {
+      return;
+    }
+
+    const response = await axiosInstance.get(`/fields/${pitchId}/`);
+    setPitchImages(response.data.images || []);
+  };
+
+  const handleDelete = async (pitchId, pitchName) => {
+    const shouldDelete = window.confirm(`Ban co chac muon xoa san "${pitchName}" khong?`);
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      setError('');
+      setSuccessMessage('');
+      await axiosInstance.delete(`/fields/${pitchId}/delete/`);
+      await loadPitches();
+
+      if (editingPitchId === pitchId) {
+        resetForm();
+      }
+
+      setSuccessMessage('Da xoa san thanh cong.');
+    } catch (requestError) {
+      setError(requestError.response?.data?.error || 'Khong the xoa san.');
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setFormError('');
+    setSuccessMessage('');
+
+    try {
+      const payload = {
+        ...formData,
+        field_type: Number(formData.field_type),
+        price_per_hour: Number(formData.price_per_hour),
+        peak_hour_price: Number(formData.peak_hour_price),
+        deposit_percent: Number(formData.deposit_percent),
+      };
+
+      if (isEditing) {
+        await axiosInstance.patch(`/fields/${editingPitchId}/update/`, payload);
+        setSuccessMessage('Cap nhat san thanh cong.');
+      } else {
+        await axiosInstance.post('/fields/create/', payload);
+        setSuccessMessage('Them san moi thanh cong.');
+      }
+
+      await loadPitches();
+      resetForm();
+    } catch (requestError) {
+      const responseData = requestError.response?.data;
+      if (typeof responseData === 'string') {
+        setFormError(responseData);
+      } else if (responseData && typeof responseData === 'object') {
+        const firstMessage = Object.values(responseData).flat()[0];
+        setFormError(firstMessage || 'Khong the luu thong tin san.');
+      } else {
+        setFormError('Khong the luu thong tin san.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleImageUpload = async (event) => {
+    event.preventDefault();
+
+    if (!editingPitchId) {
+      setImageError('Hay chon mot san de chinh sua truoc khi them anh.');
+      return;
+    }
+
+    if (!imageFile) {
+      setImageError('Vui long chon mot file anh.');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      setImageError('');
+      setSuccessMessage('');
+
+      const formPayload = new FormData();
+      formPayload.append('image', imageFile);
+      formPayload.append('order', imageOrder || '0');
+      formPayload.append('is_primary', imageIsPrimary ? 'true' : 'false');
+
+      await axiosInstance.post(`/fields/${editingPitchId}/images/upload/`, formPayload, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      await refreshEditingPitchImages();
+      await loadPitches();
+      setImageFile(null);
+      setImageOrder('0');
+      setImageIsPrimary(false);
+      setSuccessMessage('Them anh san thanh cong.');
+    } catch (requestError) {
+      setImageError(requestError.response?.data?.error || 'Khong the upload anh san.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleSetPrimaryImage = async (imageId) => {
+    try {
+      setImageError('');
+      setSuccessMessage('');
+      await axiosInstance.patch(`/fields/${editingPitchId}/images/${imageId}/set-primary/`);
+      await refreshEditingPitchImages();
+      await loadPitches();
+      setSuccessMessage('Da cap nhat anh chinh.');
+    } catch (requestError) {
+      setImageError(requestError.response?.data?.error || 'Khong the cap nhat anh chinh.');
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    const shouldDelete = window.confirm('Ban co chac muon xoa anh nay khong?');
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      setImageError('');
+      setSuccessMessage('');
+      await axiosInstance.delete(`/fields/${editingPitchId}/images/${imageId}/delete/`);
+      await refreshEditingPitchImages();
+      await loadPitches();
+      setSuccessMessage('Da xoa anh san.');
+    } catch (requestError) {
+      setImageError(requestError.response?.data?.error || 'Khong the xoa anh san.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Quan ly san bong</h1>
-          <Link to="/admin/dashboard" className="text-primary hover:underline">Ve Dashboard</Link>
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Quan ly san bong</h1>
+            <p className="text-gray-500 mt-2">Admin co the them, sua va xoa san truc tiep tai day.</p>
+          </div>
+          <Link to="/admin/dashboard" className="text-primary hover:underline">
+            Ve Dashboard
+          </Link>
         </div>
+
+        <div className="bg-white shadow-sm rounded-lg p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              {isEditing ? 'Chinh sua san' : 'Them san moi'}
+            </h2>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Huy chinh sua
+              </button>
+            )}
+          </div>
+
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Loai san</span>
+              <select
+                name="field_type"
+                value={formData.field_type}
+                onChange={handleChange}
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+              >
+                <option value="">Chon loai san</option>
+                {fieldTypes.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Ten san</span>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+              />
+            </label>
+
+            <label className="block md:col-span-2">
+              <span className="text-sm font-medium text-gray-700">Mo ta</span>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows="3"
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+              />
+            </label>
+
+            <label className="block md:col-span-2">
+              <span className="text-sm font-medium text-gray-700">Dia chi</span>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Gia gio thuong</span>
+              <input
+                type="number"
+                min="0"
+                name="price_per_hour"
+                value={formData.price_per_hour}
+                onChange={handleChange}
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Gia gio cao diem</span>
+              <input
+                type="number"
+                min="0"
+                name="peak_hour_price"
+                value={formData.peak_hour_price}
+                onChange={handleChange}
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Phan tram tien coc</span>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                name="deposit_percent"
+                value={formData.deposit_percent}
+                onChange={handleChange}
+                required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+              />
+            </label>
+
+            <label className="flex items-center gap-3 pt-8">
+              <input
+                type="checkbox"
+                name="is_active"
+                checked={formData.is_active}
+                onChange={handleChange}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <span className="text-sm font-medium text-gray-700">Dang hoat dong</span>
+            </label>
+
+            {formError && (
+              <div className="md:col-span-2 rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
+                {formError}
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="md:col-span-2 rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">
+                {successMessage}
+              </div>
+            )}
+
+            <div className="md:col-span-2 flex gap-4">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="rounded-lg bg-primary px-5 py-3 font-semibold text-white hover:bg-teal-600 disabled:opacity-60"
+              >
+                {submitting ? 'Dang luu...' : isEditing ? 'Cap nhat san' : 'Them san'}
+              </button>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="rounded-lg border border-gray-300 px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                Dat lai
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {isEditing && (
+          <div className="bg-white shadow-sm rounded-lg p-6 space-y-6">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Quan ly anh san</h2>
+              <p className="text-sm text-gray-500 mt-2">
+                Upload anh cho san dang duoc chinh sua. Ban co the dat anh chinh va xoa anh khong can dung.
+              </p>
+            </div>
+
+            <form onSubmit={handleImageUpload} className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
+              <label className="block md:col-span-2">
+                <span className="text-sm font-medium text-gray-700">Chon anh</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => setImageFile(event.target.files?.[0] || null)}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">Thu tu hien thi</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={imageOrder}
+                  onChange={(event) => setImageOrder(event.target.value)}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                />
+              </label>
+
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={imageIsPrimary}
+                  onChange={(event) => setImageIsPrimary(event.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <span className="text-sm font-medium text-gray-700">Dat lam anh chinh</span>
+              </label>
+
+              <div>
+                <button
+                  type="submit"
+                  disabled={uploadingImage}
+                  className="rounded-lg bg-primary px-5 py-3 font-semibold text-white hover:bg-teal-600 disabled:opacity-60"
+                >
+                  {uploadingImage ? 'Dang upload...' : 'Them anh'}
+                </button>
+              </div>
+            </form>
+
+            {imageError && (
+              <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
+                {imageError}
+              </div>
+            )}
+
+            {pitchImages.length === 0 ? (
+              <p className="text-sm text-gray-500">San nay chua co anh nao.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {pitchImages.map((image) => (
+                  <div key={image.id} className="border border-gray-200 rounded-xl overflow-hidden">
+                    <img src={image.image_url} alt={`pitch-${editingPitchId}-${image.id}`} className="w-full h-48 object-cover" />
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">Thu tu: {image.order}</span>
+                        {image.is_primary && (
+                          <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">
+                            Anh chinh
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleSetPrimaryImage(image.id)}
+                          className="rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100"
+                        >
+                          Dat anh chinh
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteImage(image.id)}
+                          className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
+                        >
+                          Xoa anh
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="bg-white shadow-sm rounded-lg overflow-hidden">
           <div className="p-4 border-b flex justify-between items-center bg-gray-50">
             <h2 className="font-semibold text-gray-700">Danh sach san hien tai</h2>
+            <span className="text-sm text-gray-500">{pitches.length} san</span>
           </div>
 
           {loading ? (
             <div className="p-8 text-center text-primary font-semibold">Dang tai danh sach san...</div>
           ) : error ? (
             <div className="p-8 text-center text-red-500">{error}</div>
+          ) : pitches.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">Chua co san nao trong he thong.</div>
           ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ten san</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loai</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gia / gio</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trang thai</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {pitches.map((pitch) => (
-                  <tr key={pitch.id}>
-                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{pitch.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">{pitch.field_type?.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">{Number(pitch.price_per_hour).toLocaleString('vi-VN')} d</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${pitch.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {pitch.is_active ? 'Hoat dong' : 'Tam dung'}
-                      </span>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ten san</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loai</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gia / gio</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tien coc</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trang thai</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Thao tac</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {pitches.map((pitch) => (
+                    <tr key={pitch.id}>
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{pitch.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">{pitch.field_type?.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                        {Number(pitch.price_per_hour).toLocaleString('vi-VN')} d
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">{pitch.deposit_percent}%</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            pitch.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {pitch.is_active ? 'Hoat dong' : 'Tam dung'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            type="button"
+                            onClick={() => handleEdit(pitch.id)}
+                            className="rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100"
+                          >
+                            Sua
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(pitch.id, pitch.name)}
+                            className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
+                          >
+                            Xoa
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
