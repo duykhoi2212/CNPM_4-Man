@@ -17,4 +17,7 @@ urlpatterns = [
     path('create/', views.FieldCreateView.as_view(), name='field-create'),
     path('<int:pk>/update/', views.FieldUpdateView.as_view(), name='field-update'),
     path('<int:pk>/delete/', views.FieldDeleteView.as_view(), name='field-delete'),
+    path('<int:pk>/images/upload/', views.field_image_upload_view, name='field-image-upload'),
+    path('<int:pk>/images/<int:image_id>/set-primary/', views.field_image_set_primary_view, name='field-image-set-primary'),
+    path('<int:pk>/images/<int:image_id>/delete/', views.field_image_delete_view, name='field-image-delete'),
 ]
