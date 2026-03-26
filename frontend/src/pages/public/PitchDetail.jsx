@@ -14,10 +14,12 @@ const PitchDetail = () => {
   const navigate = useNavigate();
   const [pitch, setPitch] = useState(null);
   const [availability, setAvailability] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [bookingDate, setBookingDate] = useState(getTomorrow());
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [loadingReviews, setLoadingReviews] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -56,6 +58,24 @@ const PitchDetail = () => {
       fetchAvailability();
     }
   }, [bookingDate, id]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        setLoadingReviews(true);
+        const response = await axiosInstance.get('/reviews/', {
+          params: { field: id },
+        });
+        setReviews(response.data.results || []);
+      } catch {
+        setReviews([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+
+    fetchReviews();
+  }, [id]);
 
   const selectedSlotDetails = useMemo(
     () => availability.filter((slot) => selectedSlots.includes(slot.timeslot_id)),
@@ -104,7 +124,7 @@ const PitchDetail = () => {
   const primaryImage = pitch?.images?.find((image) => image.is_primary)?.image_url || pitch?.images?.[0]?.image_url;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="md:flex">
           <div className="md:w-1/2">
@@ -225,6 +245,56 @@ const PitchDetail = () => {
           </div>
         </div>
       </div>
+
+      <section className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">Danh gia tu nguoi choi</h3>
+            <p className="text-sm text-gray-500 mt-1">Tong cong {pitch.total_reviews} danh gia</p>
+          </div>
+          <div className="text-right">
+            <p className="text-3xl font-bold text-yellow-500">{pitch.avg_rating}</p>
+            <p className="text-sm text-gray-500">diem trung binh</p>
+          </div>
+        </div>
+
+        {loadingReviews ? (
+          <p className="text-primary text-sm">Dang tai danh gia...</p>
+        ) : reviews.length === 0 ? (
+          <p className="text-gray-500">Chua co danh gia nao cho san nay.</p>
+        ) : (
+          <div className="space-y-6">
+            {reviews.map((review) => (
+              <article key={review.id} className="border border-gray-100 rounded-xl p-5">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div>
+                    <p className="font-semibold text-gray-900">{review.user}</p>
+                    <p className="text-sm text-gray-500">{new Date(review.created_at).toLocaleDateString('vi-VN')}</p>
+                  </div>
+                  <div className="text-sm font-semibold text-yellow-500">
+                    {'*'.repeat(review.rating)}{'-'.repeat(5 - review.rating)} ({review.rating}/5)
+                  </div>
+                </div>
+
+                <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+
+                {review.images?.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {review.images.map((image) => (
+                      <img
+                        key={image.id}
+                        src={image.image_url}
+                        alt={`review-${review.id}-${image.id}`}
+                        className="w-full h-28 object-cover rounded-lg border border-gray-100"
+                      />
+                    ))}
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };
