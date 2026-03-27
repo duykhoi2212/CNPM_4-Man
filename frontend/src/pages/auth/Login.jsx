@@ -29,7 +29,7 @@ const Login = () => {
         user: response.data.user,
       });
       window.dispatchEvent(new Event('auth-changed'));
-      navigate(response.data.user.is_staff ? '/admin/dashboard' : '/pitches');
+      navigate(response.data.user.is_staff ? '/admin/pitches' : '/pitches');
     } catch (requestError) {
       setError(requestError.response?.data?.error || 'Dang nhap that bai. Vui long kiem tra lai thong tin.');
     } finally {

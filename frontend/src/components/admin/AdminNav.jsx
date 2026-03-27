@@ -1,8 +1,6 @@
 import { NavLink } from 'react-router-dom';
 
 const adminLinks = [
-  { to: '/admin/dashboard', label: 'Tong quan' },
-  { to: '/admin/statistics', label: 'Thong ke' },
   { to: '/admin/pitches', label: 'San bong' },
 ];
 

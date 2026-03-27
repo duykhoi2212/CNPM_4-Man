@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
-import AdminNav from '../../components/admin/AdminNav';
 
 const Statistics = () => {
   const [overview, setOverview] = useState(null);
@@ -39,12 +38,13 @@ const Statistics = () => {
         <div className="flex justify-between items-start gap-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Thong ke he thong</h1>
-            <p className="text-gray-500 mt-2">Trang nay se la noi tap trung cac chi so va bieu do admin can theo doi.</p>
+            <p className="text-gray-500 mt-2">Trang nay tach rieng khoi khu quan ly, dung de theo doi doanh thu, booking va hieu suat hoat dong.</p>
           </div>
-          <Link to="/" className="text-primary font-medium hover:underline">Quay lai trang khach</Link>
+          <div className="flex gap-4">
+            <Link to="/admin/pitches" className="text-primary font-medium hover:underline">Ve khu quan ly</Link>
+            <Link to="/" className="text-primary font-medium hover:underline">Ve trang khach</Link>
+          </div>
         </div>
-
-        <AdminNav />
 
         {loading ? (
           <div className="rounded-lg bg-white p-8 text-center text-primary font-semibold shadow-sm">Dang tai trang thong ke...</div>
