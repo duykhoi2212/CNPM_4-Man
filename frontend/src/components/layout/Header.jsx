@@ -45,7 +45,10 @@ const Header = () => {
               <Link to="/user/history" className="text-gray-700 hover:text-primary font-medium">Lich su dat san</Link>
             )}
             {user?.is_staff && (
-              <Link to="/admin/dashboard" className="text-gray-700 hover:text-primary font-medium">Admin</Link>
+              <>
+                <Link to="/admin/dashboard" className="text-gray-700 hover:text-primary font-medium">Thong ke</Link>
+                <Link to="/admin/pitches" className="text-gray-700 hover:text-primary font-medium">Admin</Link>
+              </>
             )}
           </nav>
 
