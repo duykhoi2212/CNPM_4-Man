@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
+import AdminNav from '../../components/admin/AdminNav';
 
 const emptyForm = {
   field_type: '',
@@ -251,15 +252,17 @@ const ManagePitches = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-start gap-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Quan ly san bong</h1>
-            <p className="text-gray-500 mt-2">Admin co the them, sua va xoa san truc tiep tai day.</p>
+            <p className="text-gray-500 mt-2">Thong tin san, hinh anh va sau nay la khung gio se duoc quan ly tap trung tai day.</p>
           </div>
-          <Link to="/admin/dashboard" className="text-primary hover:underline">
-            Ve Dashboard
+          <Link to="/" className="text-primary hover:underline">
+            Ve trang khach
           </Link>
         </div>
+
+        <AdminNav />
 
         <div className="bg-white shadow-sm rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
