@@ -1,6 +1,7 @@
 # apps/bookings/serializers.py
 from rest_framework import serializers
-from datetime import date
+from datetime import date, datetime
+from django.utils import timezone
 
 from .models import Booking, BookingTimeSlot
 from apps.fields.models import TimeSlot
@@ -20,6 +21,9 @@ class BookingListSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     remaining_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    latest_end_time = serializers.SerializerMethodField()
+    can_review_now = serializers.SerializerMethodField()
+    has_review = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
@@ -27,8 +31,38 @@ class BookingListSerializer(serializers.ModelSerializer):
             'id', 'user', 'field', 'booking_date',
             'customer_name', 'customer_phone', 'customer_email',
             'total_amount', 'deposit_amount', 'remaining_amount',
-            'status', 'status_display', 'created_at'
+            'status', 'status_display', 'latest_end_time',
+            'can_review_now', 'has_review', 'created_at'
         ]
+
+    def get_latest_end_time(self, obj):
+        booking_timeslots = obj.booking_timeslots.all()
+        if not booking_timeslots:
+            return None
+        latest_end_time = max(item.timeslot.end_time for item in booking_timeslots)
+        return latest_end_time.strftime('%H:%M')
+
+    def get_has_review(self, obj):
+        return hasattr(obj, 'review') and obj.review is not None
+
+    def get_can_review_now(self, obj):
+        if obj.status != 'completed' or self.get_has_review(obj):
+            return False
+
+        booking_timeslots = obj.booking_timeslots.all()
+        if booking_timeslots:
+            latest_end_time = max(item.timeslot.end_time for item in booking_timeslots)
+            booking_end_datetime = timezone.make_aware(
+                datetime.combine(obj.booking_date, latest_end_time),
+                timezone.get_current_timezone()
+            )
+        else:
+            booking_end_datetime = timezone.make_aware(
+                datetime.combine(obj.booking_date, datetime.max.time().replace(microsecond=0)),
+                timezone.get_current_timezone()
+            )
+
+        return timezone.localtime() >= booking_end_datetime
 
 
 class BookingDetailSerializer(serializers.ModelSerializer):

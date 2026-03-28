@@ -9,6 +9,35 @@ const statusStyles = {
   cancelled: 'bg-red-100 text-red-800',
 };
 
+const getReviewInfo = (booking) => {
+  if (booking.status !== 'completed') {
+    return null;
+  }
+
+  if (booking.has_review) {
+    return {
+      text: 'Booking nay da duoc danh gia',
+      className: 'bg-green-50 text-green-700',
+    };
+  }
+
+  if (booking.can_review_now) {
+    return {
+      text: 'Da den thoi diem danh gia. Tinh nang viet danh gia se duoc mo o buoc tiep theo.',
+      className: 'bg-blue-50 text-blue-700',
+    };
+  }
+
+  const eligibleAtText = booking.latest_end_time
+    ? `${booking.booking_date} ${booking.latest_end_time}`
+    : booking.booking_date;
+
+  return {
+    text: `Ban chi co the danh gia sau ${eligibleAtText}`,
+    className: 'bg-yellow-50 text-yellow-700',
+  };
+};
+
 const History = () => {
   const location = useLocation();
   const [bookings, setBookings] = useState([]);
@@ -74,6 +103,11 @@ const History = () => {
                       <p>Con lai: {Number(booking.remaining_amount || 0).toLocaleString('vi-VN')} VND</p>
                     </div>
                   </div>
+                  {getReviewInfo(booking) && (
+                    <div className={`mt-3 rounded-md px-3 py-2 text-sm ${getReviewInfo(booking).className}`}>
+                      {getReviewInfo(booking).text}
+                    </div>
+                  )}
                 </div>
               </li>
             ))}

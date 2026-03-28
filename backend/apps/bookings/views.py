@@ -30,7 +30,10 @@ class BookingListView(generics.ListAPIView):
         else:
             queryset = Booking.objects.filter(user=user)
 
-        queryset = queryset.select_related('user', 'field', 'field__field_type').order_by('-created_at')
+        queryset = queryset.select_related('user', 'field', 'field__field_type').prefetch_related(
+            'booking_timeslots__timeslot',
+            'review',
+        ).order_by('-created_at')
 
         status_filter = self.request.query_params.get('status')
         if status_filter:
