@@ -31,6 +31,52 @@ class TimeSlotSerializer(serializers.ModelSerializer):
         ]
 
 
+class TimeSlotAdminSerializer(serializers.ModelSerializer):
+    """Serializer cho admin quản lý khung giờ"""
+    field_name = serializers.CharField(source='field.name', read_only=True)
+    duration_hours = serializers.ReadOnlyField()
+
+    class Meta:
+        model = TimeSlot
+        fields = [
+            'id', 'field', 'field_name', 'start_time', 'end_time', 'price',
+            'is_peak_hour', 'is_active', 'duration_hours'
+        ]
+        validators = []
+        extra_kwargs = {
+            'field': {'error_messages': {'required': 'Vui long chon san bong'}},
+            'start_time': {'error_messages': {'required': 'Vui long nhap gio bat dau'}},
+            'end_time': {'error_messages': {'required': 'Vui long nhap gio ket thuc'}},
+            'price': {'error_messages': {'required': 'Vui long nhap gia khung gio'}},
+        }
+
+    def validate(self, attrs):
+        start_time = attrs.get('start_time', getattr(self.instance, 'start_time', None))
+        end_time = attrs.get('end_time', getattr(self.instance, 'end_time', None))
+        field = attrs.get('field', getattr(self.instance, 'field', None))
+
+        if start_time and end_time and end_time <= start_time:
+            raise serializers.ValidationError({
+                'end_time': 'Gio ket thuc phai lon hon gio bat dau'
+            })
+
+        if field and start_time and end_time:
+            queryset = TimeSlot.objects.filter(
+                field=field,
+                start_time=start_time,
+                end_time=end_time
+            )
+            if self.instance:
+                queryset = queryset.exclude(pk=self.instance.pk)
+
+            if queryset.exists():
+                raise serializers.ValidationError({
+                    'start_time': 'Khung gio nay da ton tai cho san da chon'
+                })
+
+        return attrs
+
+
 class FieldListSerializer(serializers.ModelSerializer):
     """
     Serializer cho danh sách sân (list view)

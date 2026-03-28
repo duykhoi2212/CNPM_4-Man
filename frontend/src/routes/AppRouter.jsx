@@ -14,6 +14,7 @@ import History from '../pages/user/History';
 import Dashboard from '../pages/admin/Dashboard';
 import Statistics from '../pages/admin/Statistics';
 import ManagePitches from '../pages/admin/ManagePitches';
+import ManageTimeslots from '../pages/admin/ManageTimeslots';
 
 const AppRouter = () => {
   return (
@@ -31,6 +32,7 @@ const AppRouter = () => {
       <Route path="/admin/dashboard" element={<Dashboard />} />
       <Route path="/admin/statistics" element={<Statistics />} />
       <Route path="/admin/pitches" element={<ManagePitches />} />
+      <Route path="/admin/timeslots" element={<ManageTimeslots />} />
 
       <Route path="*" element={<h2 className="p-16 text-center text-red-500 font-bold text-3xl">404 - Khong tim thay trang</h2>} />
     </Routes>

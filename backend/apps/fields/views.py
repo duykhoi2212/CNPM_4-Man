@@ -2,6 +2,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from django.db import IntegrityError
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -14,6 +15,7 @@ from .serializers import (
     FieldCreateUpdateSerializer,
     FieldImageSerializer,
     FieldTypeSerializer,
+    TimeSlotAdminSerializer,
     TimeSlotAvailabilitySerializer
 )
 
@@ -135,6 +137,57 @@ class FieldDeleteView(generics.DestroyAPIView):
     """
     queryset = Field.objects.all()
     permission_classes = [permissions.IsAdminUser]
+
+
+class TimeSlotAdminListCreateView(generics.ListCreateAPIView):
+    """
+    GET /api/fields/timeslots/
+    POST /api/fields/timeslots/
+
+    Admin quản lý danh sách khung giờ
+    Query params:
+    - field: field_id
+    """
+    queryset = TimeSlot.objects.select_related('field')
+    serializer_class = TimeSlotAdminSerializer
+    permission_classes = [permissions.IsAdminUser]
+    ordering = ['field__name', 'start_time']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        field_id = self.request.query_params.get('field')
+        if field_id:
+            queryset = queryset.filter(field_id=field_id)
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError:
+            return Response(
+                {'error': 'Khung gio nay da ton tai cho san da chon'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class TimeSlotAdminUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    GET /api/fields/timeslots/:id/
+    PUT/PATCH /api/fields/timeslots/:id/
+    DELETE /api/fields/timeslots/:id/
+    """
+    queryset = TimeSlot.objects.select_related('field')
+    serializer_class = TimeSlotAdminSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except IntegrityError:
+            return Response(
+                {'error': 'Khung gio nay da ton tai cho san da chon'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 @api_view(['POST'])

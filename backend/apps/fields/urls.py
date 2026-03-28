@@ -7,6 +7,8 @@ app_name = 'fields'
 urlpatterns = [
     # Field Types
     path('types/', views.FieldTypeListView.as_view(), name='field-types'),
+    path('timeslots/', views.TimeSlotAdminListCreateView.as_view(), name='timeslot-admin-list-create'),
+    path('timeslots/<int:pk>/', views.TimeSlotAdminUpdateDeleteView.as_view(), name='timeslot-admin-update-delete'),
     
     # Fields - Public
     path('', views.FieldListView.as_view(), name='field-list'),
