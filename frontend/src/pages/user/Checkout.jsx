@@ -12,7 +12,7 @@ const Checkout = () => {
     customer_phone: '',
     customer_email: '',
     notes: '',
-    payment_method: 'momo',
+    payment_method: 'vnpay',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -75,12 +75,17 @@ const Checkout = () => {
 
       await axiosInstance.post(`/payments/${paymentResponse.data.payment.id}/confirm/`, {});
       navigate('/user/history', {
-        state: { successMessage: 'Dat san va thanh toan tien coc thanh cong.' },
+        state: { successMessage: 'Dat san va thanh toan tien coc qua VNPay thanh cong.' },
       });
     } catch (requestError) {
       const responseData = requestError.response?.data;
       if (responseData && typeof responseData === 'object') {
-        setError(Object.values(responseData).flat().join(' '));
+        if (responseData.error) {
+          setError(responseData.error);
+        } else {
+          const firstMessage = Object.values(responseData).flat()[0];
+          setError(firstMessage || 'Khong the hoan tat dat san. Vui long thu lai.');
+        }
       } else {
         setError('Khong the hoan tat dat san. Vui long thu lai.');
       }
@@ -107,7 +112,7 @@ const Checkout = () => {
         <div>
           <h3 className="text-xl font-semibold mb-4 text-primary">Tien coc can thanh toan</h3>
           <p className="text-3xl font-bold text-gray-900 mb-2">{Number(depositAmount).toLocaleString('vi-VN')} VND</p>
-          <p className="text-sm text-gray-500">He thong se tao payment va fake confirm de phuc vu demo tich hop.</p>
+          <p className="text-sm text-gray-500">He thong se tao giao dich dat coc qua VNPay. Ban se thanh toan phan con lai tai san sau khi su dung dich vu.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -125,13 +130,11 @@ const Checkout = () => {
           </label>
           <label className="block text-sm font-medium text-gray-700">
             Phuong thuc thanh toan
-            <select name="payment_method" value={formData.payment_method} onChange={handleChange} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md outline-none focus:border-primary">
-              <option value="momo">MoMo</option>
-              <option value="atm">ATM</option>
-              <option value="zalopay">ZaloPay</option>
-              <option value="bank_transfer">Chuyen khoan</option>
-              <option value="cash">Tien mat</option>
-            </select>
+            <input
+              value="VNPay"
+              disabled
+              className="mt-1 block w-full cursor-not-allowed rounded-md border border-gray-300 bg-gray-100 px-4 py-2 text-gray-600 outline-none"
+            />
           </label>
         </div>
 
@@ -159,7 +162,7 @@ const Checkout = () => {
             disabled={loading}
             className="flex-1 bg-primary text-white text-center py-3 rounded-md font-bold hover:bg-teal-600 transition disabled:opacity-60"
           >
-            {loading ? 'Dang xu ly...' : 'Thanh toan va xac nhan'}
+            {loading ? 'Dang xu ly...' : 'Thanh toan coc qua VNPay'}
           </button>
           <Link to={`/pitches/${pitch.id}`} className="flex-1 bg-gray-100 text-gray-700 text-center py-3 rounded-md font-bold hover:bg-gray-200 transition">
             Quay lai

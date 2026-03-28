@@ -4,7 +4,7 @@ import axiosInstance from '../../api/axios';
 import AdminNav from '../../components/admin/AdminNav';
 
 const statusStyles = {
-  pending: 'bg-yellow-100 text-yellow-800',
+  pending_payment: 'bg-yellow-100 text-yellow-800',
   confirmed: 'bg-blue-100 text-blue-800',
   completed: 'bg-green-100 text-green-800',
   cancelled: 'bg-red-100 text-red-800',
@@ -75,8 +75,7 @@ const ManageBookings = () => {
 
   const handleAction = async (bookingId, action) => {
     const actionConfig = {
-      confirm: { url: `/bookings/${bookingId}/confirm/`, message: 'Da xac nhan booking thanh cong.' },
-      complete: { url: `/bookings/${bookingId}/complete/`, message: 'Da cap nhat booking thanh hoan thanh.' },
+      complete: { url: `/bookings/${bookingId}/complete/`, message: 'Da cap nhat booking hoan thanh.' },
       cancel: { url: `/bookings/${bookingId}/cancel/`, message: 'Da huy booking thanh cong.' },
     };
 
@@ -121,7 +120,7 @@ const ManageBookings = () => {
                 className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
               >
                 <option value="">Tat ca</option>
-                <option value="pending">Cho xac nhan</option>
+                <option value="pending_payment">Cho thanh toan coc</option>
                 <option value="confirmed">Da xac nhan</option>
                 <option value="completed">Da hoan thanh</option>
                 <option value="cancelled">Da huy</option>
@@ -176,6 +175,8 @@ const ManageBookings = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">San</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngay</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tong tien</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tien coc</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Con lai</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trang thai</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Thao tac</th>
                   </tr>
@@ -193,6 +194,8 @@ const ManageBookings = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.field?.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.booking_date}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-600">{Number(booking.total_amount).toLocaleString('vi-VN')} d</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{Number(booking.deposit_amount).toLocaleString('vi-VN')} d</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">{Number(booking.remaining_amount || 0).toLocaleString('vi-VN')} d</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusStyles[booking.status] || 'bg-gray-100 text-gray-800'}`}>
                           {booking.status_display}
@@ -200,16 +203,6 @@ const ManageBookings = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex justify-end gap-3">
-                          {booking.status === 'pending' && (
-                            <button
-                              type="button"
-                              disabled={actionLoadingId === booking.id}
-                              onClick={() => handleAction(booking.id, 'confirm')}
-                              className="rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-60"
-                            >
-                              Xac nhan
-                            </button>
-                          )}
                           {booking.status === 'confirmed' && (
                             <button
                               type="button"
@@ -220,7 +213,7 @@ const ManageBookings = () => {
                               Hoan thanh
                             </button>
                           )}
-                          {['pending', 'confirmed'].includes(booking.status) && (
+                          {['pending_payment', 'confirmed'].includes(booking.status) && (
                             <button
                               type="button"
                               disabled={actionLoadingId === booking.id}

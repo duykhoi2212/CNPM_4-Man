@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 
 const statusStyles = {
-  pending: 'bg-yellow-100 text-yellow-800',
+  pending_payment: 'bg-yellow-100 text-yellow-800',
   confirmed: 'bg-green-100 text-green-800',
   completed: 'bg-gray-100 text-gray-800',
   cancelled: 'bg-red-100 text-red-800',
@@ -69,8 +69,9 @@ const History = () => {
                         Ngay: {booking.booking_date} | Tong tien: {Number(booking.total_amount).toLocaleString('vi-VN')} VND
                       </p>
                     </div>
-                    <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                      Coc: {Number(booking.deposit_amount).toLocaleString('vi-VN')} VND
+                    <div className="mt-2 space-y-1 text-sm text-gray-500 sm:mt-0 sm:text-right">
+                      <p>Coc: {Number(booking.deposit_amount).toLocaleString('vi-VN')} VND</p>
+                      <p>Con lai: {Number(booking.remaining_amount || 0).toLocaleString('vi-VN')} VND</p>
                     </div>
                   </div>
                 </div>

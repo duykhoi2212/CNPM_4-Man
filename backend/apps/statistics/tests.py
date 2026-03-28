@@ -39,7 +39,7 @@ class StatisticsApiTests(APITestCase):
         )
         Payment.objects.create(
             booking=self.completed_booking,
-            payment_method='momo',
+            payment_method='vnpay',
             amount=Decimal('120000.00'),
             status='completed',
         )
