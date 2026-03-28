@@ -322,7 +322,7 @@ def field_availability_view(request, pk):
     booked_timeslot_ids = BookingTimeSlot.objects.filter(
         booking__field=field,
         booking__booking_date=check_date,
-        booking__status__in=['pending', 'confirmed']
+        booking__status__in=['pending_payment', 'confirmed']
     ).values_list('timeslot_id', flat=True)
     
     # Build response

@@ -49,7 +49,7 @@ class BookingApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('booking', response.data)
         booking = Booking.objects.get(id=response.data['booking']['id'])
-        self.assertEqual(booking.status, 'pending')
+        self.assertEqual(booking.status, 'pending_payment')
         self.assertEqual(booking.total_amount, Decimal('400000.00'))
         self.assertEqual(booking.deposit_amount, Decimal('120000.00'))
 
@@ -65,7 +65,7 @@ class BookingApiTests(APITestCase):
             customer_email='existing@example.com',
             total_amount=Decimal('400000.00'),
             deposit_amount=Decimal('120000.00'),
-            status='pending',
+            status='pending_payment',
         )
         BookingTimeSlot.objects.create(booking=existing, timeslot=self.timeslot)
 

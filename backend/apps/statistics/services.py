@@ -30,7 +30,7 @@ def get_admin_overview(date_from=None, date_to=None, field_id=None):
 
     booking_summary = bookings.aggregate(
         total_bookings=Count('id'),
-        pending_bookings=Count('id', filter=Q(status='pending')),
+        pending_bookings=Count('id', filter=Q(status='pending_payment')),
         confirmed_bookings=Count('id', filter=Q(status='confirmed')),
         completed_bookings=Count('id', filter=Q(status='completed')),
         cancelled_bookings=Count('id', filter=Q(status='cancelled')),
@@ -117,7 +117,7 @@ def get_my_overview(user, date_from=None, date_to=None):
 
     booking_summary = bookings.aggregate(
         total_bookings=Count('id'),
-        pending_bookings=Count('id', filter=Q(status='pending')),
+        pending_bookings=Count('id', filter=Q(status='pending_payment')),
         confirmed_bookings=Count('id', filter=Q(status='confirmed')),
         completed_bookings=Count('id', filter=Q(status='completed')),
         cancelled_bookings=Count('id', filter=Q(status='cancelled')),
@@ -151,6 +151,9 @@ def get_my_overview(user, date_from=None, date_to=None):
         },
         'booking': booking_summary,
         'payment': payment_summary,
-        'upcoming_bookings': bookings.filter(booking_date__gte=date.today(), status__in=['pending', 'confirmed']).count(),
+        'upcoming_bookings': bookings.filter(
+            booking_date__gte=date.today(),
+            status__in=['pending_payment', 'confirmed']
+        ).count(),
         'recent_bookings': recent_bookings,
     }
