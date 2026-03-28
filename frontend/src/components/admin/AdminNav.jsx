@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 const adminLinks = [
   { to: '/admin/pitches', label: 'San bong' },
   { to: '/admin/timeslots', label: 'Khung gio' },
+  { to: '/admin/bookings', label: 'Booking' },
 ];
 
 const getLinkClassName = ({ isActive }) =>
