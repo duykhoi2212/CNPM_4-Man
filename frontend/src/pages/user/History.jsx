@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 
 const statusStyles = {
@@ -105,7 +105,17 @@ const History = () => {
                   </div>
                   {getReviewInfo(booking) && (
                     <div className={`mt-3 rounded-md px-3 py-2 text-sm ${getReviewInfo(booking).className}`}>
-                      {getReviewInfo(booking).text}
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <span>{getReviewInfo(booking).text}</span>
+                        {booking.can_review_now && !booking.has_review && (
+                          <Link
+                            to={`/user/reviews/new/${booking.id}`}
+                            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-teal-600"
+                          >
+                            Viet danh gia
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
