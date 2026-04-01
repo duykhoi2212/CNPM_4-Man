@@ -23,7 +23,7 @@ const getReviewInfo = (booking) => {
 
   if (booking.can_review_now) {
     return {
-      text: 'Da den thoi diem danh gia. Tinh nang viet danh gia se duoc mo o buoc tiep theo.',
+      text: 'Da den thoi diem danh gia. Ban co the viet danh gia ngay bay gio.',
       className: 'bg-blue-50 text-blue-700',
     };
   }
@@ -79,48 +79,61 @@ const History = () => {
       ) : (
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul className="divide-y divide-gray-200">
-            {bookings.map((booking) => (
-              <li key={booking.id}>
-                <div className="px-4 py-4 sm:px-6 hover:bg-gray-50 transition">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-primary truncate">
-                      #{booking.id} - {booking.field?.name}
-                    </p>
-                    <div className="ml-2 flex-shrink-0 flex">
-                      <p className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[booking.status] || 'bg-gray-100 text-gray-800'}`}>
-                        {booking.status_display}
+            {bookings.map((booking) => {
+              const reviewInfo = getReviewInfo(booking);
+
+              return (
+                <li key={booking.id}>
+                  <div className="px-4 py-4 sm:px-6 hover:bg-gray-50 transition">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-primary truncate">
+                        #{booking.id} - {booking.field?.name}
                       </p>
-                    </div>
-                  </div>
-                  <div className="mt-2 sm:flex sm:justify-between">
-                    <div className="sm:flex">
-                      <p className="flex items-center text-sm text-gray-500">
-                        Ngay: {booking.booking_date} | Tong tien: {Number(booking.total_amount).toLocaleString('vi-VN')} VND
-                      </p>
-                    </div>
-                    <div className="mt-2 space-y-1 text-sm text-gray-500 sm:mt-0 sm:text-right">
-                      <p>Coc: {Number(booking.deposit_amount).toLocaleString('vi-VN')} VND</p>
-                      <p>Con lai: {Number(booking.remaining_amount || 0).toLocaleString('vi-VN')} VND</p>
-                    </div>
-                  </div>
-                  {getReviewInfo(booking) && (
-                    <div className={`mt-3 rounded-md px-3 py-2 text-sm ${getReviewInfo(booking).className}`}>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <span>{getReviewInfo(booking).text}</span>
-                        {booking.can_review_now && !booking.has_review && (
-                          <Link
-                            to={`/user/reviews/new/${booking.id}`}
-                            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-teal-600"
-                          >
-                            Viet danh gia
-                          </Link>
-                        )}
+                      <div className="ml-2 flex-shrink-0 flex">
+                        <p className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusStyles[booking.status] || 'bg-gray-100 text-gray-800'}`}>
+                          {booking.status_display}
+                        </p>
                       </div>
                     </div>
-                  )}
-                </div>
-              </li>
-            ))}
+                    <div className="mt-2 sm:flex sm:justify-between">
+                      <div className="sm:flex">
+                        <p className="flex items-center text-sm text-gray-500">
+                          Ngay: {booking.booking_date} | Tong tien: {Number(booking.total_amount).toLocaleString('vi-VN')} VND
+                        </p>
+                      </div>
+                      <div className="mt-2 space-y-1 text-sm text-gray-500 sm:mt-0 sm:text-right">
+                        <p>Coc: {Number(booking.deposit_amount).toLocaleString('vi-VN')} VND</p>
+                        <p>Con lai: {Number(booking.remaining_amount || 0).toLocaleString('vi-VN')} VND</p>
+                      </div>
+                    </div>
+                    {reviewInfo && (
+                      <div className={`mt-3 rounded-md px-3 py-2 text-sm ${reviewInfo.className}`}>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <span>{reviewInfo.text}</span>
+                          {booking.can_review_now && !booking.has_review && (
+                            <Link
+                              to={`/user/reviews/new/${booking.id}`}
+                              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-teal-600"
+                            >
+                              Viet danh gia
+                            </Link>
+                          )}
+                          {booking.has_review && booking.review && (
+                            <Link
+                              to={`/user/reviews/new/${booking.id}`}
+                              state={{ review: booking.review }}
+                              className="inline-flex items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+                            >
+                              Sua danh gia
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}

@@ -146,7 +146,7 @@ class ReviewDeleteView(generics.DestroyAPIView):
     Xóa review (Admin only)
     """
     queryset = Review.objects.all()
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
     
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
