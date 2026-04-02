@@ -17,6 +17,7 @@ import Statistics from '../pages/admin/Statistics';
 import ManagePitches from '../pages/admin/ManagePitches';
 import ManageTimeslots from '../pages/admin/ManageTimeslots';
 import ManageBookings from '../pages/admin/ManageBookings';
+import ManageReviews from '../pages/admin/ManageReviews';
 
 const AppRouter = () => {
   return (
@@ -37,6 +38,7 @@ const AppRouter = () => {
       <Route path="/admin/pitches" element={<ManagePitches />} />
       <Route path="/admin/timeslots" element={<ManageTimeslots />} />
       <Route path="/admin/bookings" element={<ManageBookings />} />
+      <Route path="/admin/reviews" element={<ManageReviews />} />
 
       <Route path="*" element={<h2 className="p-16 text-center text-red-500 font-bold text-3xl">404 - Khong tim thay trang</h2>} />
     </Routes>

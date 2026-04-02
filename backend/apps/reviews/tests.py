@@ -61,6 +61,19 @@ class ReviewApiTests(APITestCase):
         self.assertIn('review', response.data)
         self.assertEqual(Review.objects.count(), 1)
 
+    def test_short_comment_is_allowed(self):
+        payload = {
+            'field': self.field.id,
+            'booking_id': self.completed_booking.id,
+            'rating': 5,
+            'comment': 'Tot',
+        }
+
+        response = self.client.post('/api/reviews/create/', payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['review']['comment'], 'Tot')
+
     def test_cannot_review_same_booking_twice(self):
         Review.objects.create(
             user=self.user,

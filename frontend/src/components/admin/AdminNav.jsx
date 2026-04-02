@@ -4,6 +4,7 @@ const adminLinks = [
   { to: '/admin/pitches', label: 'San bong' },
   { to: '/admin/timeslots', label: 'Khung gio' },
   { to: '/admin/bookings', label: 'Booking' },
+  { to: '/admin/reviews', label: 'Review' },
 ];
 
 const getLinkClassName = ({ isActive }) =>

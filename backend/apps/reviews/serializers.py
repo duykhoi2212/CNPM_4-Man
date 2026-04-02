@@ -8,10 +8,18 @@ from apps.bookings.models import Booking
 
 
 class ReviewImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = ReviewImage
         fields = ['id', 'image_url', 'uploaded_at']
         read_only_fields = ['uploaded_at']
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.image_url.url)
+        return obj.image_url.url
 
 
 class ReviewListSerializer(serializers.ModelSerializer):
@@ -55,9 +63,9 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_comment(self, value):
-        if len(value.strip()) < 10:
-            raise serializers.ValidationError('Noi dung danh gia phai co it nhat 10 ky tu')
-        return value
+        if not value.strip():
+            raise serializers.ValidationError('Vui long nhap noi dung danh gia')
+        return value.strip()
 
     def validate(self, attrs):
         user = self.context['request'].user
@@ -133,6 +141,6 @@ class ReviewUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_comment(self, value):
-        if len(value.strip()) < 10:
-            raise serializers.ValidationError('Noi dung danh gia phai co it nhat 10 ky tu')
-        return value
+        if not value.strip():
+            raise serializers.ValidationError('Vui long nhap noi dung danh gia')
+        return value.strip()
