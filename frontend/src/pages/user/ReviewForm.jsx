@@ -205,7 +205,7 @@ const ReviewForm = () => {
                     className={`text-4xl transition ${active ? 'text-yellow-400' : 'text-gray-200 hover:text-yellow-300'}`}
                     aria-label={`${value} sao`}
                   >
-                    ?
+                    {String.fromCharCode(9733)}
                   </button>
                 );
               })}

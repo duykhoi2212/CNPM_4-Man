@@ -28,7 +28,7 @@ const renderStars = (rating) => (
   <div className="flex gap-1 text-xl">
     {[1, 2, 3, 4, 5].map((value) => (
       <span key={value} className={value <= rating ? 'text-yellow-400' : 'text-gray-200'}>
-        ?
+        {String.fromCharCode(9733)}
       </span>
     ))}
   </div>
