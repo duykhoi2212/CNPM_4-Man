@@ -24,6 +24,7 @@ class BookingListSerializer(serializers.ModelSerializer):
     latest_end_time = serializers.SerializerMethodField()
     can_review_now = serializers.SerializerMethodField()
     has_review = serializers.SerializerMethodField()
+    review = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
@@ -32,7 +33,7 @@ class BookingListSerializer(serializers.ModelSerializer):
             'customer_name', 'customer_phone', 'customer_email',
             'total_amount', 'deposit_amount', 'remaining_amount',
             'status', 'status_display', 'latest_end_time',
-            'can_review_now', 'has_review', 'created_at'
+            'can_review_now', 'has_review', 'review', 'created_at'
         ]
 
     def get_latest_end_time(self, obj):
@@ -44,6 +45,18 @@ class BookingListSerializer(serializers.ModelSerializer):
 
     def get_has_review(self, obj):
         return hasattr(obj, 'review') and obj.review is not None
+
+    def get_review(self, obj):
+        if not self.get_has_review(obj):
+            return None
+
+        return {
+            'id': obj.review.id,
+            'rating': obj.review.rating,
+            'comment': obj.review.comment,
+            'created_at': obj.review.created_at,
+            'updated_at': obj.review.updated_at,
+        }
 
     def get_can_review_now(self, obj):
         if obj.status != 'completed' or self.get_has_review(obj):
