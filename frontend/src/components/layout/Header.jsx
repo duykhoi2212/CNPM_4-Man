@@ -55,9 +55,18 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             {loggedIn ? (
               <>
-                <span className="hidden sm:inline text-sm text-gray-600">
-                  Xin chao, <span className="font-semibold">{user?.username || 'user'}</span>
-                </span>
+                <Link to="/profile" className="hidden sm:flex items-center gap-3 text-sm text-gray-600 hover:text-primary">
+                  <span className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-teal-100 text-sm font-semibold text-primary">
+                    {user?.avatar_url ? (
+                      <img src={user.avatar_url} alt={user?.username || 'user'} className="h-full w-full object-cover" />
+                    ) : (
+                      (user?.username || 'U').slice(0, 1).toUpperCase()
+                    )}
+                  </span>
+                  <span>
+                    Xin chao, <span className="font-semibold">{user?.username || 'user'}</span>
+                  </span>
+                </Link>
                 <button
                   type="button"
                   onClick={handleLogout}

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -45,3 +46,40 @@ class AccountsApiTests(APITestCase):
     def test_profile_requires_authentication(self):
         response = self.client.get('/api/auth/profile/')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_profile_with_avatar_success(self):
+        user = User.objects.create_user(
+            username='profileuser',
+            password='StrongPass123!',
+            email='profile@example.com'
+        )
+        UserProfile.objects.create(user=user, phone='0900000003', address='Old address')
+        self.client.force_authenticate(user=user)
+
+        avatar = SimpleUploadedFile(
+            'avatar.gif',
+            (
+                b'GIF87a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00'
+                b'\xff\xff\xff!\xf9\x04\x01\x00\x00\x00\x00,\x00'
+                b'\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+            ),
+            content_type='image/gif'
+        )
+
+        response = self.client.patch(
+            '/api/auth/profile/update/',
+            {
+                'first_name': 'Profile',
+                'last_name': 'User',
+                'phone': '0900000003',
+                'address': 'New address',
+                'avatar': avatar,
+            },
+            format='multipart'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        user.refresh_from_db()
+        self.assertEqual(user.first_name, 'Profile')
+        self.assertEqual(user.profile.address, 'New address')
+        self.assertIsNotNone(response.data['user']['profile']['avatar_url'])

@@ -7,10 +7,19 @@ from .models import UserProfile
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer cho UserProfile (phone, address)"""
+    avatar_url = serializers.SerializerMethodField()
     
     class Meta:
         model = UserProfile
-        fields = ['phone', 'address']
+        fields = ['phone', 'address', 'avatar_url']
+
+    def get_avatar_url(self, obj):
+        if not obj.avatar:
+            return None
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.avatar.url)
+        return obj.avatar.url
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -36,7 +45,7 @@ class UserProfileDetailSerializer(serializers.ModelSerializer):
             profile = obj.profile
         except UserProfile.DoesNotExist:
             return None
-        return UserProfileSerializer(profile).data
+        return UserProfileSerializer(profile, context=self.context).data
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -122,10 +131,11 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     """Serializer cho cập nhật profile"""
     phone = serializers.CharField(required=False, max_length=20)
     address = serializers.CharField(required=False, allow_blank=True)
+    avatar = serializers.ImageField(required=False, allow_null=True, write_only=True)
     
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'phone', 'address']
+        fields = ['email', 'first_name', 'last_name', 'phone', 'address', 'avatar']
     
     def validate_phone(self, value):
         """Validate phone uniqueness (except current user)"""
@@ -139,6 +149,7 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         # Extract profile data
         phone = validated_data.pop('phone', None)
         address = validated_data.pop('address', None)
+        avatar = validated_data.pop('avatar', None)
         
         # Update user
         instance.email = validated_data.get('email', instance.email)
@@ -157,13 +168,16 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             UserProfile.objects.create(
                 user=instance,
                 phone=phone,
-                address=address or ''
+                address=address or '',
+                avatar=avatar
             )
             return instance
         if phone is not None:
             profile.phone = phone
         if address is not None:
             profile.address = address
+        if avatar is not None:
+            profile.avatar = avatar
         profile.save()
         
         return instance

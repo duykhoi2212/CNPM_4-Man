@@ -1,6 +1,7 @@
 # apps/accounts/views.py
 from rest_framework import status, generics, permissions
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
@@ -19,6 +20,33 @@ def _get_user_phone(user):
         return user.profile.phone
     except UserProfile.DoesNotExist:
         return None
+
+
+def _get_user_avatar_url(user, request=None):
+    try:
+        profile = user.profile
+    except UserProfile.DoesNotExist:
+        return None
+
+    if not profile.avatar:
+        return None
+
+    if request:
+        return request.build_absolute_uri(profile.avatar.url)
+    return profile.avatar.url
+
+
+def _serialize_auth_user(user, request=None):
+    return {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'phone': _get_user_phone(user),
+        'avatar_url': _get_user_avatar_url(user, request),
+        'is_staff': user.is_staff,
+    }
 
 
 class RegisterView(generics.CreateAPIView):
@@ -46,6 +74,7 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -56,16 +85,9 @@ class RegisterView(generics.CreateAPIView):
         token, created = Token.objects.get_or_create(user=user)
         
         return Response({
-            'user': {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'phone': _get_user_phone(user),
-        },
-        'token': token.key,
-        'message': 'User created successfully'
+            'user': _serialize_auth_user(user, request),
+            'token': token.key,
+            'message': 'User created successfully'
         }, status=status.HTTP_201_CREATED)
 
 
@@ -111,15 +133,7 @@ def login_view(request):
     token, created = Token.objects.get_or_create(user=user)
     
     return Response({
-        'user': {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'phone': _get_user_phone(user),
-            'is_staff': user.is_staff,
-        },
+        'user': _serialize_auth_user(user, request),
         'token': token.key,
         'message': 'Login successful'
     }, status=status.HTTP_200_OK)
@@ -174,6 +188,7 @@ def profile_view(request):
 
 @api_view(['PUT', 'PATCH'])
 @permission_classes([permissions.IsAuthenticated])
+@parser_classes([JSONParser, FormParser, MultiPartParser])
 def update_profile_view(request):
     """
     PUT/PATCH /api/auth/profile/update/
@@ -202,7 +217,7 @@ def update_profile_view(request):
     serializer.is_valid(raise_exception=True)
     user = serializer.save()
     
-    response_serializer = UserProfileDetailSerializer(user)
+    response_serializer = UserProfileDetailSerializer(user, context={'request': request})
     
     return Response({
         'user': response_serializer.data,
