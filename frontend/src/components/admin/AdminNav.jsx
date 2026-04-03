@@ -6,6 +6,7 @@ const adminLinks = [
   { to: '/admin/bookings', label: 'Booking' },
   { to: '/admin/reviews', label: 'Review' },
   { to: '/admin/users', label: 'User' },
+  { to: '/admin/contacts', label: 'Lien he' },
 ];
 
 const getLinkClassName = ({ isActive }) =>

@@ -1,91 +1,89 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { clearAuthSession, getStoredUser, isAuthenticated } from '../../utils/auth';
+﻿import { Link, useNavigate } from 'react-router-dom';
+import { clearAuth, getUserInfo } from '../../utils/auth';
 
 const Header = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(getStoredUser());
-  const [loggedIn, setLoggedIn] = useState(isAuthenticated());
-
-  useEffect(() => {
-    const syncAuthState = () => {
-      setUser(getStoredUser());
-      setLoggedIn(isAuthenticated());
-    };
-
-    window.addEventListener('storage', syncAuthState);
-    window.addEventListener('auth-changed', syncAuthState);
-
-    return () => {
-      window.removeEventListener('storage', syncAuthState);
-      window.removeEventListener('auth-changed', syncAuthState);
-    };
-  }, []);
+  const user = getUserInfo();
+  const isAuthenticated = Boolean(user);
+  const isAdmin = Boolean(user?.is_staff);
+  const avatarUrl = user?.avatar_url;
 
   const handleLogout = () => {
-    clearAuthSession();
-    window.dispatchEvent(new Event('auth-changed'));
+    clearAuth();
     navigate('/');
+    window.location.reload();
   };
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="text-2xl font-bold text-primary">
-              4-Man Sport
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <Link to="/" className="text-2xl font-bold text-primary">
+          4-Man Sport
+        </Link>
+
+        <nav className="hidden md:flex items-center space-x-8">
+          <Link to="/" className="text-gray-700 hover:text-primary font-medium">
+            Trang chu
+          </Link>
+          <Link to="/pitches" className="text-gray-700 hover:text-primary font-medium">
+            Danh sach san
+          </Link>
+          <Link to="/contact" className="text-gray-700 hover:text-primary font-medium">
+            Lien he
+          </Link>
+          {isAuthenticated && (
+            <Link to="/user/history" className="text-gray-700 hover:text-primary font-medium">
+              Lich su dat san
             </Link>
-          </div>
+          )}
+          {isAdmin && (
+            <>
+              <Link to="/admin/statistics" className="text-gray-700 hover:text-primary font-medium">
+                Thong ke
+              </Link>
+              <Link to="/admin/pitches" className="text-gray-700 hover:text-primary font-medium">
+                Quan ly
+              </Link>
+            </>
+          )}
+        </nav>
 
-          <nav className="hidden md:flex space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-primary font-medium">Trang chu</Link>
-            <Link to="/pitches" className="text-gray-700 hover:text-primary font-medium">Danh sach san</Link>
-            {loggedIn && (
-              <Link to="/user/history" className="text-gray-700 hover:text-primary font-medium">Lich su dat san</Link>
-            )}
-            {user?.is_staff && (
-              <>
-                <Link to="/admin/statistics" className="text-gray-700 hover:text-primary font-medium">Thong ke</Link>
-                <Link to="/admin/pitches" className="text-gray-700 hover:text-primary font-medium">Quan ly</Link>
-              </>
-            )}
-          </nav>
-
-          <div className="flex items-center space-x-4">
-            {loggedIn ? (
-              <>
-                <Link to="/profile" className="hidden sm:flex items-center gap-3 text-sm text-gray-600 hover:text-primary">
-                  <span className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-teal-100 text-sm font-semibold text-primary">
-                    {user?.avatar_url ? (
-                      <img src={user.avatar_url} alt={user?.username || 'user'} className="h-full w-full object-cover" />
-                    ) : (
-                      (user?.username || 'U').slice(0, 1).toUpperCase()
-                    )}
-                  </span>
-                  <span>
-                    Xin chao, <span className="font-semibold">{user?.username || 'user'}</span>
-                  </span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="text-gray-700 hover:text-primary font-medium"
-                >
-                  Dang xuat
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="text-gray-700 hover:text-primary font-medium">
-                  Dang nhap
-                </Link>
-                <Link to="/register" className="bg-primary text-white px-4 py-2 rounded-md font-medium hover:bg-teal-600 transition">
-                  Dang ky
-                </Link>
-              </>
-            )}
-          </div>
+        <div className="flex items-center space-x-4">
+          {isAuthenticated ? (
+            <>
+              <Link to="/profile" className="flex items-center space-x-3 text-gray-700 hover:text-primary font-medium">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={user?.username || 'avatar'}
+                    className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold uppercase">
+                    {(user?.username || 'U').slice(0, 1)}
+                  </div>
+                )}
+                <span>
+                  Xin chao, <strong>{user?.username}</strong>
+                </span>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-gray-700 hover:text-primary font-medium"
+              >
+                Dang xuat
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-gray-700 hover:text-primary font-medium">
+                Dang nhap
+              </Link>
+              <Link to="/register" className="btn-primary">
+                Dang ky
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

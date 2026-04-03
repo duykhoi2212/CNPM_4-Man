@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'apps.payments.apps.PaymentsConfig',
     'apps.reviews.apps.ReviewsConfig',
     'apps.statistics.apps.StatisticsConfig',
+    'apps.contacts.apps.ContactsConfig',
 ]
 
 MIDDLEWARE = [
