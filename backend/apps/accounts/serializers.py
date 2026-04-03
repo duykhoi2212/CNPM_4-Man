@@ -181,3 +181,68 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         profile.save()
         
         return instance
+
+
+class AdminUserListSerializer(serializers.ModelSerializer):
+    phone = serializers.SerializerMethodField()
+    address = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'email', 'first_name', 'last_name',
+            'phone', 'address', 'avatar_url', 'is_active', 'is_staff',
+            'is_superuser', 'role', 'date_joined',
+        ]
+        read_only_fields = fields
+
+    def _get_profile(self, obj):
+        try:
+            return obj.profile
+        except UserProfile.DoesNotExist:
+            return None
+
+    def get_phone(self, obj):
+        profile = self._get_profile(obj)
+        return profile.phone if profile else None
+
+    def get_address(self, obj):
+        profile = self._get_profile(obj)
+        return profile.address if profile else None
+
+    def get_avatar_url(self, obj):
+        profile = self._get_profile(obj)
+        if not profile or not profile.avatar:
+            return None
+
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(profile.avatar.url)
+        return profile.avatar.url
+
+    def get_role(self, obj):
+        return 'admin' if obj.is_staff else 'user'
+
+
+class AdminUserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['is_active', 'is_staff']
+
+    def validate(self, attrs):
+        target_user = self.instance
+        request_user = self.context['request'].user
+
+        if target_user == request_user:
+            if attrs.get('is_active') is False:
+                raise serializers.ValidationError({
+                    'is_active': 'Ban khong the tu khoa tai khoan cua chinh minh'
+                })
+            if attrs.get('is_staff') is False:
+                raise serializers.ValidationError({
+                    'is_staff': 'Ban khong the tu go quyen quan tri cua chinh minh'
+                })
+
+        return attrs

@@ -5,6 +5,7 @@ const adminLinks = [
   { to: '/admin/timeslots', label: 'Khung gio' },
   { to: '/admin/bookings', label: 'Booking' },
   { to: '/admin/reviews', label: 'Review' },
+  { to: '/admin/users', label: 'User' },
 ];
 
 const getLinkClassName = ({ isActive }) =>

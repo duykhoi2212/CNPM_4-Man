@@ -83,3 +83,53 @@ class AccountsApiTests(APITestCase):
         self.assertEqual(user.first_name, 'Profile')
         self.assertEqual(user.profile.address, 'New address')
         self.assertIsNotNone(response.data['user']['profile']['avatar_url'])
+
+    def test_admin_can_list_users(self):
+        admin = User.objects.create_user(
+            username='adminuser',
+            password='StrongPass123!',
+            email='admin@example.com',
+            is_staff=True,
+            is_superuser=True,
+        )
+        UserProfile.objects.create(user=admin, phone='0900000004', address='')
+        normal_user = User.objects.create_user(
+            username='normaluser',
+            password='StrongPass123!',
+            email='normal@example.com'
+        )
+        UserProfile.objects.create(user=normal_user, phone='0900000005', address='Da Nang')
+        self.client.force_authenticate(user=admin)
+
+        response = self.client.get('/api/auth/admin/users/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        usernames = [user['username'] for user in response.data['results']]
+        self.assertIn('normaluser', usernames)
+
+    def test_admin_can_disable_user(self):
+        admin = User.objects.create_user(
+            username='adminmanager',
+            password='StrongPass123!',
+            email='adminmanager@example.com',
+            is_staff=True,
+            is_superuser=True,
+        )
+        UserProfile.objects.create(user=admin, phone='0900000006', address='')
+        normal_user = User.objects.create_user(
+            username='deactivateuser',
+            password='StrongPass123!',
+            email='deactivate@example.com'
+        )
+        UserProfile.objects.create(user=normal_user, phone='0900000007', address='')
+        self.client.force_authenticate(user=admin)
+
+        response = self.client.patch(
+            f'/api/auth/admin/users/{normal_user.id}/update/',
+            {'is_active': False},
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        normal_user.refresh_from_db()
+        self.assertFalse(normal_user.is_active)

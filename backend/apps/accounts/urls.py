@@ -10,4 +10,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
     path('profile/update/', views.update_profile_view, name='update-profile'),
+    path('admin/users/', views.AdminUserListView.as_view(), name='admin-user-list'),
+    path('admin/users/<int:pk>/update/', views.AdminUserUpdateView.as_view(), name='admin-user-update'),
 ]

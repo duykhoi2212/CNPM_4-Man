@@ -6,12 +6,15 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.db.models import Q
 from .models import UserProfile
 from .serializers import (
     RegisterSerializer,
     LoginSerializer,
     UserProfileDetailSerializer,
-    UpdateProfileSerializer
+    UpdateProfileSerializer,
+    AdminUserListSerializer,
+    AdminUserUpdateSerializer,
 )
 
 
@@ -223,3 +226,60 @@ def update_profile_view(request):
         'user': response_serializer.data,
         'message': 'Profile updated successfully'
     }, status=status.HTTP_200_OK)
+
+
+class AdminUserListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAdminUser]
+    serializer_class = AdminUserListSerializer
+
+    def get_queryset(self):
+        queryset = User.objects.select_related('profile').order_by('-date_joined')
+
+        keyword = self.request.query_params.get('q')
+        role = self.request.query_params.get('role')
+        status_filter = self.request.query_params.get('status')
+
+        if keyword:
+            queryset = queryset.filter(
+                Q(username__icontains=keyword) |
+                Q(email__icontains=keyword) |
+                Q(first_name__icontains=keyword) |
+                Q(last_name__icontains=keyword) |
+                Q(profile__phone__icontains=keyword)
+            )
+
+        if role == 'admin':
+            queryset = queryset.filter(is_staff=True)
+        elif role == 'user':
+            queryset = queryset.filter(is_staff=False)
+
+        if status_filter == 'active':
+            queryset = queryset.filter(is_active=True)
+        elif status_filter == 'inactive':
+            queryset = queryset.filter(is_active=False)
+
+        return queryset.distinct()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+
+class AdminUserUpdateView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [permissions.IsAdminUser]
+    serializer_class = AdminUserUpdateSerializer
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        detail_serializer = AdminUserListSerializer(user, context={'request': request})
+        return Response({
+            'message': 'Da cap nhat tai khoan thanh cong',
+            'user': detail_serializer.data,
+        }, status=status.HTTP_200_OK)
