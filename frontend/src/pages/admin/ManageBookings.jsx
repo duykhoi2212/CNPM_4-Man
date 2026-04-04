@@ -196,7 +196,7 @@ const ManageBookings = () => {
           {successMessage && <div className="rounded-md bg-green-50 px-4 py-3 text-sm text-green-700">{successMessage}</div>}
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[1.35fr_0.95fr] gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] gap-8 items-start">
           <div className="bg-white shadow-sm rounded-lg p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Danh sach booking</h2>
 
@@ -205,89 +205,84 @@ const ManageBookings = () => {
             ) : bookings.length === 0 ? (
               <div className="p-8 text-center text-gray-500">Khong co booking nao phu hop voi bo loc hien tai.</div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ma</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Khach hang</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">San</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngay</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tong tien</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tien coc</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thanh toan</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trang thai</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Thao tac</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {bookings.map((booking) => (
-                      <tr key={booking.id} className={selectedBookingId === booking.id ? 'bg-teal-50/40' : ''}>
-                        <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">#{booking.id}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">
-                          <div>
-                            <p className="font-medium text-gray-900">{booking.customer_name}</p>
-                            <p className="text-xs text-gray-500">{booking.customer_phone}</p>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.field?.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">{booking.booking_date}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">{formatMoney(booking.total_amount)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-600">{formatMoney(booking.deposit_amount)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+              <div className="space-y-4">
+                {bookings.map((booking) => (
+                  <article
+                    key={booking.id}
+                    className={`rounded-2xl border p-5 transition ${selectedBookingId === booking.id ? 'border-primary bg-teal-50/40 shadow-sm' : 'border-gray-100 bg-white'}`}
+                  >
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="space-y-4 flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h3 className="text-lg font-bold text-gray-900">#{booking.id} - {booking.field?.name}</h3>
+                          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[booking.status] || 'bg-gray-100 text-gray-800'}`}>
+                            {booking.status_display}
+                          </span>
                           {booking.payment ? (
-                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${paymentStatusStyles[booking.payment.status] || 'bg-gray-100 text-gray-800'}`}>
+                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${paymentStatusStyles[booking.payment.status] || 'bg-gray-100 text-gray-800'}`}>
                               {booking.payment.status_display}
                             </span>
                           ) : (
-                            <span className="text-xs text-gray-400">Chua tao</span>
+                            <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-600">
+                              Chua tao thanh toan
+                            </span>
                           )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusStyles[booking.status] || 'bg-gray-100 text-gray-800'}`}>
-                            {booking.status_display}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <div className="flex justify-end gap-3">
-                            <button
-                              type="button"
-                              onClick={() => handleViewDetail(booking.id)}
-                              className="rounded-md bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
-                            >
-                              Xem chi tiet
-                            </button>
-                            {booking.status === 'confirmed' && (
-                              <button
-                                type="button"
-                                disabled={actionLoadingId === booking.id}
-                                onClick={() => handleAction(booking.id, 'complete')}
-                                className="rounded-md bg-green-50 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-100 disabled:opacity-60"
-                              >
-                                Hoan thanh
-                              </button>
-                            )}
-                            {['pending_payment', 'confirmed'].includes(booking.status) && (
-                              <button
-                                type="button"
-                                disabled={actionLoadingId === booking.id}
-                                onClick={() => handleAction(booking.id, 'cancel')}
-                                className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-60"
-                              >
-                                Huy
-                              </button>
-                            )}
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                          <div>
+                            <p className="font-semibold text-gray-900">Khach hang</p>
+                            <p>{booking.customer_name}</p>
+                            <p className="text-gray-500">{booking.customer_phone}</p>
+                            <p className="text-gray-500 break-all">{booking.customer_email || 'Chua cung cap email'}</p>
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          <div>
+                            <p className="font-semibold text-gray-900">Thong tin dat san</p>
+                            <p>Ngay su dung: {booking.booking_date}</p>
+                            <p>Tong tien: {formatMoney(booking.total_amount)}</p>
+                            <p>Tien coc: {formatMoney(booking.deposit_amount)}</p>
+                            <p>Con lai: {formatMoney(booking.remaining_amount)}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap lg:flex-col gap-3 lg:w-40 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleViewDetail(booking.id)}
+                          className="rounded-md bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100"
+                        >
+                          Xem chi tiet
+                        </button>
+                        {booking.status === 'confirmed' && (
+                          <button
+                            type="button"
+                            disabled={actionLoadingId === booking.id}
+                            onClick={() => handleAction(booking.id, 'complete')}
+                            className="rounded-md bg-green-50 px-4 py-3 text-sm font-medium text-green-700 hover:bg-green-100 disabled:opacity-60"
+                          >
+                            Hoan thanh
+                          </button>
+                        )}
+                        {['pending_payment', 'confirmed'].includes(booking.status) && (
+                          <button
+                            type="button"
+                            disabled={actionLoadingId === booking.id}
+                            onClick={() => handleAction(booking.id, 'cancel')}
+                            className="rounded-md bg-red-50 px-4 py-3 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-60"
+                          >
+                            Huy
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))}
               </div>
             )}
           </div>
 
-          <aside className="bg-white shadow-sm rounded-lg p-6 min-h-[28rem]">
+          <aside className="bg-white shadow-sm rounded-lg p-6 xl:sticky xl:top-8">
             <div className="flex items-center justify-between gap-4 mb-6">
               <h2 className="text-xl font-bold text-gray-900">Chi tiet booking</h2>
               {selectedBooking && (
@@ -301,7 +296,7 @@ const ManageBookings = () => {
               <div className="py-16 text-center text-primary font-semibold">Dang tai chi tiet booking...</div>
             ) : !selectedBooking ? (
               <div className="py-16 text-center text-gray-500">
-                Chon mot booking o bang ben trai de xem chi tiet thanh toan, khung gio va ghi chu cua khach.
+                Chon mot booking ben trai de xem chi tiet thanh toan, khung gio va ghi chu cua khach.
               </div>
             ) : (
               <div className="space-y-6">
@@ -311,16 +306,16 @@ const ManageBookings = () => {
                       <p className="text-sm text-gray-500">Booking #{selectedBooking.id}</p>
                       <h3 className="text-lg font-bold text-gray-900">{selectedBooking.field?.name}</h3>
                     </div>
-                    <p className="text-sm text-gray-500">Dat luc {formatDateTime(selectedBooking.created_at)}</p>
+                    <p className="text-sm text-gray-500 text-right">Dat luc {formatDateTime(selectedBooking.created_at)}</p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-700">
                     <p><span className="font-semibold text-gray-900">Ngay su dung:</span> {selectedBooking.booking_date}</p>
                     <p><span className="font-semibold text-gray-900">Loai san:</span> {selectedBooking.field?.field_type?.name || 'Khong ro'}</p>
                     <p><span className="font-semibold text-gray-900">Khach hang:</span> {selectedBooking.customer_name}</p>
                     <p><span className="font-semibold text-gray-900">So dien thoai:</span> {selectedBooking.customer_phone}</p>
-                    <p><span className="font-semibold text-gray-900">Email:</span> {selectedBooking.customer_email || 'Chua cung cap'}</p>
-                    <p><span className="font-semibold text-gray-900">Cap nhat lan cuoi:</span> {formatDateTime(selectedBooking.updated_at)}</p>
+                    <p className="sm:col-span-2 break-all"><span className="font-semibold text-gray-900">Email:</span> {selectedBooking.customer_email || 'Chua cung cap'}</p>
+                    <p className="sm:col-span-2"><span className="font-semibold text-gray-900">Cap nhat lan cuoi:</span> {formatDateTime(selectedBooking.updated_at)}</p>
                   </div>
                 </div>
 
@@ -329,7 +324,7 @@ const ManageBookings = () => {
                   {selectedBooking.booking_timeslots?.length ? (
                     <div className="space-y-2">
                       {selectedBooking.booking_timeslots.map((bookingTimeslot) => (
-                        <div key={bookingTimeslot.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 text-sm">
+                        <div key={bookingTimeslot.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 text-sm gap-4">
                           <div>
                             <p className="font-semibold text-gray-900">
                               {bookingTimeslot.timeslot?.start_time} - {bookingTimeslot.timeslot?.end_time}
@@ -338,7 +333,7 @@ const ManageBookings = () => {
                               {bookingTimeslot.timeslot?.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}
                             </p>
                           </div>
-                          <div className="font-semibold text-gray-900">{formatMoney(bookingTimeslot.timeslot?.price)}</div>
+                          <div className="font-semibold text-gray-900 whitespace-nowrap">{formatMoney(bookingTimeslot.timeslot?.price)}</div>
                         </div>
                       ))}
                     </div>
@@ -347,7 +342,7 @@ const ManageBookings = () => {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <div className="rounded-xl border border-gray-100 p-4 space-y-2">
                     <h4 className="font-semibold text-gray-900">Thanh toan coc</h4>
                     {selectedBooking.payment ? (
@@ -355,7 +350,7 @@ const ManageBookings = () => {
                         <p><span className="font-semibold text-gray-900">Trang thai:</span> {selectedBooking.payment.status_display}</p>
                         <p><span className="font-semibold text-gray-900">Phuong thuc:</span> {selectedBooking.payment.payment_method_display}</p>
                         <p><span className="font-semibold text-gray-900">So tien:</span> {formatMoney(selectedBooking.payment.amount)}</p>
-                        <p><span className="font-semibold text-gray-900">Ma giao dich:</span> {selectedBooking.payment.transaction_id || 'Chua co'}</p>
+                        <p className="break-all"><span className="font-semibold text-gray-900">Ma giao dich:</span> {selectedBooking.payment.transaction_id || 'Chua co'}</p>
                         <p><span className="font-semibold text-gray-900">Da thanh toan luc:</span> {formatDateTime(selectedBooking.payment.paid_at)}</p>
                       </div>
                     ) : (
