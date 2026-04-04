@@ -23,7 +23,34 @@ const bookingStatusStyles = {
   cancelled: 'bg-red-100 text-red-700',
 };
 
+const rangeOptions = [
+  { value: '30d', label: '30 ngay qua' },
+  { value: '90d', label: '90 ngay qua' },
+  { value: '1y', label: '1 nam qua' },
+  { value: 'all', label: 'Tat ca' },
+  { value: 'custom', label: 'Tuy chon' },
+];
+
 const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} d`;
+
+const formatChartMoney = (value) => {
+  const numeric = Number(value || 0);
+  if (numeric >= 1000000) return `${(numeric / 1000000).toFixed(1)}tr`;
+  if (numeric >= 1000) return `${Math.round(numeric / 1000)}k`;
+  return `${numeric}`;
+};
+
+const formatPeriodLabel = (period, groupBy) => {
+  if (!period) return '';
+  if (groupBy === 'month') {
+    const [year, month] = String(period).split('-');
+    return `${month}/${year}`;
+  }
+
+  const date = new Date(period);
+  if (Number.isNaN(date.getTime())) return String(period);
+  return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+};
 
 const getReadableError = (responseData, fallbackMessage) => {
   if (!responseData) return fallbackMessage;
@@ -37,73 +64,188 @@ const getReadableError = (responseData, fallbackMessage) => {
   return fallbackMessage;
 };
 
-const RevenueChart = ({ series }) => {
-  const chartData = useMemo(() => {
-    if (!series.length) return { points: '', labels: [] };
+const getPresetDates = (rangeKey) => {
+  if (rangeKey === 'all' || rangeKey === 'custom') {
+    return { date_from: '', date_to: '' };
+  }
 
-    const width = 640;
-    const height = 220;
+  const today = new Date();
+  const end = today.toISOString().slice(0, 10);
+  const startDate = new Date(today);
+
+  if (rangeKey === '30d') startDate.setDate(startDate.getDate() - 29);
+  if (rangeKey === '90d') startDate.setDate(startDate.getDate() - 89);
+  if (rangeKey === '1y') startDate.setFullYear(startDate.getFullYear() - 1);
+
+  return {
+    date_from: startDate.toISOString().slice(0, 10),
+    date_to: end,
+  };
+};
+
+const RevenueChart = ({ series, groupBy }) => {
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+
+  const chartData = useMemo(() => {
+    if (!series.length) {
+      return {
+        width: 760,
+        height: 320,
+        plotWidth: 0,
+        plotHeight: 0,
+        points: [],
+        yTicks: [],
+      };
+    }
+
+    const width = 760;
+    const height = 320;
+    const margin = { top: 20, right: 20, bottom: 48, left: 72 };
+    const plotWidth = width - margin.left - margin.right;
+    const plotHeight = height - margin.top - margin.bottom;
     const maxRevenue = Math.max(...series.map((item) => Number(item.total_revenue || 0)), 1);
+    const yTickValues = Array.from({ length: 5 }, (_, index) => Math.round((maxRevenue / 4) * (4 - index)));
 
     const points = series.map((item, index) => {
-      const x = (index / Math.max(series.length - 1, 1)) * (width - 40) + 20;
+      const x = margin.left + (index / Math.max(series.length - 1, 1)) * plotWidth;
       const revenue = Number(item.total_revenue || 0);
-      const y = height - (revenue / maxRevenue) * 160 - 30;
-      return `${x},${y}`;
-    }).join(' ');
+      const y = margin.top + plotHeight - (revenue / maxRevenue) * plotHeight;
+      return {
+        x,
+        y,
+        revenue,
+        bookings_count: item.bookings_count,
+        rawPeriod: item.period,
+        label: formatPeriodLabel(item.period, groupBy),
+      };
+    });
 
-    const labels = series.map((item) => ({
-      period: item.period,
-      total_revenue: item.total_revenue,
-      bookings_count: item.bookings_count,
+    const yTicks = yTickValues.map((value) => ({
+      value,
+      y: margin.top + plotHeight - (value / Math.max(maxRevenue, 1)) * plotHeight,
     }));
 
-    return { points, labels, width, height };
-  }, [series]);
+    return { width, height, margin, plotWidth, plotHeight, points, yTicks };
+  }, [series, groupBy]);
 
   if (!series.length) {
     return <p className="text-gray-500">Chua co du lieu doanh thu de hien thi.</p>;
   }
 
+  const polylinePoints = chartData.points.map((point) => `${point.x},${point.y}`).join(' ');
+  const areaPoints = [
+    `${chartData.margin.left},${chartData.margin.top + chartData.plotHeight}`,
+    ...chartData.points.map((point) => `${point.x},${point.y}`),
+    `${chartData.margin.left + chartData.plotWidth},${chartData.margin.top + chartData.plotHeight}`,
+  ].join(' ');
+
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl bg-slate-950 p-4 text-white">
-        <svg viewBox={`0 0 ${chartData.width} ${chartData.height}`} className="w-full h-64">
+      <div className="rounded-2xl bg-slate-950 p-4 text-white overflow-x-auto">
+        <svg viewBox={`0 0 ${chartData.width} ${chartData.height}`} className="w-full min-w-[680px] h-[320px]">
           <defs>
             <linearGradient id="revenueGradient" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.45" />
-              <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0.02" />
+              <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0.03" />
             </linearGradient>
           </defs>
-          {[0, 1, 2, 3].map((tick) => {
-            const y = 20 + tick * 50;
-            return <line key={tick} x1="20" x2={chartData.width - 20} y1={y} y2={y} stroke="rgba(255,255,255,0.08)" />;
-          })}
+
+          {chartData.yTicks.map((tick) => (
+            <g key={tick.value}>
+              <line
+                x1={chartData.margin.left}
+                x2={chartData.margin.left + chartData.plotWidth}
+                y1={tick.y}
+                y2={tick.y}
+                stroke="rgba(255,255,255,0.08)"
+              />
+              <text
+                x={chartData.margin.left - 12}
+                y={tick.y + 4}
+                textAnchor="end"
+                fontSize="12"
+                fill="rgba(255,255,255,0.70)"
+              >
+                {formatChartMoney(tick.value)}
+              </text>
+            </g>
+          ))}
+
+          <line
+            x1={chartData.margin.left}
+            x2={chartData.margin.left}
+            y1={chartData.margin.top}
+            y2={chartData.margin.top + chartData.plotHeight}
+            stroke="rgba(255,255,255,0.18)"
+          />
+          <line
+            x1={chartData.margin.left}
+            x2={chartData.margin.left + chartData.plotWidth}
+            y1={chartData.margin.top + chartData.plotHeight}
+            y2={chartData.margin.top + chartData.plotHeight}
+            stroke="rgba(255,255,255,0.18)"
+          />
+
+          <polygon fill="url(#revenueGradient)" points={areaPoints} />
           <polyline
             fill="none"
             stroke="#5eead4"
             strokeWidth="4"
             strokeLinejoin="round"
             strokeLinecap="round"
-            points={chartData.points}
+            points={polylinePoints}
           />
-          <polygon
-            fill="url(#revenueGradient)"
-            points={`20,${chartData.height - 30} ${chartData.points} ${chartData.width - 20},${chartData.height - 30}`}
-          />
-          {series.map((item, index) => {
-            const point = chartData.points.split(' ')[index];
-            const [x, y] = point.split(',');
-            return <circle key={item.period} cx={x} cy={y} r="5" fill="#ffffff" stroke="#2dd4bf" strokeWidth="3" />;
-          })}
+
+          {chartData.points.map((point, index) => (
+            <g key={point.rawPeriod}>
+              <circle
+                cx={point.x}
+                cy={point.y}
+                r={hoveredIndex === index ? 7 : 5}
+                fill="#ffffff"
+                stroke="#2dd4bf"
+                strokeWidth="3"
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              />
+              <text
+                x={point.x}
+                y={chartData.margin.top + chartData.plotHeight + 22}
+                textAnchor="middle"
+                fontSize="12"
+                fill="rgba(255,255,255,0.70)"
+              >
+                {point.label}
+              </text>
+              {hoveredIndex === index && (
+                <g>
+                  <rect
+                    x={point.x - 68}
+                    y={Math.max(point.y - 64, 10)}
+                    width="136"
+                    height="48"
+                    rx="10"
+                    fill="rgba(15,23,42,0.96)"
+                    stroke="rgba(45,212,191,0.6)"
+                  />
+                  <text x={point.x} y={Math.max(point.y - 40, 26)} textAnchor="middle" fontSize="12" fill="#cbd5e1">
+                    {point.label}
+                  </text>
+                  <text x={point.x} y={Math.max(point.y - 22, 44)} textAnchor="middle" fontSize="13" fontWeight="700" fill="#ffffff">
+                    {formatMoney(point.revenue)}
+                  </text>
+                </g>
+              )}
+            </g>
+          ))}
         </svg>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {chartData.labels.slice(-3).map((item) => (
-          <div key={item.period} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-            <p className="text-sm text-gray-500">{item.period}</p>
-            <p className="mt-1 text-lg font-bold text-gray-900">{formatMoney(item.total_revenue)}</p>
+        {chartData.points.slice(-3).map((item) => (
+          <div key={item.rawPeriod} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+            <p className="text-sm text-gray-500">{formatPeriodLabel(item.rawPeriod, groupBy)}</p>
+            <p className="mt-1 text-lg font-bold text-gray-900">{formatMoney(item.revenue)}</p>
             <p className="text-xs text-gray-500">{item.bookings_count || 0} booking hoan thanh</p>
           </div>
         ))}
@@ -122,6 +264,7 @@ const Statistics = () => {
     date_to: '',
     field_id: '',
     group_by: 'day',
+    range: 'all',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -150,6 +293,7 @@ const Statistics = () => {
       date_to: '',
       field_id: '',
       group_by: 'day',
+      range: 'all',
     };
 
     const fetchStatistics = async () => {
@@ -171,11 +315,7 @@ const Statistics = () => {
     fetchStatistics();
   }, [loadStatistics]);
 
-  const handleFilterChange = async (event) => {
-    const nextFilters = {
-      ...filters,
-      [event.target.name]: event.target.value,
-    };
+  const applyFilters = async (nextFilters) => {
     setFilters(nextFilters);
     setError('');
 
@@ -187,6 +327,27 @@ const Statistics = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFilterChange = async (event) => {
+    const { name, value } = event.target;
+    const nextFilters = {
+      ...filters,
+      [name]: value,
+      range: name === 'date_from' || name === 'date_to' ? 'custom' : filters.range,
+    };
+    await applyFilters(nextFilters);
+  };
+
+  const handleRangeSelect = async (rangeKey) => {
+    const presetDates = getPresetDates(rangeKey);
+    const nextFilters = {
+      ...filters,
+      ...presetDates,
+      range: rangeKey,
+      group_by: rangeKey === '1y' ? 'month' : filters.group_by,
+    };
+    await applyFilters(nextFilters);
   };
 
   const summaryCards = overview ? [
@@ -230,6 +391,22 @@ const Statistics = () => {
         </div>
 
         <div className="rounded-2xl bg-white p-6 shadow-sm space-y-5">
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-3">Soat nhanh theo moc thoi gian</p>
+            <div className="flex flex-wrap gap-3">
+              {rangeOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => handleRangeSelect(option.value)}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${filters.range === option.value ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
             <label className="block">
               <span className="text-sm font-medium text-gray-700">Tu ngay</span>
@@ -307,7 +484,7 @@ const Statistics = () => {
                     <p className="text-lg font-bold text-gray-900">{formatMoney(overview?.payment?.pending_deposit)}</p>
                   </div>
                 </div>
-                <RevenueChart series={revenueSeries} />
+                <RevenueChart series={revenueSeries} groupBy={filters.group_by} />
               </section>
 
               <section className="rounded-2xl bg-white p-6 shadow-sm">
