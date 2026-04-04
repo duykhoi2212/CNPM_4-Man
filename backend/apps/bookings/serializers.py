@@ -25,6 +25,7 @@ class BookingListSerializer(serializers.ModelSerializer):
     can_review_now = serializers.SerializerMethodField()
     has_review = serializers.SerializerMethodField()
     review = serializers.SerializerMethodField()
+    payment = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
@@ -33,8 +34,24 @@ class BookingListSerializer(serializers.ModelSerializer):
             'customer_name', 'customer_phone', 'customer_email',
             'total_amount', 'deposit_amount', 'remaining_amount',
             'status', 'status_display', 'latest_end_time',
-            'can_review_now', 'has_review', 'review', 'created_at'
+            'can_review_now', 'has_review', 'review', 'payment', 'created_at'
         ]
+
+    def get_payment(self, obj):
+        payment = getattr(obj, 'payment', None)
+        if not payment:
+            return None
+
+        return {
+            'id': payment.id,
+            'payment_method': payment.payment_method,
+            'payment_method_display': payment.get_payment_method_display(),
+            'status': payment.status,
+            'status_display': payment.get_status_display(),
+            'transaction_id': payment.transaction_id,
+            'paid_at': payment.paid_at,
+            'amount': payment.amount,
+        }
 
     def get_latest_end_time(self, obj):
         booking_timeslots = obj.booking_timeslots.all()
@@ -84,6 +101,7 @@ class BookingDetailSerializer(serializers.ModelSerializer):
     booking_timeslots = BookingTimeSlotSerializer(many=True, read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     remaining_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    payment = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
@@ -91,9 +109,25 @@ class BookingDetailSerializer(serializers.ModelSerializer):
             'id', 'user', 'field', 'booking_date',
             'customer_name', 'customer_phone', 'customer_email', 'notes',
             'total_amount', 'deposit_amount', 'remaining_amount',
-            'status', 'status_display', 'booking_timeslots',
+            'status', 'status_display', 'booking_timeslots', 'payment',
             'created_at', 'updated_at'
         ]
+
+    def get_payment(self, obj):
+        payment = getattr(obj, 'payment', None)
+        if not payment:
+            return None
+
+        return {
+            'id': payment.id,
+            'payment_method': payment.payment_method,
+            'payment_method_display': payment.get_payment_method_display(),
+            'status': payment.status,
+            'status_display': payment.get_status_display(),
+            'transaction_id': payment.transaction_id,
+            'paid_at': payment.paid_at,
+            'amount': payment.amount,
+        }
 
 
 class BookingCreateSerializer(serializers.ModelSerializer):

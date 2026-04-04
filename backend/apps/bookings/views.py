@@ -30,7 +30,7 @@ class BookingListView(generics.ListAPIView):
         else:
             queryset = Booking.objects.filter(user=user)
 
-        queryset = queryset.select_related('user', 'field', 'field__field_type').prefetch_related(
+        queryset = queryset.select_related('user', 'field', 'field__field_type', 'payment').prefetch_related(
             'booking_timeslots__timeslot',
             'review',
         ).order_by('-created_at')
@@ -51,7 +51,7 @@ class BookingListView(generics.ListAPIView):
 
 
 class BookingDetailView(generics.RetrieveAPIView):
-    queryset = Booking.objects.select_related('user', 'field').prefetch_related('booking_timeslots__timeslot')
+    queryset = Booking.objects.select_related('user', 'field', 'field__field_type', 'payment').prefetch_related('booking_timeslots__timeslot')
     serializer_class = BookingDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
