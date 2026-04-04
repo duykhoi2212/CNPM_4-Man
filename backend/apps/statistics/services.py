@@ -48,6 +48,20 @@ def get_admin_overview(date_from=None, date_to=None, field_id=None):
     total_bookings = booking_summary['total_bookings'] or 0
     completed_bookings = booking_summary['completed_bookings'] or 0
     completion_rate_percent = round((completed_bookings / total_bookings) * 100, 2) if total_bookings else 0
+    recent_bookings = list(
+        bookings.select_related('field')
+        .order_by('-created_at')
+        .values(
+            'id',
+            'field_id',
+            'field__name',
+            'booking_date',
+            'customer_name',
+            'status',
+            'total_amount',
+            'deposit_amount',
+        )[:5]
+    )
 
     return {
         'period': {
@@ -61,6 +75,7 @@ def get_admin_overview(date_from=None, date_to=None, field_id=None):
         },
         'payment': payment_summary,
         'total_reviews_from_bookings': Review.objects.filter(booking_id__in=booking_ids).count(),
+        'recent_bookings': recent_bookings,
     }
 
 
