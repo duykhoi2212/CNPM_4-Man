@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 import { getStoredUser, updateStoredUser } from '../../utils/auth';
@@ -130,11 +130,16 @@ const Profile = () => {
         <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-3xl font-bold text-gray-900">Thong tin tai khoan</h2>
-            <p className="mt-2 text-gray-500">Ban co the cap nhat thong tin ca nhan va avatar tai day.</p>
+            <p className="mt-2 text-gray-500">Ban co the cap nhat thong tin ca nhan, avatar va quan ly bao mat tai day.</p>
           </div>
-          <Link to={storedUser?.is_staff ? '/admin/pitches' : '/pitches'} className="text-primary font-semibold hover:underline">
-            {storedUser?.is_staff ? 'Ve khu quan ly' : 'Ve danh sach san'}
-          </Link>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link to="/change-password" className="rounded-md border border-primary px-4 py-2 font-semibold text-primary hover:bg-teal-50">
+              Doi mat khau
+            </Link>
+            <Link to={storedUser?.is_staff ? '/admin/pitches' : '/pitches'} className="text-primary font-semibold hover:underline">
+              {storedUser?.is_staff ? 'Ve khu quan ly' : 'Ve danh sach san'}
+            </Link>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">

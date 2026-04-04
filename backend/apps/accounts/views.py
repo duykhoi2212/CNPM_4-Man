@@ -15,6 +15,7 @@ from .serializers import (
     UpdateProfileSerializer,
     AdminUserListSerializer,
     AdminUserUpdateSerializer,
+    ChangePasswordSerializer,
 )
 
 
@@ -225,6 +226,25 @@ def update_profile_view(request):
     return Response({
         'user': response_serializer.data,
         'message': 'Profile updated successfully'
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def change_password_view(request):
+    serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+    serializer.is_valid(raise_exception=True)
+
+    request.user.set_password(serializer.validated_data['new_password'])
+    request.user.save()
+
+    Token.objects.filter(user=request.user).delete()
+    token = Token.objects.create(user=request.user)
+
+    return Response({
+        'message': 'Doi mat khau thanh cong',
+        'token': token.key,
+        'user': _serialize_auth_user(request.user, request),
     }, status=status.HTTP_200_OK)
 
 

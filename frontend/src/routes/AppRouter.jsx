@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+﻿import { Routes, Route } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 
 import Home from '../pages/public/Home';
@@ -13,6 +13,7 @@ import Checkout from '../pages/user/Checkout';
 import History from '../pages/user/History';
 import ReviewForm from '../pages/user/ReviewForm';
 import Profile from '../pages/user/Profile';
+import ChangePassword from '../pages/user/ChangePassword';
 
 import Dashboard from '../pages/admin/Dashboard';
 import Statistics from '../pages/admin/Statistics';
@@ -36,6 +37,7 @@ const AppRouter = () => {
         <Route path="/user/history" element={<History />} />
         <Route path="/user/reviews/new/:bookingId" element={<ReviewForm />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/checkout" element={<Checkout />} />
       </Route>
 

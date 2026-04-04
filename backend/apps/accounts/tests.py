@@ -133,3 +133,49 @@ class AccountsApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         normal_user.refresh_from_db()
         self.assertFalse(normal_user.is_active)
+
+    def test_change_password_success(self):
+        user = User.objects.create_user(
+            username='changepassuser',
+            password='StrongPass123!',
+            email='changepass@example.com'
+        )
+        UserProfile.objects.create(user=user, phone='0900000008', address='')
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(
+            '/api/auth/change-password/',
+            {
+                'old_password': 'StrongPass123!',
+                'new_password': 'NewStrongPass123!',
+                'new_password2': 'NewStrongPass123!',
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        user.refresh_from_db()
+        self.assertTrue(user.check_password('NewStrongPass123!'))
+        self.assertIn('token', response.data)
+
+    def test_change_password_rejects_wrong_old_password(self):
+        user = User.objects.create_user(
+            username='wrongoldpassuser',
+            password='StrongPass123!',
+            email='wrongold@example.com'
+        )
+        UserProfile.objects.create(user=user, phone='0900000009', address='')
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(
+            '/api/auth/change-password/',
+            {
+                'old_password': 'WrongPass123!',
+                'new_password': 'NewStrongPass123!',
+                'new_password2': 'NewStrongPass123!',
+            },
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('old_password', response.data)
