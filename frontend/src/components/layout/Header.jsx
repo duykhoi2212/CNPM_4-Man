@@ -1,4 +1,4 @@
-﻿import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { clearAuth, getUserInfo } from '../../utils/auth';
 
 const Header = () => {
@@ -31,7 +31,7 @@ const Header = () => {
           <Link to="/contact" className="text-gray-700 hover:text-primary font-medium">
             Lien he
           </Link>
-          {isAuthenticated && (
+          {isAuthenticated && !isAdmin && (
             <Link to="/user/history" className="text-gray-700 hover:text-primary font-medium">
               Lich su dat san
             </Link>
@@ -91,3 +91,4 @@ const Header = () => {
 };
 
 export default Header;
+
