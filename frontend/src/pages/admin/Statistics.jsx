@@ -64,6 +64,15 @@ const getReadableError = (responseData, fallbackMessage) => {
   return fallbackMessage;
 };
 
+const buildStatsParams = (nextFilters) => {
+  const params = {};
+  if (nextFilters.date_from) params.date_from = nextFilters.date_from;
+  if (nextFilters.date_to) params.date_to = nextFilters.date_to;
+  if (nextFilters.field_id) params.field_id = nextFilters.field_id;
+  params.group_by = nextFilters.group_by;
+  return params;
+};
+
 const getPresetDates = (rangeKey) => {
   if (rangeKey === 'all' || rangeKey === 'custom') {
     return { date_from: '', date_to: '' };
@@ -267,14 +276,11 @@ const Statistics = () => {
     range: 'all',
   });
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
 
   const loadStatistics = useCallback(async (nextFilters) => {
-    const params = {};
-    if (nextFilters.date_from) params.date_from = nextFilters.date_from;
-    if (nextFilters.date_to) params.date_to = nextFilters.date_to;
-    if (nextFilters.field_id) params.field_id = nextFilters.field_id;
-    params.group_by = nextFilters.group_by;
+    const params = buildStatsParams(nextFilters);
 
     const [overviewResponse, revenueResponse, topFieldsResponse] = await Promise.all([
       axiosInstance.get('/statistics/admin/overview/', { params }),
@@ -350,6 +356,34 @@ const Statistics = () => {
     await applyFilters(nextFilters);
   };
 
+  const handleExportReport = async () => {
+    try {
+      setExporting(true);
+      const response = await axiosInstance.get('/statistics/admin/export/', {
+        params: buildStatsParams(filters),
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([response.data], { type: 'text/csv;charset=utf-8;' });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const contentDisposition = response.headers['content-disposition'] || '';
+      const matchedFileName = contentDisposition.match(/filename="([^"]+)"/);
+      const fileName = matchedFileName?.[1] || `bao-cao-thong-ke-${new Date().toISOString().slice(0, 10)}.csv`;
+
+      link.href = downloadUrl;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch {
+      setError('Khong the xuat bao cao thong ke luc nay.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const summaryCards = overview ? [
     {
       label: 'Doanh thu hoan tat',
@@ -385,6 +419,14 @@ const Statistics = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-4">
+            <button
+              type="button"
+              onClick={handleExportReport}
+              disabled={exporting}
+              className="rounded-md bg-slate-950 px-4 py-3 font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {exporting ? 'Dang xuat bao cao...' : 'Xuat bao cao CSV'}
+            </button>
             <Link to="/admin/pitches" className="rounded-md border border-primary px-4 py-3 font-semibold text-primary hover:bg-teal-50">Ve khu quan ly</Link>
             <Link to="/" className="rounded-md border border-gray-200 px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">Ve trang khach</Link>
           </div>

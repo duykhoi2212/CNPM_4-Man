@@ -1,6 +1,6 @@
 from django.db.models import Avg, Count, DecimalField, Sum, Value, Q
 from datetime import date
-from django.db.models.functions import Coalesce, TruncDate, TruncMonth
+from django.db.models.functions import Coalesce
 from apps.bookings.models import Booking
 from apps.payments.models import Payment
 from apps.reviews.models import Review
@@ -82,15 +82,36 @@ def get_admin_overview(date_from=None, date_to=None, field_id=None):
 def get_admin_revenue_series(date_from=None, date_to=None, field_id=None, group_by='day'):
     bookings = get_bookings_queryset(date_from=date_from, date_to=date_to, field_id=field_id)
     completed = bookings.filter(status='completed')
+    aggregated = {}
 
-    trunc_fn = TruncDate('booking_date') if group_by == 'day' else TruncMonth('booking_date')
+    for booking in completed.values('booking_date', 'total_amount'):
+        booking_date = booking['booking_date']
+        if not booking_date:
+            continue
 
-    series = list(
-        completed.annotate(period=trunc_fn)
-        .values('period')
-        .annotate(total_revenue=Coalesce(Sum('total_amount'), DECIMAL_ZERO), bookings_count=Count('id'))
-        .order_by('period')
-    )
+        if group_by == 'month':
+            period_key = booking_date.replace(day=1)
+        else:
+            period_key = booking_date
+
+        if period_key not in aggregated:
+            aggregated[period_key] = {
+                'period': period_key,
+                'total_revenue': 0,
+                'bookings_count': 0,
+            }
+
+        aggregated[period_key]['total_revenue'] += booking['total_amount'] or 0
+        aggregated[period_key]['bookings_count'] += 1
+
+    series = [
+        {
+            'period': period,
+            'total_revenue': data['total_revenue'],
+            'bookings_count': data['bookings_count'],
+        }
+        for period, data in sorted(aggregated.items(), key=lambda item: item[0])
+    ]
 
     return {
         'period': {

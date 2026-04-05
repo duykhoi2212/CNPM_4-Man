@@ -58,6 +58,18 @@ class StatisticsApiTests(APITestCase):
         self.assertIn('payment', response.data)
         self.assertEqual(response.data['booking']['completed_bookings'], 1)
 
+    def test_admin_export_report_success(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get('/api/statistics/admin/export/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('text/csv', response['Content-Type'])
+        self.assertIn('attachment;', response['Content-Disposition'])
+        content = response.content.decode('utf-8')
+        self.assertIn('Bao cao thong ke doanh thu', content)
+        self.assertIn('Doanh thu theo thoi gian', content)
+        self.assertIn('Top san', content)
+
     def test_my_overview_success(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.get('/api/statistics/me/overview/')
