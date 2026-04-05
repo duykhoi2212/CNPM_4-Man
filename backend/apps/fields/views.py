@@ -3,7 +3,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.db import IntegrityError
-from django.db.models import Q
+from django.db.models import Q, Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from datetime import datetime, date
@@ -16,7 +16,8 @@ from .serializers import (
     FieldImageSerializer,
     FieldTypeSerializer,
     TimeSlotAdminSerializer,
-    TimeSlotAvailabilitySerializer
+    TimeSlotAvailabilitySerializer,
+    RecommendedFieldSerializer
 )
 
 
@@ -257,6 +258,105 @@ def field_image_delete_view(request, pk, image_id):
 
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
+def recommended_fields_view(request):
+    from apps.bookings.models import Booking
+
+    limit = request.query_params.get('limit', 4)
+    try:
+        limit = max(1, min(int(limit), 8))
+    except (TypeError, ValueError):
+        limit = 4
+
+    queryset = Field.objects.filter(is_active=True).select_related('field_type').prefetch_related('images', 'time_slots')
+    if not queryset.exists():
+        return Response({'results': []}, status=status.HTTP_200_OK)
+
+    booking_counts = {
+        item['field_id']: item['count']
+        for item in Booking.objects.filter(status='completed')
+        .values('field_id')
+        .annotate(count=Count('id'))
+    }
+
+    preferred_field_type_id = None
+    if request.user.is_authenticated:
+        preferred = (
+            Booking.objects.filter(user=request.user)
+            .values('field__field_type_id')
+            .annotate(count=Count('id'))
+            .order_by('-count')
+            .first()
+        )
+        if preferred:
+            preferred_field_type_id = preferred['field__field_type_id']
+
+    scored_fields = []
+    recommendation_reasons = {}
+    recommendation_scores = {}
+
+    for field in queryset:
+        score = 0
+        reasons = []
+        active_slots = sum(1 for slot in field.time_slots.all() if slot.is_active)
+        completed_bookings = booking_counts.get(field.id, 0)
+        avg_rating = float(field.avg_rating or 0)
+        regular_price = float(field.price_per_hour or 0)
+
+        if preferred_field_type_id and field.field_type_id == preferred_field_type_id:
+            score += 3.5
+            reasons.append('Phu hop voi lich su dat san cua ban')
+
+        if avg_rating >= 4.5:
+            score += 3
+            reasons.append('Danh gia rat cao tu nguoi choi')
+        elif avg_rating >= 4:
+            score += 2
+            reasons.append('Danh gia cao va on dinh')
+        elif avg_rating > 0:
+            score += 1
+
+        if completed_bookings >= 5:
+            score += 2.5
+            reasons.append('San duoc dat nhieu gan day')
+        elif completed_bookings >= 2:
+            score += 1.5
+
+        if active_slots >= 6:
+            score += 2
+            reasons.append('Con nhieu khung gio de chon')
+        elif active_slots >= 3:
+            score += 1
+
+        if regular_price and regular_price <= 300000:
+            score += 1.5
+            reasons.append('Gia hop ly de dat nhanh')
+        elif regular_price and regular_price <= 500000:
+            score += 0.5
+
+        if not reasons:
+            reasons.append('San phu hop de dat nhanh')
+
+        recommendation_reasons[field.id] = reasons[0]
+        recommendation_scores[field.id] = round(score, 2)
+        scored_fields.append((score, field))
+
+    scored_fields.sort(key=lambda item: (item[0], float(item[1].avg_rating or 0), booking_counts.get(item[1].id, 0)), reverse=True)
+    selected_fields = [field for _, field in scored_fields[:limit]]
+
+    serializer = RecommendedFieldSerializer(
+        selected_fields,
+        many=True,
+        context={
+            'request': request,
+            'recommendation_reasons': recommendation_reasons,
+            'recommendation_scores': recommendation_scores,
+        }
+    )
+    return Response({'results': serializer.data}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
 def field_availability_view(request, pk):
     """
     GET /api/fields/:id/availability/?date=YYYY-MM-DD
@@ -344,3 +444,5 @@ def field_availability_view(request, pk):
         'date': check_date,
         'timeslots': timeslots_data
     }, status=status.HTTP_200_OK)
+
+

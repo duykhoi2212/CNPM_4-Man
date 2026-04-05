@@ -10,6 +10,8 @@ urlpatterns = [
     path('timeslots/', views.TimeSlotAdminListCreateView.as_view(), name='timeslot-admin-list-create'),
     path('timeslots/<int:pk>/', views.TimeSlotAdminUpdateDeleteView.as_view(), name='timeslot-admin-update-delete'),
     
+    path('recommendations/', views.recommended_fields_view, name='field-recommendations'),
+    
     # Fields - Public
     path('', views.FieldListView.as_view(), name='field-list'),
     path('<int:pk>/', views.FieldDetailView.as_view(), name='field-detail'),

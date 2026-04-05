@@ -1,28 +1,22 @@
-# apps/fields/serializers.py
 from rest_framework import serializers
 from .models import FieldType, Field, FieldImage, TimeSlot
 
 
 class FieldTypeSerializer(serializers.ModelSerializer):
-    """Serializer cho loại sân"""
-    
     class Meta:
         model = FieldType
         fields = ['id', 'name', 'description']
 
 
 class FieldImageSerializer(serializers.ModelSerializer):
-    """Serializer cho ảnh sân"""
-    
     class Meta:
         model = FieldImage
         fields = ['id', 'image_url', 'is_primary', 'order']
 
 
 class TimeSlotSerializer(serializers.ModelSerializer):
-    """Serializer cho khung giờ"""
     duration_hours = serializers.ReadOnlyField()
-    
+
     class Meta:
         model = TimeSlot
         fields = [
@@ -32,7 +26,6 @@ class TimeSlotSerializer(serializers.ModelSerializer):
 
 
 class TimeSlotAdminSerializer(serializers.ModelSerializer):
-    """Serializer cho admin quản lý khung giờ"""
     field_name = serializers.CharField(source='field.name', read_only=True)
     duration_hours = serializers.ReadOnlyField()
 
@@ -64,7 +57,7 @@ class TimeSlotAdminSerializer(serializers.ModelSerializer):
             queryset = TimeSlot.objects.filter(
                 field=field,
                 start_time=start_time,
-                end_time=end_time
+                end_time=end_time,
             )
             if self.instance:
                 queryset = queryset.exclude(pk=self.instance.pk)
@@ -78,13 +71,9 @@ class TimeSlotAdminSerializer(serializers.ModelSerializer):
 
 
 class FieldListSerializer(serializers.ModelSerializer):
-    """
-    Serializer cho danh sách sân (list view)
-    Không include images/timeslots để response nhẹ hơn
-    """
     field_type = FieldTypeSerializer(read_only=True)
     primary_image = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Field
         fields = [
@@ -93,9 +82,8 @@ class FieldListSerializer(serializers.ModelSerializer):
             'avg_rating', 'total_reviews', 'is_active',
             'primary_image'
         ]
-    
+
     def get_primary_image(self, obj):
-        """Lấy URL ảnh chính"""
         if obj.primary_image:
             request = self.context.get('request')
             if request:
@@ -103,15 +91,30 @@ class FieldListSerializer(serializers.ModelSerializer):
         return None
 
 
+class RecommendedFieldSerializer(FieldListSerializer):
+    recommendation_reason = serializers.SerializerMethodField()
+    recommendation_score = serializers.SerializerMethodField()
+
+    class Meta(FieldListSerializer.Meta):
+        fields = FieldListSerializer.Meta.fields + [
+            'recommendation_reason',
+            'recommendation_score',
+        ]
+
+    def get_recommendation_reason(self, obj):
+        reasons = self.context.get('recommendation_reasons', {})
+        return reasons.get(obj.id, 'San phu hop de dat nhanh')
+
+    def get_recommendation_score(self, obj):
+        scores = self.context.get('recommendation_scores', {})
+        return scores.get(obj.id, 0)
+
+
 class FieldDetailSerializer(serializers.ModelSerializer):
-    """
-    Serializer chi tiết sân (detail view)
-    Include full images và timeslots
-    """
     field_type = FieldTypeSerializer(read_only=True)
     images = FieldImageSerializer(many=True, read_only=True)
     time_slots = TimeSlotSerializer(many=True, read_only=True)
-    
+
     class Meta:
         model = Field
         fields = [
@@ -123,10 +126,6 @@ class FieldDetailSerializer(serializers.ModelSerializer):
 
 
 class FieldCreateUpdateSerializer(serializers.ModelSerializer):
-    """
-    Serializer cho tạo/cập nhật sân (Admin only)
-    """
-    
     class Meta:
         model = Field
         fields = [
@@ -134,9 +133,8 @@ class FieldCreateUpdateSerializer(serializers.ModelSerializer):
             'price_per_hour', 'peak_hour_price', 'deposit_percent',
             'is_active'
         ]
-    
+
     def validate(self, attrs):
-        """Validate giá cao điểm >= giá thường"""
         if attrs.get('peak_hour_price') and attrs.get('price_per_hour'):
             if attrs['peak_hour_price'] < attrs['price_per_hour']:
                 raise serializers.ValidationError({
@@ -146,9 +144,6 @@ class FieldCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class TimeSlotAvailabilitySerializer(serializers.Serializer):
-    """
-    Serializer cho check availability của timeslot
-    """
     timeslot_id = serializers.IntegerField()
     start_time = serializers.TimeField()
     end_time = serializers.TimeField()
