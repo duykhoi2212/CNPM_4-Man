@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
+import { getUserInfo } from '../../utils/auth';
 
 const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} d`;
 
@@ -23,6 +24,8 @@ const getPitchPlaceholder = (name) => {
 };
 
 const Home = () => {
+  const user = getUserInfo();
+  const isAuthenticated = Boolean(user);
   const [recommendedFields, setRecommendedFields] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [recommendationError, setRecommendationError] = useState('');
@@ -60,7 +63,7 @@ const Home = () => {
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <Link
-                  to="/pitches"
+                  to={isAuthenticated ? '/pitches' : '/login'}
                   className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-white font-semibold shadow-md hover:bg-teal-600 transition"
                 >
                   Tim san ngay
@@ -93,7 +96,7 @@ const Home = () => {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="font-semibold text-white">{field.name}</p>
-                          <p className="mt-1 text-sm text-slate-300">{field.field_type?.name || 'Loai san'} · {Number(field.avg_rating || 0).toFixed(1)}/5</p>
+                          <p className="mt-1 text-sm text-slate-300">{field.field_type?.name || 'Loai san'}  {Number(field.avg_rating || 0).toFixed(1)}/5</p>
                         </div>
                         <span className="rounded-full bg-teal-400/15 px-3 py-1 text-xs font-semibold text-teal-200">Top de xuat</span>
                       </div>
@@ -101,7 +104,7 @@ const Home = () => {
                       <div className="mt-4 flex items-center justify-between gap-3">
                         <span className="text-lg font-bold text-white">{formatMoney(field.price_per_hour)}</span>
                         <Link
-                          to={`/pitches/${field.id}`}
+                          to={isAuthenticated ? `/pitches/${field.id}` : '/login'}
                           className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-teal-500"
                         >
                           Dat san ngay
@@ -161,7 +164,7 @@ const Home = () => {
                       <span>{field.total_reviews || 0} review</span>
                     </div>
                     <Link
-                      to={`/pitches/${field.id}`}
+                      to={isAuthenticated ? `/pitches/${field.id}` : '/login'}
                       className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-teal-600"
                     >
                       Dat san ngay
