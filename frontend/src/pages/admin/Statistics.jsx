@@ -390,74 +390,6 @@ const Statistics = () => {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm space-y-5">
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-3">Soat nhanh theo moc thoi gian</p>
-            <div className="flex flex-wrap gap-3">
-              {rangeOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleRangeSelect(option.value)}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${filters.range === option.value ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Tu ngay</span>
-              <input
-                type="date"
-                name="date_from"
-                value={filters.date_from}
-                onChange={handleFilterChange}
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Den ngay</span>
-              <input
-                type="date"
-                name="date_to"
-                value={filters.date_to}
-                onChange={handleFilterChange}
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">San bong</span>
-              <select
-                name="field_id"
-                value={filters.field_id}
-                onChange={handleFilterChange}
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
-              >
-                <option value="">Tat ca san</option>
-                {fields.map((field) => (
-                  <option key={field.id} value={field.id}>{field.name}</option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Nhom doanh thu theo</span>
-              <select
-                name="group_by"
-                value={filters.group_by}
-                onChange={handleFilterChange}
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
-              >
-                <option value="day">Ngay</option>
-                <option value="month">Thang</option>
-              </select>
-            </label>
-          </div>
-          {error && <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
-        </div>
-
         {loading ? (
           <div className="rounded-2xl bg-white p-8 text-center text-primary font-semibold shadow-sm">Dang tai trang thong ke...</div>
         ) : (
@@ -474,15 +406,81 @@ const Statistics = () => {
 
             <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.9fr)] gap-6">
               <section className="rounded-2xl bg-white p-6 shadow-sm">
-                <div className="mb-5 flex items-center justify-between gap-4">
+                <div className="mb-5 space-y-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Revenue</p>
+                      <h2 className="text-2xl font-bold text-gray-950">Doanh thu hoan tat</h2>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">Tien coc dang cho thanh toan</p>
+                      <p className="text-lg font-bold text-gray-900">{formatMoney(overview?.payment?.pending_deposit)}</p>
+                    </div>
+                  </div>
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Revenue</p>
-                    <h2 className="text-2xl font-bold text-gray-950">Doanh thu hoan tat</h2>
+                    <p className="text-sm font-medium text-gray-700 mb-3">Soat nhanh theo moc thoi gian</p>
+                    <div className="flex flex-wrap gap-3">
+                      {rangeOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => handleRangeSelect(option.value)}
+                          className={`rounded-full px-4 py-2 text-sm font-semibold transition ${filters.range === option.value ? 'bg-primary text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">Tien coc dang cho thanh toan</p>
-                    <p className="text-lg font-bold text-gray-900">{formatMoney(overview?.payment?.pending_deposit)}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                    <label className="block">
+                      <span className="text-sm font-medium text-gray-700">Tu ngay</span>
+                      <input
+                        type="date"
+                        name="date_from"
+                        value={filters.date_from}
+                        onChange={handleFilterChange}
+                        className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium text-gray-700">Den ngay</span>
+                      <input
+                        type="date"
+                        name="date_to"
+                        value={filters.date_to}
+                        onChange={handleFilterChange}
+                        className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium text-gray-700">San bong</span>
+                      <select
+                        name="field_id"
+                        value={filters.field_id}
+                        onChange={handleFilterChange}
+                        className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                      >
+                        <option value="">Tat ca san</option>
+                        {fields.map((field) => (
+                          <option key={field.id} value={field.id}>{field.name}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="text-sm font-medium text-gray-700">Nhom doanh thu theo</span>
+                      <select
+                        name="group_by"
+                        value={filters.group_by}
+                        onChange={handleFilterChange}
+                        className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                      >
+                        <option value="day">Ngay</option>
+                        <option value="month">Thang</option>
+                      </select>
+                    </label>
                   </div>
+                  {error && <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
                 </div>
                 <RevenueChart series={revenueSeries} groupBy={filters.group_by} />
               </section>
