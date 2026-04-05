@@ -428,20 +428,14 @@ const Statistics = () => {
               {exporting ? 'Dang xuat bao cao...' : 'Xuat bao cao CSV'}
             </button>
             <Link
-              to="/admin/pitches"
-              className="rounded-md border border-primary px-5 py-3 font-semibold text-primary hover:bg-teal-50"
-            >
-              Ve khu quan ly
-            </Link>
-            <Link
               to="/"
               title="Ve trang khach"
               aria-label="Ve trang khach"
               className="inline-flex h-12 w-12 items-center justify-center rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M15 18l-6-6 6-6" />
-                <path d="M21 12H9" />
+                <path d="M9 18l6-6-6-6" />
+                <path d="M3 12h12" />
               </svg>
             </Link>
           </div>
