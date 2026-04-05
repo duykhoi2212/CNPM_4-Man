@@ -106,6 +106,14 @@ const History = () => {
                         <p>Con lai: {Number(booking.remaining_amount || 0).toLocaleString('vi-VN')} VND</p>
                       </div>
                     </div>
+                    <div className="mt-3">
+                      <Link
+                        to={`/user/history/${booking.id}`}
+                        className="inline-flex items-center justify-center rounded-md bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                      >
+                        Chi tiet lich dat
+                      </Link>
+                    </div>
                     {reviewInfo && (
                       <div className={`mt-3 rounded-md px-3 py-2 text-sm ${reviewInfo.className}`}>
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

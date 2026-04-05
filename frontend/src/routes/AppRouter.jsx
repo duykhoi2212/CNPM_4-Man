@@ -11,6 +11,7 @@ import Register from '../pages/auth/Register';
 
 import Checkout from '../pages/user/Checkout';
 import History from '../pages/user/History';
+import BookingDetail from '../pages/user/BookingDetail';
 import ReviewForm from '../pages/user/ReviewForm';
 import Profile from '../pages/user/Profile';
 import ChangePassword from '../pages/user/ChangePassword';
@@ -35,6 +36,7 @@ const AppRouter = () => {
         <Route path="/pitches/:id" element={<PitchDetail />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/user/history" element={<History />} />
+        <Route path="/user/history/:bookingId" element={<BookingDetail />} />
         <Route path="/user/reviews/new/:bookingId" element={<ReviewForm />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/change-password" element={<ChangePassword />} />
