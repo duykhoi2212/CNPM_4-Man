@@ -418,17 +418,27 @@ const Statistics = () => {
               Tong hop doanh thu, tien coc, nhom booking va cac san noi bat de ban co the theo doi van hanh he thong theo mot dashboard gon va ro rang hon.
             </p>
           </div>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap items-center gap-3 xl:justify-end">
             <button
               type="button"
               onClick={handleExportReport}
               disabled={exporting}
-              className="rounded-md bg-slate-950 px-4 py-3 font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-md bg-slate-950 px-5 py-3 font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {exporting ? 'Dang xuat bao cao...' : 'Xuat bao cao CSV'}
             </button>
-            <Link to="/admin/pitches" className="rounded-md border border-primary px-4 py-3 font-semibold text-primary hover:bg-teal-50">Ve khu quan ly</Link>
-            <Link to="/" className="rounded-md border border-gray-200 px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">Ve trang khach</Link>
+            <Link
+              to="/admin/pitches"
+              className="rounded-md border border-primary px-5 py-3 font-semibold text-primary hover:bg-teal-50"
+            >
+              Ve khu quan ly
+            </Link>
+            <Link
+              to="/"
+              className="rounded-md border border-gray-200 px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              Ve trang khach
+            </Link>
           </div>
         </div>
 
