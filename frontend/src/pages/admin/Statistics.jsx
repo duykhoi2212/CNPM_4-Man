@@ -432,7 +432,17 @@ const Statistics = () => {
                       ))}
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                </div>
+                <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-5 items-start">
+                  <div className="space-y-4">
+                    {error && <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
+                    <RevenueChart series={revenueSeries} groupBy={filters.group_by} />
+                  </div>
+                  <aside className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-4">
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Bo loc chi tiet</p>
+                      <h3 className="mt-1 text-lg font-bold text-gray-900">Dieu chinh bieu do</h3>
+                    </div>
                     <label className="block">
                       <span className="text-sm font-medium text-gray-700">Tu ngay</span>
                       <input
@@ -440,7 +450,7 @@ const Statistics = () => {
                         name="date_from"
                         value={filters.date_from}
                         onChange={handleFilterChange}
-                        className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                        className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-primary"
                       />
                     </label>
                     <label className="block">
@@ -450,7 +460,7 @@ const Statistics = () => {
                         name="date_to"
                         value={filters.date_to}
                         onChange={handleFilterChange}
-                        className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                        className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-primary"
                       />
                     </label>
                     <label className="block">
@@ -459,7 +469,7 @@ const Statistics = () => {
                         name="field_id"
                         value={filters.field_id}
                         onChange={handleFilterChange}
-                        className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                        className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-primary"
                       >
                         <option value="">Tat ca san</option>
                         {fields.map((field) => (
@@ -473,16 +483,14 @@ const Statistics = () => {
                         name="group_by"
                         value={filters.group_by}
                         onChange={handleFilterChange}
-                        className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                        className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-primary"
                       >
                         <option value="day">Ngay</option>
                         <option value="month">Thang</option>
                       </select>
                     </label>
-                  </div>
-                  {error && <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
+                  </aside>
                 </div>
-                <RevenueChart series={revenueSeries} groupBy={filters.group_by} />
               </section>
 
               <section className="rounded-2xl bg-white p-6 shadow-sm">
