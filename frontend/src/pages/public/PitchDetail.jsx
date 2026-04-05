@@ -242,7 +242,7 @@ const PitchDetail = () => {
                       <div>
                         <p className="text-sm font-semibold text-gray-900">{slot.start_time} - {slot.end_time}</p>
                         <p className="mt-1 text-xs text-gray-500 md:hidden">
-                          {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'} • {Number(slot.price).toLocaleString('vi-VN')} d
+                          {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}  {Number(slot.price).toLocaleString('vi-VN')} d
                         </p>
                       </div>
                       <div className="hidden md:block text-sm text-gray-600">
@@ -273,45 +273,51 @@ const PitchDetail = () => {
           )}
         </div>
 
-        {(selectedSlotDetails.length > 0 || isAdminViewer) && (
-          <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div className="rounded-xl bg-gray-50 p-5 text-sm text-gray-700">
-              <p className="font-semibold text-gray-900 mb-3">Tam tinh</p>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <span>So khung gio da chon</span>
-                  <span className="font-semibold text-gray-900">{selectedSlotDetails.length}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span>Tong tien</span>
-                  <span className="font-semibold text-gray-900">{totalAmount.toLocaleString('vi-VN')} d</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span>Tien coc</span>
-                  <span className="font-semibold text-primary">{depositAmount.toLocaleString('vi-VN')} d</span>
-                </div>
+        <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="rounded-xl bg-gray-50 p-5 text-sm text-gray-700">
+            <p className="font-semibold text-gray-900 mb-3">Tam tinh</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <span>So khung gio da chon</span>
+                <span className="font-semibold text-gray-900">{selectedSlotDetails.length}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>Tong tien</span>
+                <span className="font-semibold text-gray-900">{totalAmount.toLocaleString('vi-VN')} d</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>Tien coc</span>
+                <span className="font-semibold text-primary">{depositAmount.toLocaleString('vi-VN')} d</span>
               </div>
             </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              {!isAdminViewer && (
-                <button
-                  type="button"
-                  onClick={handleBooking}
-                  className="inline-flex items-center justify-center rounded-xl bg-primary px-8 py-4 text-base font-bold text-white transition hover:bg-teal-600 shadow-lg hover:shadow-xl"
-                >
-                  Dat san ngay
-                </button>
-              )}
-              <Link
-                to="/pitches"
-                className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-6 py-4 font-semibold text-gray-700 hover:bg-gray-50"
-              >
-                Quay lai
-              </Link>
-            </div>
+            {!isAdminViewer && selectedSlotDetails.length === 0 && (
+              <p className="mt-3 text-xs text-gray-500">Chon it nhat mot khung gio de tiep tuc dat san.</p>
+            )}
           </div>
-        )}
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            {!isAdminViewer && (
+              <button
+                type="button"
+                onClick={handleBooking}
+                disabled={selectedSlotDetails.length === 0}
+                className={`inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-bold text-white transition shadow-lg ${
+                  selectedSlotDetails.length === 0
+                    ? 'cursor-not-allowed bg-gray-300 shadow-none'
+                    : 'bg-primary hover:bg-teal-600 hover:shadow-xl'
+                }`}
+              >
+                Dat san ngay
+              </button>
+            )}
+            <Link
+              to="/pitches"
+              className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-6 py-4 font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              Quay lai
+            </Link>
+          </div>
+        </div>
 
         {error && (
           <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
