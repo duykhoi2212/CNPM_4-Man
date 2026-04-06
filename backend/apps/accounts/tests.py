@@ -245,3 +245,55 @@ class AccountsApiTests(APITestCase):
         self.assertEqual(response.data['bookings'], 1)
         self.assertEqual(response.data['reviews'], 1)
         self.assertEqual(response.data['contacts'], 1)
+
+    def test_mark_nav_section_read_resets_booking_badge(self):
+        admin = User.objects.create_user(
+            username='badgeadmin',
+            password='StrongPass123!',
+            email='badgeadmin@example.com',
+            is_staff=True,
+            is_superuser=True,
+        )
+        UserProfile.objects.create(user=admin, phone='0900000012', address='')
+
+        user = User.objects.create_user(
+            username='badgeuser',
+            password='StrongPass123!',
+            email='badgeuser@example.com'
+        )
+        UserProfile.objects.create(user=user, phone='0900000013', address='')
+
+        field_type = FieldType.objects.create(name='San 7 nguoi')
+        field = Field.objects.create(
+            field_type=field_type,
+            name='Badge Field',
+            location='Hue',
+            price_per_hour=350000,
+            peak_hour_price=450000,
+        )
+
+        Booking.objects.create(
+            user=user,
+            field=field,
+            booking_date='2026-04-12',
+            customer_name='Badge User',
+            customer_phone='0900000013',
+            customer_email='badgeuser@example.com',
+            total_amount=350000,
+            deposit_amount=105000,
+            status='pending_payment',
+        )
+
+        self.client.force_authenticate(user=admin)
+        summary_response = self.client.get('/api/auth/admin/nav-summary/')
+        self.assertEqual(summary_response.data['bookings'], 1)
+
+        mark_read_response = self.client.post(
+            '/api/auth/admin/nav-summary/mark-read/',
+            {'section': 'bookings'},
+            format='json'
+        )
+        self.assertEqual(mark_read_response.status_code, status.HTTP_200_OK)
+
+        summary_response = self.client.get('/api/auth/admin/nav-summary/')
+        self.assertEqual(summary_response.data['bookings'], 0)
