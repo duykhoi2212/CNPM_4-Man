@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from decouple import config, Csv
+import pymysql
+pymysql.install_as_MySQLdb()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -160,3 +162,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# PAYMENT CONFIGURATION
+# ==============================================================================
+BANK_ACCOUNT = config('BANK_ACCOUNT', default='1234567890')
+BANK_NAME = config('BANK_NAME', default='Vietcombank')
+MOMO_PHONE = config('MOMO_PHONE', default='0987654321')
+PAYMENT_QR_CODE = config('PAYMENT_QR_CODE', default=None)

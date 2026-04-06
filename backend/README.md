@@ -48,6 +48,30 @@ Make sure MySQL database exists (`DB_NAME` in `.env`), then run:
 
 API base URL: `http://127.0.0.1:8000`
 
+## Virtual Payment QR Code
+
+Hệ thống sử dụng thanh toán ảo với QR code static từ ảnh bạn cung cấp.
+
+### Cấu hình QR Code
+
+1. **Sử dụng script helper để convert ảnh:**
+   ```powershell
+   .\venv\Scripts\python.exe convert_qr_image.py your_qr_image.png
+   ```
+
+2. **Copy kết quả vào `.env`:**
+   ```
+   PAYMENT_QR_CODE=data:image/png;base64,YOUR_BASE64_STRING_HERE
+   ```
+
+### Test Virtual Payment
+
+```powershell
+.\venv\Scripts\python.exe test_virtual_payment.py
+```
+
+**Lưu ý:** Nếu chưa có ảnh QR, hệ thống sẽ tạo QR code fallback đơn giản.
+
 ## 5) API documentation
 
 - Main contract: `API_CONTRACT.md`

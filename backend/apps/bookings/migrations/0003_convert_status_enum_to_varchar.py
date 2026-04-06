@@ -23,6 +23,7 @@ def revert_status_to_enum(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    atomic = False
     dependencies = [
         ('bookings', '0002_alter_booking_options_alter_bookingtimeslot_options_and_more'),
     ]

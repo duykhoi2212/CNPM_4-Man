@@ -56,7 +56,7 @@ class PaymentApiTests(APITestCase):
             booking=self.booking,
             payment_method='vnpay',
             amount=Decimal('120000.00'),
-            status='pending',
+            status='user_confirmed',  # Changed from 'pending' to 'user_confirmed'
         )
 
         response = self.client.post(f'/api/payments/{payment.id}/confirm/', {}, format='json')

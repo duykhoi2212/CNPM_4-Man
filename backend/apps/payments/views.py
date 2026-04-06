@@ -2,6 +2,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from django.utils import timezone
 
 from .models import Payment
 from .serializers import (
@@ -37,6 +38,37 @@ class PaymentDetailView(generics.RetrieveAPIView):
     queryset = Payment.objects.select_related('booking', 'booking__field', 'booking__user')
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def payment_user_confirm_view(request, pk):
+    """User báo đã thanh toán - chuyển sang chờ admin xác nhận"""
+    try:
+        payment = Payment.objects.select_related('booking').get(pk=pk)
+    except Payment.DoesNotExist:
+        return Response({'error': 'Khong tim thay thanh toan'}, status=status.HTTP_404_NOT_FOUND)
+
+    if payment.booking.user != request.user:
+        return Response({'error': 'Ban khong co quyen thao tac voi thanh toan nay'}, status=status.HTTP_403_FORBIDDEN)
+
+    if payment.status != 'pending':
+        return Response({'error': f'Khong the thao tac voi thanh toan o trang thai {payment.get_status_display()}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Check expiry
+    if payment.expiry_time and timezone.now() > payment.expiry_time:
+        return Response({'error': 'Thoi han thanh toan da het'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Update status
+    payment.status = 'user_confirmed'
+    payment.save(update_fields=['status'])
+
+    response_serializer = PaymentSerializer(payment, context={'request': request})
+
+    return Response({
+        'message': 'Da gui thong bao thanh toan. Vui long cho admin xac nhan.',
+        'payment': response_serializer.data
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
