@@ -82,12 +82,14 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
 
 
 class PaymentConfirmSerializer(serializers.Serializer):
+    """Admin serializer để duyệt thanh toán từ trạng thái user_confirmed"""
+    
     def validate(self, attrs):
         payment = self.instance
 
         if payment.status != 'user_confirmed':
             raise serializers.ValidationError(
-                f"Chi admin moi co the xac nhan thanh toan. Trang thai hien tai: '{payment.get_status_display()}'"
+                f"Chi co the duyet thanh toan o trang thai 'Nguoi dung da thanh toan - cho xac nhan admin'. Trang thai hien tai: '{payment.get_status_display()}'"
             )
 
         return attrs

@@ -9,7 +9,6 @@ from .serializers import (
     BookingDetailSerializer,
     BookingCreateSerializer,
     BookingCancelSerializer,
-    BookingConfirmSerializer
 )
 
 
@@ -104,9 +103,28 @@ def booking_confirm_view(request, pk):
     except Booking.DoesNotExist:
         return Response({'error': 'Khong tim thay booking'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = BookingConfirmSerializer(instance=booking, data=request.data)
-    serializer.is_valid(raise_exception=True)
-    return Response({'booking_id': booking.id}, status=status.HTTP_200_OK)
+    if booking.status == 'confirmed':
+        detail_serializer = BookingDetailSerializer(booking, context={'request': request})
+        return Response({
+            'message': 'Booking da duoc xac nhan',
+            'booking': detail_serializer.data
+        }, status=status.HTTP_200_OK)
+
+    if booking.status != 'pending_payment':
+        return Response(
+            {'error': f"Khong the xac nhan booking o trang thai '{booking.get_status_display()}'"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    booking.status = 'confirmed'
+    booking.save(update_fields=['status', 'updated_at'])
+
+    detail_serializer = BookingDetailSerializer(booking, context={'request': request})
+
+    return Response({
+        'message': 'Da xac nhan booking',
+        'booking': detail_serializer.data
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['PUT'])

@@ -6,6 +6,7 @@ const Header = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(getStoredUser());
   const [loggedIn, setLoggedIn] = useState(isAuthenticated());
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     const syncAuthState = () => {
@@ -41,8 +42,12 @@ const Header = () => {
           <nav className="hidden md:flex space-x-8">
             <Link to="/" className="text-gray-700 hover:text-primary font-medium">Trang chu</Link>
             <Link to="/pitches" className="text-gray-700 hover:text-primary font-medium">Danh sach san</Link>
-            {loggedIn && (
-              <Link to="/user/history" className="text-gray-700 hover:text-primary font-medium">Lich su dat san</Link>
+            {loggedIn && !user?.is_staff && (
+              <>
+                <Link to="/user/history" className="text-gray-700 hover:text-primary font-medium">Lich su dat san</Link>
+                <Link to="/user/find-opponent" className="text-gray-700 hover:text-primary font-medium">Tim Doi Bong</Link>
+                <Link to="/user/skill-profile" className="text-gray-700 hover:text-primary font-medium">Ho So Doi Bong</Link>
+              </>
             )}
             {user?.is_staff && (
               <>
@@ -54,18 +59,56 @@ const Header = () => {
 
           <div className="flex items-center space-x-4">
             {loggedIn ? (
-              <>
-                <span className="hidden sm:inline text-sm text-gray-600">
-                  Xin chao, <span className="font-semibold">{user?.username || 'user'}</span>
-                </span>
+              <div className="relative">
                 <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="text-gray-700 hover:text-primary font-medium"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-2 text-gray-700 hover:text-primary font-medium"
                 >
-                  Dang xuat
+                  <span className="hidden sm:inline">{user?.username || 'user'}</span>
+                  <span className="text-xl">▼</span>
                 </button>
-              </>
+
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-40">
+                    <Link
+                      to="/user/history"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      Lich su dat san
+                    </Link>
+                    {!user?.is_staff && (
+                      <>
+                        <Link
+                          to="/user/skill-profile"
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          Ho So Doi Bong
+                        </Link>
+                        <Link
+                          to="/user/find-opponent"
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-left"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          Tim Doi Bong
+                        </Link>
+                      </>
+                    )}
+                    <hr />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        handleLogout();
+                      }}
+                      className="block px-4 py-2 text-red-700 hover:bg-gray-100 w-full text-left"
+                    >
+                      Dang xuat
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <Link to="/login" className="text-gray-700 hover:text-primary font-medium">

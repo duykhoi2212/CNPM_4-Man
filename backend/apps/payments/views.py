@@ -74,14 +74,42 @@ def payment_user_confirm_view(request, pk):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def payment_confirm_view(request, pk):
+    """User xác nhận thanh toán (để chuyển sang user_confirmed)"""
     try:
         payment = Payment.objects.select_related('booking').get(pk=pk)
     except Payment.DoesNotExist:
         return Response({'error': 'Khong tim thay thanh toan'}, status=status.HTTP_404_NOT_FOUND)
 
-    if payment.booking.user != request.user and not request.user.is_staff:
+    if payment.booking.user != request.user:
         return Response({'error': 'Ban khong co quyen xac nhan thanh toan nay'}, status=status.HTTP_403_FORBIDDEN)
 
+    if payment.status != 'pending':
+        return Response({'error': f'Trang thai thanh toan phai la "Cho thanh toan", hien tai: {payment.get_status_display()}'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Update to user_confirmed
+    payment = payment_user_confirm_view(request, pk)
+    return payment
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def payment_admin_confirm_view(request, pk):
+    """Admin duyệt thanh toán (chuyển từ user_confirmed sang completed)"""
+    try:
+        payment = Payment.objects.select_related('booking').get(pk=pk)
+    except Payment.DoesNotExist:
+        return Response({'error': 'Khong tim thay thanh toan'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Only admin can confirm
+    if not request.user.is_staff:
+        return Response({'error': 'Chi admin co the duyet thanh toan'}, status=status.HTTP_403_FORBIDDEN)
+
+    if payment.status != 'user_confirmed':
+        return Response({
+            'error': f'Chi co the duyet thanh toan o trang thai "Nguoi dung da thanh toan - cho xac nhan admin". Trang thai hien tai: {payment.get_status_display()}'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    # Admin confirm payment
     serializer = PaymentConfirmSerializer(instance=payment, data=request.data)
     serializer.is_valid(raise_exception=True)
     payment = serializer.save()
@@ -89,7 +117,7 @@ def payment_confirm_view(request, pk):
     response_serializer = PaymentSerializer(payment, context={'request': request})
 
     return Response({
-        'message': 'Thanh toan coc thanh cong, booking da duoc xac nhan',
+        'message': 'Da duyet thanh toan, booking da duoc xac nhan',
         'payment': response_serializer.data
     }, status=status.HTTP_200_OK)
 

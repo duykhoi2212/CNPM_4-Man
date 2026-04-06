@@ -12,4 +12,5 @@ urlpatterns = [
     # Actions
     path('<int:pk>/user-confirm/', views.payment_user_confirm_view, name='payment-user-confirm'),
     path('<int:pk>/confirm/', views.payment_confirm_view, name='payment-confirm'),
+    path('<int:pk>/admin-confirm/', views.payment_admin_confirm_view, name='payment-admin-confirm'),
 ]

@@ -11,6 +11,8 @@ import Register from '../pages/auth/Register';
 import Checkout from '../pages/user/Checkout';
 import History from '../pages/user/History';
 import ReviewForm from '../pages/user/ReviewForm';
+import FindOpponent from '../pages/user/FindOpponent';
+import SkillProfile from '../pages/user/SkillProfile';
 
 import Dashboard from '../pages/admin/Dashboard';
 import Statistics from '../pages/admin/Statistics';
@@ -29,6 +31,8 @@ const AppRouter = () => {
         <Route path="/pitches/:id" element={<PitchDetail />} />
         <Route path="/user/history" element={<History />} />
         <Route path="/user/reviews/new/:bookingId" element={<ReviewForm />} />
+        <Route path="/user/skill-profile" element={<SkillProfile />} />
+        <Route path="/user/find-opponent" element={<FindOpponent />} />
         <Route path="/checkout" element={<Checkout />} />
       </Route>
 

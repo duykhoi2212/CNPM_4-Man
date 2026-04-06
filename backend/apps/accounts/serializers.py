@@ -122,10 +122,25 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     """Serializer cho cập nhật profile"""
     phone = serializers.CharField(required=False, max_length=20)
     address = serializers.CharField(required=False, allow_blank=True)
+    team_name = serializers.CharField(required=False, allow_blank=True)
+    skill_level = serializers.ChoiceField(
+        required=False,
+        choices=[
+            ('beginner', 'Yếu - Người mới bắt đầu'),
+            ('intermediate', 'Trung bình - Có kinh nghiệm'),
+            ('advanced', 'Khá - Kỹ thuật tốt'),
+            ('professional', 'Tốt - Chuyên nghiệp'),
+        ]
+    )
+    rating = serializers.FloatField(required=False, min_value=0, max_value=5)
+    bio = serializers.CharField(required=False, allow_blank=True)
     
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'phone', 'address']
+        fields = [
+            'email', 'first_name', 'last_name', 'phone', 'address',
+            'team_name', 'skill_level', 'rating', 'bio'
+        ]
     
     def validate_phone(self, value):
         """Validate phone uniqueness (except current user)"""
@@ -139,6 +154,10 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         # Extract profile data
         phone = validated_data.pop('phone', None)
         address = validated_data.pop('address', None)
+        skill_level = validated_data.pop('skill_level', None)
+        rating = validated_data.pop('rating', None)
+        bio = validated_data.pop('bio', None)
+        preferred_position = validated_data.pop('preferred_position', None)
         
         # Update user
         instance.email = validated_data.get('email', instance.email)
@@ -157,13 +176,28 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             UserProfile.objects.create(
                 user=instance,
                 phone=phone,
-                address=address or ''
+                address=address or '',
+                skill_level=skill_level or 'beginner',
+                rating=rating or 0,
+                bio=bio or '',
+                preferred_position=preferred_position or ''
             )
             return instance
+        
+        # Update existing profile
         if phone is not None:
             profile.phone = phone
         if address is not None:
             profile.address = address
-        profile.save()
+        if skill_level is not None:
+            profile.skill_level = skill_level
+        if rating is not None:
+            profile.rating = rating
+        if bio is not None:
+            profile.bio = bio
+        if preferred_position is not None:
+            profile.preferred_position = preferred_position
         
+        profile.save()
         return instance
+

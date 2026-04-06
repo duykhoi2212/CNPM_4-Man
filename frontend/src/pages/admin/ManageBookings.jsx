@@ -75,6 +75,7 @@ const ManageBookings = () => {
 
   const handleAction = async (bookingId, action) => {
     const actionConfig = {
+      confirm: { url: `/bookings/${bookingId}/confirm/`, message: 'Da xac nhan booking.' },
       complete: { url: `/bookings/${bookingId}/complete/`, message: 'Da cap nhat booking hoan thanh.' },
       cancel: { url: `/bookings/${bookingId}/cancel/`, message: 'Da huy booking thanh cong.' },
     };
@@ -203,6 +204,16 @@ const ManageBookings = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex justify-end gap-3">
+                              {booking.status === 'pending_payment' && (
+                            <button
+                              type="button"
+                              disabled={actionLoadingId === booking.id}
+                              onClick={() => handleAction(booking.id, 'confirm')}
+                              className="rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+                            >
+                              Xac nhan
+                            </button>
+                          )}
                           {booking.status === 'confirmed' && (
                             <button
                               type="button"
