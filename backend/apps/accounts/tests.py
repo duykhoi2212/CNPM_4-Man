@@ -69,6 +69,15 @@ class AccountsApiTests(APITestCase):
             ),
             content_type='image/gif'
         )
+        team_image = SimpleUploadedFile(
+            'team.gif',
+            (
+                b'GIF87a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00'
+                b'\xff\xff\xff!\xf9\x04\x01\x00\x00\x00\x00,\x00'
+                b'\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+            ),
+            content_type='image/gif'
+        )
 
         response = self.client.patch(
             '/api/auth/profile/update/',
@@ -78,6 +87,8 @@ class AccountsApiTests(APITestCase):
                 'phone': '0900000003',
                 'address': 'New address',
                 'avatar': avatar,
+                'team_name': 'Blue Storm',
+                'team_image': team_image,
             },
             format='multipart'
         )
@@ -86,7 +97,10 @@ class AccountsApiTests(APITestCase):
         user.refresh_from_db()
         self.assertEqual(user.first_name, 'Profile')
         self.assertEqual(user.profile.address, 'New address')
+        self.assertEqual(user.profile.team_name, 'Blue Storm')
         self.assertIsNotNone(response.data['user']['profile']['avatar_url'])
+        self.assertEqual(response.data['user']['profile']['team_name'], 'Blue Storm')
+        self.assertIsNotNone(response.data['user']['profile']['team_image_url'])
 
     def test_admin_can_list_users(self):
         admin = User.objects.create_user(

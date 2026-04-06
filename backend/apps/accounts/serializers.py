@@ -9,10 +9,11 @@ from .models import UserProfile
 
 class UserProfileSerializer(serializers.ModelSerializer):
     avatar_url = serializers.SerializerMethodField()
+    team_image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
-        fields = ['phone', 'address', 'avatar_url']
+        fields = ['phone', 'address', 'avatar_url', 'team_name', 'team_image_url']
 
     def get_avatar_url(self, obj):
         if not obj.avatar:
@@ -21,6 +22,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(obj.avatar.url)
         return obj.avatar.url
+
+    def get_team_image_url(self, obj):
+        if not obj.team_image:
+            return None
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.team_image.url)
+        return obj.team_image.url
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -118,10 +127,12 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(required=False, max_length=20)
     address = serializers.CharField(required=False, allow_blank=True)
     avatar = serializers.ImageField(required=False, allow_null=True, write_only=True)
+    team_name = serializers.CharField(required=False, allow_blank=True, max_length=120)
+    team_image = serializers.ImageField(required=False, allow_null=True, write_only=True)
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'phone', 'address', 'avatar']
+        fields = ['email', 'first_name', 'last_name', 'phone', 'address', 'avatar', 'team_name', 'team_image']
 
     def validate_phone(self, value):
         user = self.context['request'].user
@@ -133,6 +144,8 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         phone = validated_data.pop('phone', None)
         address = validated_data.pop('address', None)
         avatar = validated_data.pop('avatar', None)
+        team_name = validated_data.pop('team_name', None)
+        team_image = validated_data.pop('team_image', None)
 
         instance.email = validated_data.get('email', instance.email)
         instance.first_name = validated_data.get('first_name', instance.first_name)
@@ -149,6 +162,8 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
                 phone=phone,
                 address=address or '',
                 avatar=avatar,
+                team_name=team_name or '',
+                team_image=team_image,
             )
             return instance
 
@@ -158,6 +173,10 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             profile.address = address
         if avatar is not None:
             profile.avatar = avatar
+        if team_name is not None:
+            profile.team_name = team_name
+        if team_image is not None:
+            profile.team_image = team_image
         profile.save()
         return instance
 
@@ -166,13 +185,15 @@ class AdminUserListSerializer(serializers.ModelSerializer):
     phone = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
     avatar_url = serializers.SerializerMethodField()
+    team_name = serializers.SerializerMethodField()
+    team_image_url = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
-            'phone', 'address', 'avatar_url', 'is_active', 'is_staff',
+            'phone', 'address', 'avatar_url', 'team_name', 'team_image_url', 'is_active', 'is_staff',
             'is_superuser', 'role', 'date_joined',
         ]
         read_only_fields = fields
@@ -203,6 +224,20 @@ class AdminUserListSerializer(serializers.ModelSerializer):
 
     def get_role(self, obj):
         return 'admin' if obj.is_staff else 'user'
+
+    def get_team_name(self, obj):
+        profile = self._get_profile(obj)
+        return profile.team_name if profile else None
+
+    def get_team_image_url(self, obj):
+        profile = self._get_profile(obj)
+        if not profile or not profile.team_image:
+            return None
+
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(profile.team_image.url)
+        return profile.team_image.url
 
 
 class AdminUserUpdateSerializer(serializers.ModelSerializer):

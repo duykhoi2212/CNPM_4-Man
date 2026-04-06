@@ -10,6 +10,7 @@ const Profile = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [avatarPreview, setAvatarPreview] = useState('');
+  const [teamImagePreview, setTeamImagePreview] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -19,6 +20,9 @@ const Profile = () => {
     address: '',
     avatar: null,
     currentAvatarUrl: '',
+    team_name: '',
+    team_image: null,
+    currentTeamImageUrl: '',
   });
 
   useEffect(() => {
@@ -35,6 +39,9 @@ const Profile = () => {
           address: response.data.profile?.address || '',
           avatar: null,
           currentAvatarUrl: response.data.profile?.avatar_url || '',
+          team_name: response.data.profile?.team_name || '',
+          team_image: null,
+          currentTeamImageUrl: response.data.profile?.team_image_url || '',
         });
       } catch (requestError) {
         setError(requestError.response?.data?.error || 'Khong the tai thong tin tai khoan.');
@@ -57,6 +64,17 @@ const Profile = () => {
     return () => URL.revokeObjectURL(previewUrl);
   }, [formData.avatar]);
 
+  useEffect(() => {
+    if (!formData.team_image) {
+      setTeamImagePreview('');
+      return undefined;
+    }
+
+    const previewUrl = URL.createObjectURL(formData.team_image);
+    setTeamImagePreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [formData.team_image]);
+
   const handleChange = (event) => {
     const { name, value, files } = event.target;
     setFormData((prev) => ({
@@ -78,8 +96,12 @@ const Profile = () => {
       payload.append('last_name', formData.last_name);
       payload.append('phone', formData.phone);
       payload.append('address', formData.address);
+      payload.append('team_name', formData.team_name);
       if (formData.avatar) {
         payload.append('avatar', formData.avatar);
+      }
+      if (formData.team_image) {
+        payload.append('team_image', formData.team_image);
       }
 
       const response = await axiosInstance.patch('/auth/profile/update/', payload, {
@@ -94,6 +116,8 @@ const Profile = () => {
         last_name: response.data.user.last_name,
         phone: response.data.user.profile?.phone || '',
         avatar_url: response.data.user.profile?.avatar_url || null,
+        team_name: response.data.user.profile?.team_name || '',
+        team_image_url: response.data.user.profile?.team_image_url || null,
         is_staff: storedUser?.is_staff || false,
       };
       updateStoredUser(updatedUser);
@@ -103,6 +127,8 @@ const Profile = () => {
         ...prev,
         avatar: null,
         currentAvatarUrl: response.data.user.profile?.avatar_url || '',
+        team_image: null,
+        currentTeamImageUrl: response.data.user.profile?.team_image_url || '',
       }));
       setSuccessMessage('Thong tin tai khoan da duoc cap nhat thanh cong.');
     } catch (requestError) {
@@ -169,6 +195,31 @@ const Profile = () => {
                   className="mt-2 block w-full rounded-md border border-gray-300 px-4 py-3 text-sm"
                 />
               </label>
+
+              <div className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
+                {(teamImagePreview || formData.currentTeamImageUrl) ? (
+                  <img
+                    src={teamImagePreview || formData.currentTeamImageUrl}
+                    alt={formData.team_name || 'team'}
+                    className="h-48 w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-48 items-center justify-center bg-slate-100 text-center text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
+                    Chua co anh doi
+                  </div>
+                )}
+              </div>
+
+              <label className="block text-sm font-medium text-gray-700">
+                Anh doi bong
+                <input
+                  type="file"
+                  name="team_image"
+                  accept="image/*"
+                  onChange={handleChange}
+                  className="mt-2 block w-full rounded-md border border-gray-300 px-4 py-3 text-sm"
+                />
+              </label>
             </div>
 
             <div className="md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -223,6 +274,18 @@ const Profile = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   className="mt-1 block w-full rounded-md border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                />
+              </label>
+
+              <label className="block text-sm font-medium text-gray-700">
+                Ten doi bong
+                <input
+                  type="text"
+                  name="team_name"
+                  value={formData.team_name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                  placeholder="VD: Blue Storm FC"
                 />
               </label>
 

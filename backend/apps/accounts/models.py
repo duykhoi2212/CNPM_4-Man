@@ -25,6 +25,18 @@ class UserProfile(models.Model):
         null=True,
         verbose_name='Avatar',
     )
+    team_name = models.CharField(
+        max_length=120,
+        blank=True,
+        null=True,
+        verbose_name='Ten doi bong',
+    )
+    team_image = models.ImageField(
+        upload_to='team-images/',
+        blank=True,
+        null=True,
+        verbose_name='Anh doi bong',
+    )
     last_seen_bookings_at = models.DateTimeField(
         blank=True,
         null=True,

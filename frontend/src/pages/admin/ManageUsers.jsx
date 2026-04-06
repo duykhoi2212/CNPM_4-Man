@@ -165,6 +165,7 @@ const ManageUsers = () => {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Tai khoan</th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Lien he</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Doi bong</th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Vai tro</th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Trang thai</th>
                     <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500">Thao tac</th>
@@ -195,6 +196,21 @@ const ManageUsers = () => {
                           <p>{user.email || 'Chua cap nhat email'}</p>
                           <p>{user.phone || 'Chua cap nhat so dien thoai'}</p>
                           <p className="text-xs text-gray-400">{user.address || 'Chua cap nhat dia chi'}</p>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-3">
+                            <span className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-slate-100 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                              {user.team_image_url ? (
+                                <img src={user.team_image_url} alt={user.team_name || user.username} className="h-full w-full object-cover" />
+                              ) : (
+                                'Team'
+                              )}
+                            </span>
+                            <div>
+                              <p className="font-semibold text-gray-900">{user.team_name || 'Chua tham gia doi bong'}</p>
+                              <p className="text-xs text-gray-400">Thong tin nay se duoc dung cho bang xep hang doi bong tieu bieu.</p>
+                            </div>
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${user.is_staff ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>

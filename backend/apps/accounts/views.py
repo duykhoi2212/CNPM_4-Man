@@ -41,6 +41,27 @@ def _get_user_avatar_url(user, request=None):
     return profile.avatar.url
 
 
+def _get_user_team_name(user):
+    try:
+        return user.profile.team_name
+    except UserProfile.DoesNotExist:
+        return None
+
+
+def _get_user_team_image_url(user, request=None):
+    try:
+        profile = user.profile
+    except UserProfile.DoesNotExist:
+        return None
+
+    if not profile.team_image:
+        return None
+
+    if request:
+        return request.build_absolute_uri(profile.team_image.url)
+    return profile.team_image.url
+
+
 def _serialize_auth_user(user, request=None):
     return {
         'id': user.id,
@@ -50,6 +71,8 @@ def _serialize_auth_user(user, request=None):
         'last_name': user.last_name,
         'phone': _get_user_phone(user),
         'avatar_url': _get_user_avatar_url(user, request),
+        'team_name': _get_user_team_name(user),
+        'team_image_url': _get_user_team_image_url(user, request),
         'is_staff': user.is_staff,
     }
 
