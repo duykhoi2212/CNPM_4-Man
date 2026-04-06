@@ -4,6 +4,10 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .models import UserProfile
+from apps.bookings.models import Booking
+from apps.contacts.models import ContactMessage
+from apps.fields.models import Field, FieldType
+from apps.reviews.models import Review
 
 
 class AccountsApiTests(APITestCase):
@@ -179,3 +183,65 @@ class AccountsApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('old_password', response.data)
+
+    def test_admin_nav_summary_returns_badge_counts(self):
+        admin = User.objects.create_user(
+            username='summaryadmin',
+            password='StrongPass123!',
+            email='summaryadmin@example.com',
+            is_staff=True,
+            is_superuser=True,
+        )
+        UserProfile.objects.create(user=admin, phone='0900000010', address='')
+
+        user = User.objects.create_user(
+            username='summaryuser',
+            password='StrongPass123!',
+            email='summaryuser@example.com'
+        )
+        UserProfile.objects.create(user=user, phone='0900000011', address='')
+
+        field_type = FieldType.objects.create(name='San 5 nguoi')
+        field = Field.objects.create(
+            field_type=field_type,
+            name='Summary Field',
+            location='Da Nang',
+            price_per_hour=300000,
+            peak_hour_price=400000,
+        )
+
+        Booking.objects.create(
+            user=user,
+            field=field,
+            booking_date='2026-04-10',
+            customer_name='Summary User',
+            customer_phone='0900000011',
+            customer_email='summaryuser@example.com',
+            total_amount=300000,
+            deposit_amount=90000,
+            status='confirmed',
+        )
+
+        Review.objects.create(
+            user=user,
+            field=field,
+            booking=None,
+            rating=5,
+            comment='Rat tot'
+        )
+
+        ContactMessage.objects.create(
+            name='Guest',
+            email='guest@example.com',
+            subject='Ho tro',
+            message='Can ho tro dat san',
+            is_resolved=False,
+        )
+
+        self.client.force_authenticate(user=admin)
+        response = self.client.get('/api/auth/admin/nav-summary/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['bookings'], 1)
+        self.assertEqual(response.data['reviews'], 1)
+        self.assertEqual(response.data['contacts'], 1)

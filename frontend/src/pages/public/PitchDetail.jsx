@@ -28,6 +28,7 @@ const PitchDetail = () => {
   const [pitch, setPitch] = useState(null);
   const [availability, setAvailability] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [activeImage, setActiveImage] = useState('');
   const [bookingDate, setBookingDate] = useState(getTomorrow());
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,6 +72,16 @@ const PitchDetail = () => {
       fetchAvailability();
     }
   }, [bookingDate, id]);
+
+  useEffect(() => {
+    if (!pitch?.images?.length) {
+      setActiveImage('');
+      return;
+    }
+
+    const primary = pitch.images.find((image) => image.is_primary)?.image_url || pitch.images[0]?.image_url || '';
+    setActiveImage(primary);
+  }, [pitch]);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -134,17 +145,46 @@ const PitchDetail = () => {
     return <div className="max-w-7xl mx-auto px-4 py-12 text-center text-red-500">{error}</div>;
   }
 
-  const primaryImage = pitch?.images?.find((image) => image.is_primary)?.image_url || pitch?.images?.[0]?.image_url;
+  const allImages = pitch?.images || [];
+  const fallbackImage = `https://via.placeholder.com/1200x900/14b8a6/ffffff?text=${encodeURIComponent(pitch.name)}`;
+  const displayedImage = activeImage || allImages.find((image) => image.is_primary)?.image_url || allImages[0]?.image_url || fallbackImage;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
       <div className="grid gap-8 xl:grid-cols-[1.2fr_0.95fr]">
-        <section className="overflow-hidden rounded-2xl bg-white shadow-xl">
-          <img
-            src={primaryImage || `https://via.placeholder.com/1200x900/14b8a6/ffffff?text=${encodeURIComponent(pitch.name)}`}
-            alt={pitch.name}
-            className="h-full min-h-[320px] w-full object-cover"
-          />
+        <section className="overflow-hidden rounded-2xl bg-white p-4 shadow-xl space-y-4">
+          <div className="overflow-hidden rounded-2xl bg-gray-50">
+            <img
+              src={displayedImage}
+              alt={pitch.name}
+              className="h-full min-h-[320px] max-h-[520px] w-full object-cover"
+            />
+          </div>
+
+          {allImages.length > 1 && (
+            <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
+              {allImages.map((image) => {
+                const imageUrl = image.image_url;
+                const isActiveImage = displayedImage === imageUrl;
+                return (
+                  <button
+                    key={image.id}
+                    type="button"
+                    onClick={() => setActiveImage(imageUrl)}
+                    className={`overflow-hidden rounded-xl border-2 transition ${
+                      isActiveImage ? 'border-primary shadow-md' : 'border-transparent hover:border-teal-200'
+                    }`}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`${pitch.name}-${image.id}`}
+                      className="h-20 w-full object-cover sm:h-24"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         <section className="rounded-2xl bg-white p-8 shadow-xl space-y-6">

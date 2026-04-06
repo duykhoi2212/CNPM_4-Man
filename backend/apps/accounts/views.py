@@ -303,3 +303,17 @@ class AdminUserUpdateView(generics.UpdateAPIView):
             'message': 'Da cap nhat tai khoan thanh cong',
             'user': detail_serializer.data,
         }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAdminUser])
+def admin_nav_summary_view(request):
+    from apps.bookings.models import Booking
+    from apps.reviews.models import Review
+    from apps.contacts.models import ContactMessage
+
+    return Response({
+        'bookings': Booking.objects.filter(status__in=['pending_payment', 'confirmed']).count(),
+        'reviews': Review.objects.count(),
+        'contacts': ContactMessage.objects.filter(is_resolved=False).count(),
+    }, status=status.HTTP_200_OK)
