@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import generics, permissions, status
 from rest_framework.authtoken.models import Token
@@ -13,6 +13,7 @@ from .serializers import (
     AdminUserListSerializer,
     AdminUserUpdateSerializer,
     ChangePasswordSerializer,
+    FeaturedTeamSerializer,
     LoginSerializer,
     RegisterSerializer,
     UpdateProfileSerializer,
@@ -75,6 +76,14 @@ def _serialize_auth_user(user, request=None):
         'team_image_url': _get_user_team_image_url(user, request),
         'is_staff': user.is_staff,
     }
+
+
+def _build_team_image_url(profile, request=None):
+    if not profile or not profile.team_image:
+        return None
+    if request:
+        return request.build_absolute_uri(profile.team_image.url)
+    return profile.team_image.url
 
 
 class RegisterView(generics.CreateAPIView):
@@ -303,3 +312,58 @@ def admin_mark_nav_section_read_view(request):
     profile.save(update_fields=[field_name, 'updated_at'])
 
     return Response({'message': 'Da danh dau da xem thong bao'}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def featured_teams_view(request):
+    from apps.bookings.models import Booking
+
+    profiles = (
+        UserProfile.objects.select_related('user')
+        .exclude(team_name__isnull=True)
+        .exclude(team_name__exact='')
+        .order_by('team_name', '-updated_at')
+    )
+
+    booking_counts = {
+        item['user_id']: item['count']
+        for item in Booking.objects.values('user_id').annotate(count=Count('id'))
+    }
+
+    teams_map = {}
+    for profile in profiles:
+        team_name = (profile.team_name or '').strip()
+        if not team_name:
+            continue
+
+        team_key = team_name.lower()
+        team = teams_map.setdefault(
+            team_key,
+            {
+                'team_name': team_name,
+                'team_image_url': None,
+                'booking_count': 0,
+            },
+        )
+        team['booking_count'] += booking_counts.get(profile.user_id, 0)
+        if not team['team_image_url']:
+            team['team_image_url'] = _build_team_image_url(profile, request)
+
+    ranked_teams = sorted(
+        teams_map.values(),
+        key=lambda item: (-item['booking_count'], item['team_name'].lower()),
+    )
+
+    payload = [
+        {
+            'rank': index + 1,
+            'team_name': item['team_name'],
+            'team_image_url': item['team_image_url'],
+            'booking_count': item['booking_count'],
+        }
+        for index, item in enumerate(ranked_teams)
+    ]
+
+    serializer = FeaturedTeamSerializer(payload, many=True)
+    return Response({'results': serializer.data}, status=status.HTTP_200_OK)

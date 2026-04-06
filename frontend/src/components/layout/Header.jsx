@@ -28,6 +28,9 @@ const Header = () => {
           <Link to="/pitches" className="text-gray-700 hover:text-primary font-medium">
             Danh sach san
           </Link>
+          <Link to="/teams" className="text-gray-700 hover:text-primary font-medium">
+            Doi bong
+          </Link>
           <Link to="/contact" className="text-gray-700 hover:text-primary font-medium">
             Lien he
           </Link>

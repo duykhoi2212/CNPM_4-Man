@@ -311,3 +311,91 @@ class AccountsApiTests(APITestCase):
 
         summary_response = self.client.get('/api/auth/admin/nav-summary/')
         self.assertEqual(summary_response.data['bookings'], 0)
+
+    def test_featured_teams_are_ranked_by_booking_count(self):
+        team_a_user = User.objects.create_user(
+            username='teamalpha1',
+            password='StrongPass123!',
+            email='teamalpha1@example.com'
+        )
+        UserProfile.objects.create(
+            user=team_a_user,
+            phone='0900000014',
+            address='',
+            team_name='Blue Storm',
+        )
+
+        team_a_user_2 = User.objects.create_user(
+            username='teamalpha2',
+            password='StrongPass123!',
+            email='teamalpha2@example.com'
+        )
+        UserProfile.objects.create(
+            user=team_a_user_2,
+            phone='0900000015',
+            address='',
+            team_name='Blue Storm',
+        )
+
+        team_b_user = User.objects.create_user(
+            username='teambeta1',
+            password='StrongPass123!',
+            email='teambeta1@example.com'
+        )
+        UserProfile.objects.create(
+            user=team_b_user,
+            phone='0900000016',
+            address='',
+            team_name='Red Phoenix',
+        )
+
+        field_type = FieldType.objects.create(name='San 11 nguoi')
+        field = Field.objects.create(
+            field_type=field_type,
+            name='Ranking Field',
+            location='Da Nang',
+            price_per_hour=500000,
+            peak_hour_price=600000,
+        )
+
+        Booking.objects.create(
+            user=team_a_user,
+            field=field,
+            booking_date='2026-04-15',
+            customer_name='A1',
+            customer_phone='0900000014',
+            customer_email='teamalpha1@example.com',
+            total_amount=500000,
+            deposit_amount=150000,
+            status='completed',
+        )
+        Booking.objects.create(
+            user=team_a_user_2,
+            field=field,
+            booking_date='2026-04-16',
+            customer_name='A2',
+            customer_phone='0900000015',
+            customer_email='teamalpha2@example.com',
+            total_amount=500000,
+            deposit_amount=150000,
+            status='completed',
+        )
+        Booking.objects.create(
+            user=team_b_user,
+            field=field,
+            booking_date='2026-04-17',
+            customer_name='B1',
+            customer_phone='0900000016',
+            customer_email='teambeta1@example.com',
+            total_amount=500000,
+            deposit_amount=150000,
+            status='completed',
+        )
+
+        response = self.client.get('/api/auth/teams/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['results'][0]['team_name'], 'Blue Storm')
+        self.assertEqual(response.data['results'][0]['booking_count'], 2)
+        self.assertEqual(response.data['results'][1]['team_name'], 'Red Phoenix')
+        self.assertEqual(response.data['results'][1]['booking_count'], 1)

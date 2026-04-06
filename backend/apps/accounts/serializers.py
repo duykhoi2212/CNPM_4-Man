@@ -281,3 +281,10 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({'new_password': 'Mat khau moi phai khac mat khau hien tai'})
 
         return attrs
+
+
+class FeaturedTeamSerializer(serializers.Serializer):
+    rank = serializers.IntegerField()
+    team_name = serializers.CharField()
+    team_image_url = serializers.CharField(allow_null=True)
+    booking_count = serializers.IntegerField()

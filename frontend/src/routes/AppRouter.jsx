@@ -5,6 +5,7 @@ import Home from '../pages/public/Home';
 import PitchList from '../pages/public/PitchList';
 import PitchDetail from '../pages/public/PitchDetail';
 import Contact from '../pages/public/Contact';
+import Teams from '../pages/public/Teams';
 
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
@@ -34,6 +35,7 @@ const AppRouter = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/pitches" element={<PitchList />} />
         <Route path="/pitches/:id" element={<PitchDetail />} />
+        <Route path="/teams" element={<Teams />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/user/history" element={<History />} />
         <Route path="/user/history/:bookingId" element={<BookingDetail />} />
