@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 import { getStoredUser, isAuthenticated } from '../../utils/auth';
 
+const AVAILABILITY_POLLING_MS = 10000;
+
 const getTomorrow = () => {
   const next = new Date();
   next.setDate(next.getDate() + 1);
@@ -37,6 +39,62 @@ const PitchDetail = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    let isMounted = true;
+
+    const fetchAvailability = async ({ showLoading = true } = {}) => {
+      try {
+        if (showLoading) {
+          setLoadingSlots(true);
+        }
+        const response = await axiosInstance.get(`/fields/${id}/availability/`, {
+          params: { date: bookingDate },
+        });
+
+        if (!isMounted) {
+          return;
+        }
+
+        const nextAvailability = response.data.timeslots || [];
+        setAvailability(nextAvailability);
+        setSelectedSlots((prev) => {
+          const availableSlotIds = new Set(
+            nextAvailability.filter((slot) => slot.is_available).map((slot) => slot.timeslot_id)
+          );
+          return prev.filter((slotId) => availableSlotIds.has(slotId));
+        });
+      } catch (requestError) {
+        if (!isMounted) {
+          return;
+        }
+
+        setAvailability([]);
+        setSelectedSlots([]);
+        setError(requestError.response?.data?.error || 'Khong the tai lich trong cua san.');
+      } finally {
+        if (isMounted && showLoading) {
+          setLoadingSlots(false);
+        }
+      }
+    };
+
+    if (bookingDate) {
+      fetchAvailability();
+      const intervalId = window.setInterval(() => {
+        fetchAvailability({ showLoading: false });
+      }, AVAILABILITY_POLLING_MS);
+
+      return () => {
+        isMounted = false;
+        window.clearInterval(intervalId);
+      };
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [bookingDate, id]);
+
+  useEffect(() => {
     const fetchPitch = async () => {
       try {
         setLoading(true);
@@ -51,27 +109,6 @@ const PitchDetail = () => {
 
     fetchPitch();
   }, [id]);
-
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      try {
-        setLoadingSlots(true);
-        const response = await axiosInstance.get(`/fields/${id}/availability/`, {
-          params: { date: bookingDate },
-        });
-        setAvailability(response.data.timeslots || []);
-      } catch (requestError) {
-        setAvailability([]);
-        setError(requestError.response?.data?.error || 'Khong the tai lich trong cua san.');
-      } finally {
-        setLoadingSlots(false);
-      }
-    };
-
-    if (bookingDate) {
-      fetchAvailability();
-    }
-  }, [bookingDate, id]);
 
   useEffect(() => {
     if (!pitch?.images?.length) {
@@ -308,20 +345,31 @@ const PitchDetail = () => {
             <div className="divide-y divide-gray-100">
               {availability.map((slot) => {
                 const isSelected = selectedSlots.includes(slot.timeslot_id);
-                  const isAvailable = slot.is_available;
-                  const reservationStatus = slot.reservation_status || (isAvailable ? 'con_trong' : 'da_dat');
-                  const statusLabel = reservationStatus === 'dang_giu_cho'
-                    ? 'Dang giu cho'
-                    : reservationStatus === 'da_dat'
-                      ? 'Da dat'
-                      : isSelected
-                        ? 'Da chon'
-                        : 'Con trong';
-                  return (
-                    <button
-                      key={slot.timeslot_id}
-                      type="button"
-                      disabled={!isAvailable || isAdminViewer}
+                const isAvailable = slot.is_available;
+                const reservationStatus = slot.reservation_status || (isAvailable ? 'con_trong' : 'da_dat');
+                const statusLabel = !isAvailable
+                  ? 'Da dat'
+                  : isSelected
+                    ? 'Da chon'
+                    : 'Con trong';
+                const statusTone = reservationStatus === 'dang_giu_cho'
+                  ? 'bg-amber-100 text-amber-700'
+                  : !isAvailable
+                    ? 'bg-gray-100 text-gray-500'
+                    : isSelected
+                      ? 'bg-primary text-white'
+                      : 'bg-green-100 text-green-700';
+                const statusNote = reservationStatus === 'dang_giu_cho'
+                  ? 'Khung gio dang duoc giu cho trong 1 phut de thanh toan coc.'
+                  : reservationStatus === 'da_dat'
+                    ? 'Khung gio nay da duoc dat.'
+                    : '';
+
+                return (
+                  <button
+                    key={slot.timeslot_id}
+                    type="button"
+                    disabled={!isAvailable || isAdminViewer}
                     onClick={() => toggleSlot(slot.timeslot_id)}
                     className={`w-full px-5 py-4 text-left transition ${
                       isSelected
@@ -343,20 +391,17 @@ const PitchDetail = () => {
                         {Number(slot.price).toLocaleString('vi-VN')} d
                       </div>
                       <div className="flex items-center justify-between gap-3 md:justify-start">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                          reservationStatus === 'dang_giu_cho'
-                            ? 'bg-amber-100 text-amber-700'
-                            : !isAvailable
-                            ? 'bg-gray-100 text-gray-500'
-                            : isSelected
-                              ? 'bg-primary text-white'
-                              : 'bg-green-100 text-green-700'
-                        }`}>
+                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusTone}`}>
                           {statusLabel}
                         </span>
                         {isAdminViewer && <span className="text-xs text-gray-400">Xem-only</span>}
                       </div>
                     </div>
+                    {statusNote && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        {statusNote}
+                      </p>
+                    )}
                   </button>
                 );
               })}
