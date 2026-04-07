@@ -27,6 +27,9 @@ class MatchRequestListSerializer(serializers.ModelSerializer):
     reservation_status = serializers.SerializerMethodField()
     viewing_team_name = serializers.SerializerMethodField()
     viewing_team_image_url = serializers.SerializerMethodField()
+    counterpart_team_name = serializers.SerializerMethodField()
+    counterpart_team_image_url = serializers.SerializerMethodField()
+    viewer_role = serializers.SerializerMethodField()
 
     class Meta:
         model = MatchRequest
@@ -49,8 +52,11 @@ class MatchRequestListSerializer(serializers.ModelSerializer):
             'remaining_amount',
             'creator_username',
             'accepted_username',
+            'viewer_role',
             'viewing_team_name',
             'viewing_team_image_url',
+            'counterpart_team_name',
+            'counterpart_team_image_url',
             'timeslots',
             'can_accept',
             'can_pay_deposit',
@@ -103,21 +109,34 @@ class MatchRequestListSerializer(serializers.ModelSerializer):
         return 'da_huy'
 
     def get_viewing_team_name(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            if obj.created_by_id == request.user.id:
-                return obj.accepted_team_name or ''
-            if obj.accepted_by_id == request.user.id:
-                return obj.created_team_name or ''
-        return obj.accepted_team_name or obj.created_team_name or ''
+        return self.get_counterpart_team_name(obj)
 
     def get_viewing_team_image_url(self, obj):
+        return self.get_counterpart_team_image_url(obj)
+
+    def get_viewer_role(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             if obj.created_by_id == request.user.id:
-                return obj.accepted_team_image_url or ''
+                return 'creator'
             if obj.accepted_by_id == request.user.id:
-                return obj.created_team_image_url or ''
+                return 'accepted'
+        return 'guest'
+
+    def get_counterpart_team_name(self, obj):
+        viewer_role = self.get_viewer_role(obj)
+        if viewer_role == 'creator':
+            return obj.accepted_team_name or ''
+        if viewer_role == 'accepted':
+            return obj.created_team_name or ''
+        return obj.accepted_team_name or obj.created_team_name or ''
+
+    def get_counterpart_team_image_url(self, obj):
+        viewer_role = self.get_viewer_role(obj)
+        if viewer_role == 'creator':
+            return obj.accepted_team_image_url or ''
+        if viewer_role == 'accepted':
+            return obj.created_team_image_url or ''
         return obj.accepted_team_image_url or obj.created_team_image_url or ''
 
 

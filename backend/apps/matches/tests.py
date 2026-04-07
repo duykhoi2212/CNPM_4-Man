@@ -116,3 +116,28 @@ class MatchRequestTests(TestCase):
         match_request_obj = MatchRequest.objects.get(pk=match_request['id'])
         self.assertEqual(match_request_obj.status, MatchRequest.STATUS_DEPOSIT_PAID)
         self.assertIsNotNone(match_request_obj.booking_id)
+
+    def test_counterpart_team_depends_on_viewer(self):
+        match_request = self._create_request()
+
+        self.client.force_authenticate(self.opponent)
+        accept_response = self.client.post(
+            reverse('matches:match-request-accept', args=[match_request['id']]),
+            {},
+            format='json',
+        )
+        self.assertEqual(accept_response.status_code, 200)
+
+        self.client.force_authenticate(self.creator)
+        creator_response = self.client.get(reverse('matches:match-request-detail', args=[match_request['id']]))
+        self.assertEqual(creator_response.status_code, 200)
+        self.assertEqual(creator_response.data['viewer_role'], 'creator')
+        self.assertEqual(creator_response.data['counterpart_team_name'], 'FC Opponent')
+        self.assertTrue(creator_response.data['counterpart_team_image_url'])
+
+        self.client.force_authenticate(self.opponent)
+        accepted_response = self.client.get(reverse('matches:match-request-detail', args=[match_request['id']]))
+        self.assertEqual(accepted_response.status_code, 200)
+        self.assertEqual(accepted_response.data['viewer_role'], 'accepted')
+        self.assertEqual(accepted_response.data['counterpart_team_name'], 'FC Creator')
+        self.assertTrue(accepted_response.data['counterpart_team_image_url'])

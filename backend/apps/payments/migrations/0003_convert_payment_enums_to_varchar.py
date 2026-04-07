@@ -24,6 +24,8 @@ def revert_payment_columns_to_enum(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    atomic = False
+
     dependencies = [
         ('payments', '0002_alter_payment_options_alter_payment_amount_and_more'),
     ]
