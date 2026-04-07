@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
-import { getUserInfo, isAuthenticated } from '../../utils/auth';
+import { isAuthenticated } from '../../utils/auth';
 
 const TEAM_TABS = [
   { key: 'doi-bong-tieu-bieu', label: 'Doi bong tieu bieu' },
@@ -33,7 +33,6 @@ const Teams = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const currentUser = getUserInfo();
   const activeTab = searchParams.get('tab') || 'doi-bong-tieu-bieu';
   const [teams, setTeams] = useState([]);
   const [matchRequests, setMatchRequests] = useState([]);
@@ -89,17 +88,15 @@ const Teams = () => {
   const topTeam = teams[0] || null;
   const rankedTeams = teams.slice(1);
   const getMatchDialogTeamInfo = (requestItem) => {
-    const isCreatorViewing = currentUser?.username && currentUser.username === requestItem.creator_username;
-    if (isCreatorViewing) {
-      return {
-        teamName: requestItem.accepted_team_name || 'Chua co doi chap nhan',
-        teamImage: requestItem.accepted_team_image_url || getTeamPlaceholder(requestItem.accepted_team_name),
-      };
-    }
-
     return {
-      teamName: requestItem.created_team_name || 'Chua cap nhat ten doi',
-      teamImage: requestItem.created_team_image_url || getTeamPlaceholder(requestItem.created_team_name),
+      teamName: requestItem.viewing_team_name
+        || requestItem.accepted_team_name
+        || requestItem.created_team_name
+        || 'Chua co du lieu doi',
+      teamImage: requestItem.viewing_team_image_url
+        || requestItem.accepted_team_image_url
+        || requestItem.created_team_image_url
+        || getTeamPlaceholder(requestItem.viewing_team_name || requestItem.created_team_name || requestItem.accepted_team_name),
     };
   };
 
