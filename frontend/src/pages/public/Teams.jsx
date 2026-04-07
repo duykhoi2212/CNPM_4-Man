@@ -439,17 +439,17 @@ const Teams = () => {
               />
               <div className="space-y-4">
                 <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-sm text-gray-500">Doi giao luu voi ban</p>
+                  <p className="text-sm text-gray-500">Ten doi bong</p>
                   <p className="mt-2 text-lg font-semibold text-gray-950">
-                    {selectedRequest.accepted_team_name || selectedRequest.created_team_name || 'Chua cap nhat ten doi'}
+                    {selectedRequest.accepted_team_name || 'Chua cap nhat ten doi'}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-sm text-gray-500">Anh doi bong</p>
                   <div className="mt-3 flex items-center gap-3">
                     <img
-                      src={selectedRequest.accepted_team_image_url || getTeamPlaceholder(selectedRequest.accepted_team_name || selectedRequest.created_team_name)}
-                      alt={selectedRequest.accepted_team_name || selectedRequest.created_team_name}
+                      src={selectedRequest.accepted_team_image_url || getTeamPlaceholder(selectedRequest.accepted_team_name)}
+                      alt={selectedRequest.accepted_team_name}
                       className="h-14 w-14 rounded-xl object-cover"
                     />
                     <div>
@@ -459,7 +459,7 @@ const Teams = () => {
                   </div>
                 </div>
                 <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-sm text-gray-500">San va khung gio</p>
+                  <p className="text-sm text-gray-500">Lich thi dau</p>
                   <p className="mt-2 text-sm font-semibold text-gray-950">
                     {selectedRequest.field?.name} • {selectedRequest.booking_date}
                   </p>
