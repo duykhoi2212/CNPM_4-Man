@@ -433,30 +433,48 @@ const Teams = () => {
             </div>
             <div className="mt-6 grid gap-6 md:grid-cols-[220px_1fr]">
               <img
-                src={selectedRequest.accepted_team_image_url || getTeamPlaceholder(selectedRequest.accepted_team_name)}
-                alt={selectedRequest.accepted_team_name}
+                src={selectedRequest.accepted_team_image_url || selectedRequest.created_team_image_url || getTeamPlaceholder(selectedRequest.accepted_team_name || selectedRequest.created_team_name)}
+                alt={selectedRequest.accepted_team_name || selectedRequest.created_team_name}
                 className="h-56 w-full rounded-2xl object-cover"
               />
               <div className="space-y-4">
                 <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-sm text-gray-500">Ten doi bong</p>
+                  <p className="text-sm text-gray-500">Doi tao yeu cau</p>
                   <p className="mt-2 text-lg font-semibold text-gray-950">
-                    {selectedRequest.accepted_team_name || 'Chua cap nhat ten doi'}
+                    {selectedRequest.created_team_name || 'Chua cap nhat ten doi'}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-sm text-gray-500">Anh doi bong</p>
+                  <p className="text-sm text-gray-500">Anh doi tao yeu cau</p>
                   <div className="mt-3 flex items-center gap-3">
                     <img
-                      src={selectedRequest.accepted_team_image_url || getTeamPlaceholder(selectedRequest.accepted_team_name)}
-                      alt={selectedRequest.accepted_team_name}
+                      src={selectedRequest.created_team_image_url || getTeamPlaceholder(selectedRequest.created_team_name)}
+                      alt={selectedRequest.created_team_name}
                       className="h-14 w-14 rounded-xl object-cover"
                     />
                     <div>
-                      <p className="font-semibold text-gray-950">Hinh dai dien cua doi</p>
+                      <p className="font-semibold text-gray-950">Hinh dai dien cua doi tao</p>
                       <p className="text-xs text-gray-500">Su dung de nhan dien trong giao luu</p>
                     </div>
                   </div>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-sm text-gray-500">Doi da chap nhan giao luu</p>
+                  {selectedRequest.accepted_team_name ? (
+                    <div className="mt-3 flex items-center gap-3">
+                      <img
+                        src={selectedRequest.accepted_team_image_url || getTeamPlaceholder(selectedRequest.accepted_team_name)}
+                        alt={selectedRequest.accepted_team_name}
+                        className="h-14 w-14 rounded-xl object-cover"
+                      />
+                      <div>
+                        <p className="font-semibold text-gray-950">{selectedRequest.accepted_team_name}</p>
+                        <p className="text-xs text-gray-500">Doi dang giao luu voi ban</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-gray-500">Chua co doi chap nhan.</p>
+                  )}
                 </div>
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-sm text-gray-500">San va khung gio</p>
