@@ -2,6 +2,7 @@
 from rest_framework import serializers
 from datetime import date, datetime
 from django.utils import timezone
+from django.db.models import Q
 
 from .models import Booking, BookingTimeSlot
 from apps.fields.models import TimeSlot
@@ -176,6 +177,22 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         if conflicting_bookings.exists():
             raise serializers.ValidationError({
                 'timeslot_ids': 'Khung gio nay da duoc dat, vui long chon khung gio khac'
+            })
+
+        from apps.matches.models import MatchRequestTimeSlot
+
+        reserved_timeslots = MatchRequestTimeSlot.objects.filter(
+            timeslot_id__in=timeslot_ids,
+            match_request__field=field,
+            match_request__booking_date=booking_date,
+            match_request__status__in=['accepted_waiting_deposit', 'deposit_paid'],
+        )
+        reserved_timeslots = reserved_timeslots.filter(
+            Q(match_request__status='deposit_paid') | Q(match_request__reserved_until__gt=timezone.now())
+        )
+        if reserved_timeslots.exists():
+            raise serializers.ValidationError({
+                'timeslot_ids': 'Khung gio nay dang duoc giu cho giao luu, vui long chon khung gio khac'
             })
 
         attrs['_timeslots'] = timeslots

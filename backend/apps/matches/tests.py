@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -13,6 +14,10 @@ from .models import MatchRequest, MatchRequestTimeSlot
 
 
 class MatchRequestTests(TestCase):
+    @staticmethod
+    def _team_image(name='team.png'):
+        return SimpleUploadedFile(name, b'fake-image-bytes', content_type='image/png')
+
     def setUp(self):
         self.client = APIClient()
         self.field_type = FieldType.objects.create(name='San 5')
@@ -36,9 +41,19 @@ class MatchRequestTests(TestCase):
             is_active=True,
         )
         self.creator = User.objects.create_user(username='creator', password='StrongPass123!')
-        UserProfile.objects.create(user=self.creator, phone='0900000001', team_name='FC Creator', team_image='')
+        UserProfile.objects.create(
+            user=self.creator,
+            phone='0900000001',
+            team_name='FC Creator',
+            team_image=self._team_image('creator-team.png'),
+        )
         self.opponent = User.objects.create_user(username='opponent', password='StrongPass123!')
-        UserProfile.objects.create(user=self.opponent, phone='0900000002', team_name='FC Opponent', team_image='')
+        UserProfile.objects.create(
+            user=self.opponent,
+            phone='0900000002',
+            team_name='FC Opponent',
+            team_image=self._team_image('opponent-team.png'),
+        )
 
     def _create_request(self):
         self.client.force_authenticate(self.creator)

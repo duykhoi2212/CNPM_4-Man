@@ -419,7 +419,9 @@ const Teams = () => {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Thong tin doi</p>
-                <h3 className="mt-2 text-2xl font-bold text-gray-950">{selectedRequest.accepted_team_name}</h3>
+                <h3 className="mt-2 text-2xl font-bold text-gray-950">
+                  {selectedRequest.accepted_team_name || 'Doi da chap nhan giao luu'}
+                </h3>
               </div>
               <button
                 type="button"
@@ -437,8 +439,24 @@ const Teams = () => {
               />
               <div className="space-y-4">
                 <div className="rounded-2xl bg-slate-50 p-4">
-                  <p className="text-sm text-gray-500">Doi dang giao luu voi ban</p>
-                  <p className="mt-2 text-lg font-semibold text-gray-950">{selectedRequest.accepted_team_name}</p>
+                  <p className="text-sm text-gray-500">Ten doi bong</p>
+                  <p className="mt-2 text-lg font-semibold text-gray-950">
+                    {selectedRequest.accepted_team_name || 'Chua cap nhat ten doi'}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-sm text-gray-500">Anh doi bong</p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <img
+                      src={selectedRequest.accepted_team_image_url || getTeamPlaceholder(selectedRequest.accepted_team_name)}
+                      alt={selectedRequest.accepted_team_name}
+                      className="h-14 w-14 rounded-xl object-cover"
+                    />
+                    <div>
+                      <p className="font-semibold text-gray-950">Hinh dai dien cua doi</p>
+                      <p className="text-xs text-gray-500">Su dung de nhan dien trong giao luu</p>
+                    </div>
+                  </div>
                 </div>
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-sm text-gray-500">San va khung gio</p>

@@ -161,11 +161,16 @@ class MatchRequestCreateSerializer(serializers.Serializer):
 
         try:
             profile = request.user.profile
-            team_name = (profile.team_name or '').strip() or request.user.username
-            team_image_url = request.build_absolute_uri(profile.team_image.url) if profile.team_image else ''
+            team_name = (profile.team_name or '').strip()
+            if not team_name or not profile.team_image:
+                raise serializers.ValidationError({
+                    'team': 'Ban can cap nhat ten doi bong va anh doi bong trong profile truoc khi tao yeu cau giao luu.'
+                })
+            team_image_url = request.build_absolute_uri(profile.team_image.url)
         except UserProfile.DoesNotExist:
-            team_name = request.user.username
-            team_image_url = ''
+            raise serializers.ValidationError({
+                'team': 'Ban can tao profile va cap nhat ten doi bong, anh doi bong truoc khi tao yeu cau giao luu.'
+            })
 
         selected_timeslots = list(
             TimeSlot.objects.filter(

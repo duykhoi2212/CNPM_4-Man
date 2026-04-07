@@ -27,11 +27,12 @@ def _expire_stale_match_requests():
 def _team_snapshot_for_user(user):
     try:
         profile = user.profile
-        team_name = (profile.team_name or '').strip() or user.username
-        team_image_url = profile.team_image.url if profile.team_image else ''
+        team_name = (profile.team_name or '').strip()
+        if not team_name or not profile.team_image:
+            return None, None
+        team_image_url = profile.team_image.url
     except UserProfile.DoesNotExist:
-        team_name = user.username
-        team_image_url = ''
+        return None, None
 
     return team_name, team_image_url
 
@@ -113,6 +114,11 @@ def match_request_accept_view(request, pk):
         return Response({'error': 'Yeu cau giao luu nay khong con hop le de chap nhan'}, status=status.HTTP_400_BAD_REQUEST)
 
     team_name, team_image_url = _team_snapshot_for_user(request.user)
+    if not team_name or not team_image_url:
+        return Response(
+            {'error': 'Ban can cap nhat ten doi bong va anh doi bong trong profile truoc khi chap nhan giao luu'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     if team_image_url:
         team_image_url = request.build_absolute_uri(team_image_url)
     match_request.accepted_team_name = team_name
