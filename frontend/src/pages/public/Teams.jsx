@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
-import { isAuthenticated } from '../../utils/auth';
+import { getUserInfo, isAuthenticated } from '../../utils/auth';
 
 const TEAM_TABS = [
   { key: 'doi-bong-tieu-bieu', label: 'Doi bong tieu bieu' },
@@ -33,6 +33,7 @@ const Teams = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const currentUser = getUserInfo();
   const activeTab = searchParams.get('tab') || 'doi-bong-tieu-bieu';
   const [teams, setTeams] = useState([]);
   const [matchRequests, setMatchRequests] = useState([]);
@@ -87,6 +88,20 @@ const Teams = () => {
 
   const topTeam = teams[0] || null;
   const rankedTeams = teams.slice(1);
+  const getMatchDialogTeamInfo = (requestItem) => {
+    const isCreatorViewing = currentUser?.username && currentUser.username === requestItem.creator_username;
+    if (isCreatorViewing) {
+      return {
+        teamName: requestItem.accepted_team_name || 'Chua co doi chap nhan',
+        teamImage: requestItem.accepted_team_image_url || getTeamPlaceholder(requestItem.accepted_team_name),
+      };
+    }
+
+    return {
+      teamName: requestItem.created_team_name || 'Chua cap nhat ten doi',
+      teamImage: requestItem.created_team_image_url || getTeamPlaceholder(requestItem.created_team_name),
+    };
+  };
 
   const handleChangeTab = (tabKey) => {
     setSearchParams(tabKey === 'doi-bong-tieu-bieu' ? {} : { tab: tabKey });
@@ -410,7 +425,10 @@ const Teams = () => {
         </div>
       )}
 
-      {selectedRequest && (
+      {selectedRequest && (() => {
+        const { teamName: displayTeamName, teamImage: displayTeamImage } = getMatchDialogTeamInfo(selectedRequest);
+
+        return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4" onClick={() => setSelectedRequest(null)}>
           <div
             className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl"
@@ -420,7 +438,7 @@ const Teams = () => {
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Thong tin doi</p>
                 <h3 className="mt-2 text-2xl font-bold text-gray-950">
-                  {selectedRequest.accepted_team_name || 'Doi da chap nhan giao luu'}
+                  {displayTeamName}
                 </h3>
               </div>
               <button
@@ -433,23 +451,23 @@ const Teams = () => {
             </div>
             <div className="mt-6 grid gap-6 md:grid-cols-[220px_1fr]">
               <img
-                src={selectedRequest.accepted_team_image_url || getTeamPlaceholder(selectedRequest.accepted_team_name || selectedRequest.created_team_name)}
-                alt={selectedRequest.accepted_team_name || selectedRequest.created_team_name}
+                src={displayTeamImage}
+                alt={displayTeamName}
                 className="h-56 w-full rounded-2xl object-cover"
               />
               <div className="space-y-4">
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-sm text-gray-500">Ten doi bong</p>
                   <p className="mt-2 text-lg font-semibold text-gray-950">
-                    {selectedRequest.accepted_team_name || 'Chua cap nhat ten doi'}
+                    {displayTeamName}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-sm text-gray-500">Anh doi bong</p>
                   <div className="mt-3 flex items-center gap-3">
                     <img
-                      src={selectedRequest.accepted_team_image_url || getTeamPlaceholder(selectedRequest.accepted_team_name)}
-                      alt={selectedRequest.accepted_team_name}
+                      src={displayTeamImage}
+                      alt={displayTeamName}
                       className="h-14 w-14 rounded-xl object-cover"
                     />
                     <div>
@@ -471,7 +489,8 @@ const Teams = () => {
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </section>
   );
 

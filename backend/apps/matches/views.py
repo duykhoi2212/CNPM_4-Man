@@ -123,11 +123,13 @@ def match_request_accept_view(request, pk):
         team_image_url = request.build_absolute_uri(team_image_url)
     match_request.accepted_team_name = team_name
     match_request.accepted_team_image_url = team_image_url
+    match_request.accepted_by = request.user
     match_request.status = MatchRequest.STATUS_ACCEPTED_WAITING_DEPOSIT
     match_request.reserved_until = timezone.now() + timedelta(minutes=1)
     match_request.save(update_fields=[
         'accepted_team_name',
         'accepted_team_image_url',
+        'accepted_by',
         'status',
         'reserved_until',
         'updated_at',

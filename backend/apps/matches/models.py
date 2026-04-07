@@ -28,6 +28,14 @@ class MatchRequest(models.Model):
         related_name='match_requests',
         verbose_name='Nguoi tao',
     )
+    accepted_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name='accepted_match_requests',
+        blank=True,
+        null=True,
+        verbose_name='Nguoi chap nhan',
+    )
     field = models.ForeignKey(
         Field,
         on_delete=models.CASCADE,

@@ -21,9 +21,12 @@ class MatchRequestListSerializer(serializers.ModelSerializer):
     timeslots = serializers.SerializerMethodField()
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     creator_username = serializers.CharField(source='created_by.username', read_only=True)
+    accepted_username = serializers.CharField(source='accepted_by.username', read_only=True)
     can_accept = serializers.SerializerMethodField()
     can_pay_deposit = serializers.SerializerMethodField()
     reservation_status = serializers.SerializerMethodField()
+    viewing_team_name = serializers.SerializerMethodField()
+    viewing_team_image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = MatchRequest
@@ -45,6 +48,9 @@ class MatchRequestListSerializer(serializers.ModelSerializer):
             'deposit_amount',
             'remaining_amount',
             'creator_username',
+            'accepted_username',
+            'viewing_team_name',
+            'viewing_team_image_url',
             'timeslots',
             'can_accept',
             'can_pay_deposit',
@@ -95,6 +101,24 @@ class MatchRequestListSerializer(serializers.ModelSerializer):
         if obj.status == MatchRequest.STATUS_EXPIRED:
             return 'het_han'
         return 'da_huy'
+
+    def get_viewing_team_name(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            if obj.created_by_id == request.user.id:
+                return obj.accepted_team_name or ''
+            if obj.accepted_by_id == request.user.id:
+                return obj.created_team_name or ''
+        return obj.accepted_team_name or obj.created_team_name or ''
+
+    def get_viewing_team_image_url(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            if obj.created_by_id == request.user.id:
+                return obj.accepted_team_image_url or ''
+            if obj.accepted_by_id == request.user.id:
+                return obj.created_team_image_url or ''
+        return obj.accepted_team_image_url or obj.created_team_image_url or ''
 
 
 class MatchRequestCreateSerializer(serializers.Serializer):
