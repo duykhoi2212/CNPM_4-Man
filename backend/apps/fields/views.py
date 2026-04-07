@@ -7,6 +7,7 @@ from django.db.models import Q, Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from datetime import datetime, date
+from django.utils import timezone
 
 from .models import Field, FieldType, TimeSlot, FieldImage
 from .serializers import (
@@ -418,23 +419,40 @@ def field_availability_view(request, pk):
     
     # Check which timeslots are already booked
     from apps.bookings.models import Booking, BookingTimeSlot
+    from apps.matches.models import MatchRequestTimeSlot
     
-    booked_timeslot_ids = BookingTimeSlot.objects.filter(
+    booked_timeslot_ids = set(BookingTimeSlot.objects.filter(
         booking__field=field,
         booking__booking_date=check_date,
         booking__status__in=['pending_payment', 'confirmed']
-    ).values_list('timeslot_id', flat=True)
+    ).values_list('timeslot_id', flat=True))
+
+    reserved_timeslot_ids = set(MatchRequestTimeSlot.objects.filter(
+        match_request__field=field,
+        match_request__booking_date=check_date,
+        match_request__status='accepted_waiting_deposit',
+        match_request__reserved_until__gt=timezone.now(),
+    ).values_list('timeslot_id', flat=True))
+
+    match_booked_timeslot_ids = set(MatchRequestTimeSlot.objects.filter(
+        match_request__field=field,
+        match_request__booking_date=check_date,
+        match_request__status='deposit_paid',
+    ).values_list('timeslot_id', flat=True))
     
     # Build response
     timeslots_data = []
     for slot in timeslots:
+        is_booked = slot.id in booked_timeslot_ids or slot.id in match_booked_timeslot_ids
+        is_reserved = slot.id in reserved_timeslot_ids
         timeslots_data.append({
             'timeslot_id': slot.id,
             'start_time': slot.start_time,
             'end_time': slot.end_time,
             'price': slot.price,
             'is_peak_hour': slot.is_peak_hour,
-            'is_available': slot.id not in booked_timeslot_ids,
+            'is_available': not (is_booked or is_reserved),
+            'reservation_status': 'da_dat' if is_booked else 'dang_giu_cho' if is_reserved else 'con_trong',
             'duration_hours': slot.duration_hours
         })
     

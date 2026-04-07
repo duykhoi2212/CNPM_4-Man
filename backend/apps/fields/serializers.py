@@ -150,4 +150,5 @@ class TimeSlotAvailabilitySerializer(serializers.Serializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     is_peak_hour = serializers.BooleanField()
     is_available = serializers.BooleanField()
+    reservation_status = serializers.CharField(required=False)
     duration_hours = serializers.FloatField()

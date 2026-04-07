@@ -137,6 +137,49 @@ const PitchDetail = () => {
     });
   };
 
+  const handleCreateMatchRequest = async () => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    if (!selectedSlotDetails.length) {
+      setError('Vui long chon it nhat mot khung gio.');
+      return;
+    }
+
+    try {
+      setLoadingSlots(true);
+      setError('');
+      const response = await axiosInstance.post('/matches/requests/', {
+        field: pitch.id,
+        booking_date: bookingDate,
+        timeslot_ids: selectedSlotDetails.map((slot) => slot.timeslot_id),
+        notes: '',
+      });
+
+      navigate('/teams?tab=tim-giao-luu', {
+        state: {
+          successMessage: response.data?.message || 'Da tao yeu cau giao luu thanh cong',
+        },
+      });
+    } catch (requestError) {
+      const responseData = requestError.response?.data;
+      if (responseData && typeof responseData === 'object') {
+        if (responseData.error) {
+          setError(responseData.error);
+        } else {
+          const firstMessage = Object.values(responseData).flat()[0];
+          setError(firstMessage || 'Khong the tao yeu cau giao luu. Vui long thu lai.');
+        }
+      } else {
+        setError('Khong the tao yeu cau giao luu. Vui long thu lai.');
+      }
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
   if (loading) {
     return <div className="max-w-7xl mx-auto px-4 py-12 text-center text-primary font-bold">Dang tai chi tiet san...</div>;
   }
@@ -265,12 +308,20 @@ const PitchDetail = () => {
             <div className="divide-y divide-gray-100">
               {availability.map((slot) => {
                 const isSelected = selectedSlots.includes(slot.timeslot_id);
-                const isAvailable = slot.is_available;
-                return (
-                  <button
-                    key={slot.timeslot_id}
-                    type="button"
-                    disabled={!isAvailable || isAdminViewer}
+                  const isAvailable = slot.is_available;
+                  const reservationStatus = slot.reservation_status || (isAvailable ? 'con_trong' : 'da_dat');
+                  const statusLabel = reservationStatus === 'dang_giu_cho'
+                    ? 'Dang giu cho'
+                    : reservationStatus === 'da_dat'
+                      ? 'Da dat'
+                      : isSelected
+                        ? 'Da chon'
+                        : 'Con trong';
+                  return (
+                    <button
+                      key={slot.timeslot_id}
+                      type="button"
+                      disabled={!isAvailable || isAdminViewer}
                     onClick={() => toggleSlot(slot.timeslot_id)}
                     className={`w-full px-5 py-4 text-left transition ${
                       isSelected
@@ -293,13 +344,15 @@ const PitchDetail = () => {
                       </div>
                       <div className="flex items-center justify-between gap-3 md:justify-start">
                         <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                          !isAvailable
+                          reservationStatus === 'dang_giu_cho'
+                            ? 'bg-amber-100 text-amber-700'
+                            : !isAvailable
                             ? 'bg-gray-100 text-gray-500'
                             : isSelected
                               ? 'bg-primary text-white'
                               : 'bg-green-100 text-green-700'
                         }`}>
-                          {!isAvailable ? 'Da dat' : isSelected ? 'Da chon' : 'Con trong'}
+                          {statusLabel}
                         </span>
                         {isAdminViewer && <span className="text-xs text-gray-400">Xem-only</span>}
                       </div>
@@ -337,18 +390,32 @@ const PitchDetail = () => {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             {!isAdminViewer && (
-              <button
-                type="button"
-                onClick={handleBooking}
-                disabled={selectedSlotDetails.length === 0}
-                className={`inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-bold text-white transition shadow-lg ${
-                  selectedSlotDetails.length === 0
-                    ? 'cursor-not-allowed bg-gray-300 shadow-none'
-                    : 'bg-primary hover:bg-teal-600 hover:shadow-xl'
-                }`}
-              >
-                Dat san ngay
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleCreateMatchRequest}
+                  disabled={selectedSlotDetails.length === 0}
+                  className={`inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-bold text-white transition shadow-lg ${
+                    selectedSlotDetails.length === 0
+                      ? 'cursor-not-allowed bg-gray-300 shadow-none'
+                      : 'bg-slate-900 hover:bg-slate-800 hover:shadow-xl'
+                  }`}
+                >
+                  Tim doi giao luu
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBooking}
+                  disabled={selectedSlotDetails.length === 0}
+                  className={`inline-flex items-center justify-center rounded-xl px-8 py-4 text-base font-bold text-white transition shadow-lg ${
+                    selectedSlotDetails.length === 0
+                      ? 'cursor-not-allowed bg-gray-300 shadow-none'
+                      : 'bg-primary hover:bg-teal-600 hover:shadow-xl'
+                  }`}
+                >
+                  Dat san ngay
+                </button>
+              </>
             )}
             <Link
               to="/pitches"

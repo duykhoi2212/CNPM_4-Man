@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'apps.reviews.apps.ReviewsConfig',
     'apps.statistics.apps.StatisticsConfig',
     'apps.contacts.apps.ContactsConfig',
+    'apps.matches.apps.MatchesConfig',
 ]
 
 MIDDLEWARE = [

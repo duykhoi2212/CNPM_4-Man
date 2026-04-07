@@ -45,7 +45,7 @@ const Checkout = () => {
     return null;
   }
 
-  const { pitch, bookingDate, selectedSlots, totalAmount, depositAmount } = bookingState;
+  const { pitch, bookingDate, selectedSlots, totalAmount, depositAmount, matchRequestId } = bookingState;
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -57,23 +57,33 @@ const Checkout = () => {
     setError('');
 
     try {
-      const bookingResponse = await axiosInstance.post('/bookings/create/', {
-        field: pitch.id,
-        booking_date: bookingDate,
-        timeslot_ids: selectedSlots.map((slot) => slot.timeslot_id),
-        customer_name: formData.customer_name,
-        customer_phone: formData.customer_phone,
-        customer_email: formData.customer_email,
-        notes: formData.notes,
-      });
+      if (matchRequestId) {
+        await axiosInstance.post(`/matches/requests/${matchRequestId}/pay/`, {
+          customer_name: formData.customer_name,
+          customer_phone: formData.customer_phone,
+          customer_email: formData.customer_email,
+          notes: formData.notes,
+        });
+      } else {
+        const bookingResponse = await axiosInstance.post('/bookings/create/', {
+          field: pitch.id,
+          booking_date: bookingDate,
+          timeslot_ids: selectedSlots.map((slot) => slot.timeslot_id || slot.id),
+          customer_name: formData.customer_name,
+          customer_phone: formData.customer_phone,
+          customer_email: formData.customer_email,
+          notes: formData.notes,
+        });
 
-      const bookingId = bookingResponse.data.booking.id;
-      const paymentResponse = await axiosInstance.post('/payments/', {
-        booking_id: bookingId,
-        payment_method: formData.payment_method,
-      });
+        const bookingId = bookingResponse.data.booking.id;
+        const paymentResponse = await axiosInstance.post('/payments/', {
+          booking_id: bookingId,
+          payment_method: formData.payment_method,
+        });
 
-      await axiosInstance.post(`/payments/${paymentResponse.data.payment.id}/confirm/`, {});
+        await axiosInstance.post(`/payments/${paymentResponse.data.payment.id}/confirm/`, {});
+      }
+
       navigate('/user/history', {
         state: { successMessage: 'Dat san va thanh toan tien coc qua VNPay thanh cong.' },
       });
