@@ -45,7 +45,7 @@ const Checkout = () => {
     return null;
   }
 
-  const { pitch, bookingDate, selectedSlots, totalAmount, depositAmount, matchRequestId } = bookingState;
+  const { pitch, bookingDate, selectedSlots, totalAmount, depositAmount, matchRequestId, returnToMatchTab } = bookingState;
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -84,9 +84,18 @@ const Checkout = () => {
         await axiosInstance.post(`/payments/${paymentResponse.data.payment.id}/confirm/`, {});
       }
 
-      navigate('/user/history', {
-        state: { successMessage: 'Dat san va thanh toan tien coc qua VNPay thanh cong.' },
-      });
+      if (matchRequestId && returnToMatchTab) {
+        navigate('/teams?tab=tim-giao-luu', {
+          state: {
+            successMessage: 'Da thanh toan coc giao luu thanh cong. Danh sach da duoc cap nhat.',
+            refreshMatchesAt: Date.now(),
+          },
+        });
+      } else {
+        navigate('/user/history', {
+          state: { successMessage: 'Dat san va thanh toan tien coc qua VNPay thanh cong.' },
+        });
+      }
     } catch (requestError) {
       const responseData = requestError.response?.data;
       if (responseData && typeof responseData === 'object') {

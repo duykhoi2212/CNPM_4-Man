@@ -9,6 +9,8 @@ const TEAM_TABS = [
   { key: 'tim-giao-luu', label: 'Tim giao luu' },
 ];
 
+const MATCH_REQUEST_POLLING_MS = 10000;
+
 const getTeamPlaceholder = (name) => {
   const safeName = (name || '4-Man Team').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const initials = safeName.split(' ').map((part) => part[0]).join('').slice(0, 3).toUpperCase();
@@ -82,10 +84,34 @@ const Teams = () => {
   const [error, setError] = useState('');
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [busyRequestId, setBusyRequestId] = useState(null);
+  const [requestRefreshKey, setRequestRefreshKey] = useState(0);
+
+  const loadMatchRequests = async ({ silent = false } = {}) => {
+    try {
+      if (!silent) {
+        setLoadingRequests(true);
+      }
+      const response = await axiosInstance.get('/matches/requests/', { params: { scope: 'active' } });
+      setMatchRequests(response.data.results || []);
+    } catch (requestError) {
+      setMatchRequests([]);
+      setError(requestError.response?.data?.error || 'Khong the tai danh sach giao luu.');
+    } finally {
+      if (!silent) {
+        setLoadingRequests(false);
+      }
+    }
+  };
 
   useEffect(() => {
-    if (location.state?.successMessage) {
-      setError(location.state.successMessage);
+    const nextState = location.state || {};
+    if (nextState.successMessage) {
+      setError(nextState.successMessage);
+    }
+    if (nextState.refreshMatchesAt) {
+      setRequestRefreshKey(nextState.refreshMatchesAt);
+    }
+    if (nextState.successMessage || nextState.refreshMatchesAt) {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location, navigate]);
@@ -108,23 +134,16 @@ const Teams = () => {
   }, []);
 
   useEffect(() => {
-    const fetchMatchRequests = async () => {
-      try {
-        setLoadingRequests(true);
-        const response = await axiosInstance.get('/matches/requests/', { params: { scope: 'active' } });
-        setMatchRequests(response.data.results || []);
-      } catch (requestError) {
-        setMatchRequests([]);
-        setError(requestError.response?.data?.error || 'Khong the tai danh sach giao luu.');
-      } finally {
-        setLoadingRequests(false);
-      }
-    };
-
     if (activeTab === 'tim-giao-luu') {
-      fetchMatchRequests();
+      loadMatchRequests();
+      const intervalId = window.setInterval(() => {
+        loadMatchRequests({ silent: true });
+      }, MATCH_REQUEST_POLLING_MS);
+
+      return () => window.clearInterval(intervalId);
     }
-  }, [activeTab]);
+    return undefined;
+  }, [activeTab, requestRefreshKey]);
 
   const topTeam = teams[0] || null;
   const rankedTeams = teams.slice(1);
@@ -159,9 +178,12 @@ const Teams = () => {
     try {
       setBusyRequestId(requestId);
       setError('');
-      await axiosInstance.post(`/matches/requests/${requestId}/accept/`, {});
-      const response = await axiosInstance.get('/matches/requests/', { params: { scope: 'active' } });
-      setMatchRequests(response.data.results || []);
+      const response = await axiosInstance.post(`/matches/requests/${requestId}/accept/`, {});
+      const updatedRequest = response.data?.match_request;
+      if (updatedRequest) {
+        setMatchRequests((prev) => prev.map((item) => (item.id === updatedRequest.id ? updatedRequest : item)));
+      }
+      await loadMatchRequests({ silent: true });
     } catch (requestError) {
       setError(requestError.response?.data?.error || 'Khong the chap nhan giao luu luc nay.');
     } finally {
@@ -186,6 +208,7 @@ const Teams = () => {
         totalAmount: Number(requestItem.total_amount),
         depositAmount: Number(requestItem.deposit_amount),
         matchRequestId: requestItem.id,
+        returnToMatchTab: true,
       },
     });
   };
@@ -650,21 +673,46 @@ const Teams = () => {
               <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-6 text-sm text-slate-300">
                 Chon san, chon gio, tao yeu cau giao luu. Doi khac chap nhan, he thong giu cho 1 phut de ban thanh toan coc.
               </div>
-              <div className="mt-6 flex gap-3">
-                {TEAM_TABS.map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => handleChangeTab(tab.key)}
-                    className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-                      activeTab === tab.key ? 'bg-teal-400 text-slate-950' : 'bg-white/10 text-slate-200 hover:bg-white/20'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm text-slate-300">
+                Dieu huong chinh da duoc dua xuong ngay ben duoi de de tim va chuyen tab hon tren desktop va mobile.
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
+        <div className="mx-auto max-w-7xl rounded-[32px] border border-slate-200 bg-white p-4 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
+          <div className="grid gap-3 md:grid-cols-3">
+            {TEAM_TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => handleChangeTab(tab.key)}
+                  className={`rounded-[28px] border px-5 py-5 text-left transition ${
+                    isActive
+                      ? 'border-primary bg-[linear-gradient(135deg,rgba(20,184,166,0.14),rgba(15,23,42,0.06))] shadow-[0_16px_32px_rgba(20,184,166,0.12)]'
+                      : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className={`text-xs font-semibold uppercase tracking-[0.24em] ${isActive ? 'text-primary' : 'text-slate-400'}`}>
+                        Chuyen tab
+                      </p>
+                      <h3 className={`mt-3 text-xl font-black tracking-tight ${isActive ? 'text-slate-950' : 'text-slate-800'}`}>
+                        {tab.label}
+                      </h3>
+                    </div>
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isActive ? 'bg-slate-950 text-white' : 'bg-white text-slate-500'}`}>
+                      {isActive ? 'Dang xem' : 'Mo tab'}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
