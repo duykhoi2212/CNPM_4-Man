@@ -14,6 +14,14 @@ const emptyForm = {
   is_active: true,
 };
 
+const createDraftImage = (file, order, isPrimary) => ({
+  id: `${file.name}-${file.size}-${file.lastModified}-${Math.random().toString(36).slice(2, 8)}`,
+  file,
+  previewUrl: URL.createObjectURL(file),
+  order,
+  is_primary: isPrimary,
+});
+
 const ManagePitches = () => {
   const [pitches, setPitches] = useState([]);
   const [fieldTypes, setFieldTypes] = useState([]);
@@ -22,6 +30,7 @@ const ManagePitches = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imageOrder, setImageOrder] = useState('0');
   const [imageIsPrimary, setImageIsPrimary] = useState(false);
+  const [pendingCreateImages, setPendingCreateImages] = useState([]);
   const [editingPitchId, setEditingPitchId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -36,6 +45,7 @@ const ManagePitches = () => {
   const loadPitches = async () => {
     const response = await axiosInstance.get('/fields/');
     setPitches(response.data.results || []);
+    return response.data.results || [];
   };
 
   useEffect(() => {
@@ -62,12 +72,18 @@ const ManagePitches = () => {
   }, []);
 
   const resetForm = () => {
+    pendingCreateImages.forEach((image) => {
+      if (image.previewUrl) {
+        URL.revokeObjectURL(image.previewUrl);
+      }
+    });
     setFormData(emptyForm);
     setEditingPitchId(null);
     setPitchImages([]);
     setImageFile(null);
     setImageOrder('0');
     setImageIsPrimary(false);
+    setPendingCreateImages([]);
     setFormError('');
     setImageError('');
   };
@@ -89,6 +105,12 @@ const ManagePitches = () => {
 
       setEditingPitchId(pitch.id);
       setPitchImages(pitch.images || []);
+      pendingCreateImages.forEach((image) => {
+        if (image.previewUrl) {
+          URL.revokeObjectURL(image.previewUrl);
+        }
+      });
+      setPendingCreateImages([]);
       setFormData({
         field_type: String(pitch.field_type?.id || ''),
         name: pitch.name || '',
@@ -155,13 +177,49 @@ const ManagePitches = () => {
         await axiosInstance.patch(`/fields/${editingPitchId}/update/`, payload);
         setSuccessMessage('Cap nhat san thanh cong.');
       } else {
+        const existingPitchIds = new Set(pitches.map((pitch) => pitch.id));
         await axiosInstance.post('/fields/create/', payload);
-        setSuccessMessage('Them san moi thanh cong.');
+        const refreshedPitches = await loadPitches();
+        const createdPitch = refreshedPitches.find((pitch) => (
+          !existingPitchIds.has(pitch.id)
+          && pitch.name === payload.name
+          && pitch.location === payload.location
+          && Number(pitch.price_per_hour) === payload.price_per_hour
+          && Number(pitch.peak_hour_price) === payload.peak_hour_price
+        ));
+        const createdPitchId = createdPitch?.id;
+
+        if (pendingCreateImages.length && !createdPitchId) {
+          throw new Error('Khong the xac dinh san vua tao de upload anh.');
+        }
+
+        if (createdPitchId && pendingCreateImages.length) {
+          for (const image of pendingCreateImages) {
+            const formPayload = new FormData();
+            formPayload.append('image', image.file);
+            formPayload.append('order', String(image.order || 0));
+            formPayload.append('is_primary', image.is_primary ? 'true' : 'false');
+
+            await axiosInstance.post(`/fields/${createdPitchId}/images/upload/`, formPayload, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            });
+          }
+        }
+
+        setSuccessMessage(
+          pendingCreateImages.length ? 'Them san moi va upload anh thanh cong.' : 'Them san moi thanh cong.'
+        );
       }
 
       await loadPitches();
       resetForm();
     } catch (requestError) {
+      if (requestError instanceof Error && !requestError.response) {
+        setFormError(requestError.message);
+        return;
+      }
       const responseData = requestError.response?.data;
       if (typeof responseData === 'string') {
         setFormError(responseData);
@@ -174,6 +232,35 @@ const ManagePitches = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleAddCreateImage = () => {
+    if (!imageFile) {
+      setImageError('Vui long chon mot file anh.');
+      return;
+    }
+
+    const nextImage = createDraftImage(imageFile, Number(imageOrder || 0), imageIsPrimary);
+    setPendingCreateImages((prev) => {
+      const normalizedPrev = imageIsPrimary
+        ? prev.map((item) => ({ ...item, is_primary: false }))
+        : prev;
+      return [...normalizedPrev, nextImage];
+    });
+    setImageError('');
+    setImageFile(null);
+    setImageOrder('0');
+    setImageIsPrimary(false);
+  };
+
+  const handleRemoveCreateImage = (imageId) => {
+    setPendingCreateImages((prev) => {
+      const imageToRemove = prev.find((item) => item.id === imageId);
+      if (imageToRemove?.previewUrl) {
+        URL.revokeObjectURL(imageToRemove.previewUrl);
+      }
+      return prev.filter((item) => item.id !== imageId);
+    });
   };
 
   const handleImageUpload = async (event) => {
@@ -384,6 +471,93 @@ const ManagePitches = () => {
               />
               <span className="text-sm font-medium text-gray-700">Dang hoat dong</span>
             </label>
+
+            <div className="md:col-span-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
+              <div className="flex flex-col gap-5">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Hinh anh san</h3>
+                  <p className="mt-2 text-sm leading-7 text-slate-500">
+                    {isEditing
+                      ? 'Ban dang o che do chinh sua. Co the them anh moi ngay ben duoi va quan ly thu vien anh hien tai.'
+                      : 'Chon anh truoc khi tao san. He thong se tu dong upload ngay sau khi san duoc tao thanh cong.'}
+                  </p>
+                </div>
+
+                {!isEditing && (
+                  <>
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1.4fr)_180px_220px] md:items-end">
+                      <label className="block">
+                        <span className="text-sm font-medium text-gray-700">Chon anh</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(event) => setImageFile(event.target.files?.[0] || null)}
+                          className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="text-sm font-medium text-gray-700">Thu tu hien thi</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={imageOrder}
+                          onChange={(event) => setImageOrder(event.target.value)}
+                          className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                        />
+                      </label>
+
+                      <div className="flex flex-col gap-3">
+                        <label className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={imageIsPrimary}
+                            onChange={(event) => setImageIsPrimary(event.target.checked)}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm font-medium text-gray-700">Dat lam anh chinh</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleAddCreateImage}
+                          className="rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800"
+                        >
+                          Them vao danh sach anh
+                        </button>
+                      </div>
+                    </div>
+
+                    {pendingCreateImages.length > 0 && (
+                      <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                        {pendingCreateImages.map((image) => (
+                          <div key={image.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                            <img src={image.previewUrl} alt={image.file.name} className="h-48 w-full object-cover" />
+                            <div className="space-y-3 p-4">
+                              <div className="flex items-center justify-between gap-3">
+                                <span className="text-sm text-slate-500">Thu tu: {image.order}</span>
+                                {image.is_primary && (
+                                  <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">
+                                    Anh chinh
+                                  </span>
+                                )}
+                              </div>
+                              <p className="truncate text-sm font-medium text-slate-800">{image.file.name}</p>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveCreateImage(image.id)}
+                                className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
+                              >
+                                Xoa khoi danh sach
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
 
             {formError && (
               <div className="md:col-span-2 rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
