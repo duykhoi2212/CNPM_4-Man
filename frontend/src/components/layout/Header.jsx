@@ -36,7 +36,7 @@ const Header = () => {
           </Link>
           {isAuthenticated && !isAdmin && (
             <Link to="/user/history" className="text-gray-700 hover:text-primary font-medium">
-              Lich su dat san
+              Lich su
             </Link>
           )}
           {isAdmin && (
