@@ -85,6 +85,7 @@ const Teams = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [busyRequestId, setBusyRequestId] = useState(null);
   const [requestRefreshKey, setRequestRefreshKey] = useState(0);
+  const [matchDateFilter, setMatchDateFilter] = useState('');
 
   const loadMatchRequests = async ({ silent = false } = {}) => {
     try {
@@ -147,6 +148,9 @@ const Teams = () => {
 
   const topTeam = teams[0] || null;
   const rankedTeams = teams.slice(1);
+  const filteredMatchRequests = matchDateFilter
+    ? matchRequests.filter((requestItem) => requestItem.booking_date === matchDateFilter)
+    : matchRequests;
   const getMatchDialogTeamInfo = (requestItem) => {
     const teamName = requestItem.counterpart_team_name
       || requestItem.viewing_team_name
@@ -373,13 +377,53 @@ const Teams = () => {
         </div>
       </div>
 
+      <div className="mb-8 rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Tim theo ngay</p>
+            <h3 className="mt-2 text-2xl font-black tracking-tight text-slate-950">Loc cac tran giao luu theo lich thi dau</h3>
+            <p className="mt-2 text-sm leading-7 text-slate-500">
+              Chon mot ngay cu the de chi xem cac request giao luu dien ra trong ngay do.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <label className="block text-sm font-medium text-slate-700">
+              Ngay thi dau
+              <input
+                type="date"
+                value={matchDateFilter}
+                onChange={(event) => setMatchDateFilter(event.target.value)}
+                className="mt-2 block w-full min-w-[220px] rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-primary"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => setMatchDateFilter('')}
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary hover:text-primary"
+            >
+              Xoa loc
+            </button>
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+          <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 font-semibold text-slate-700">
+            {filteredMatchRequests.length} tran
+          </span>
+          {matchDateFilter && (
+            <span>
+              Dang hien thi lich giao luu ngay <span className="font-semibold text-slate-900">{formatBookingDate(matchDateFilter)}</span>
+            </span>
+          )}
+        </div>
+      </div>
+
       {loadingRequests ? (
         <div className="rounded-[32px] border border-slate-200 bg-white p-8 text-sm text-primary shadow-[0_20px_45px_rgba(15,23,42,0.06)]">
           Dang tai yeu cau giao luu...
         </div>
-      ) : matchRequests.length ? (
+      ) : filteredMatchRequests.length ? (
         <div className="space-y-6">
-          {matchRequests.map((requestItem) => {
+          {filteredMatchRequests.map((requestItem) => {
             const statusBadge = getReservationBadge(requestItem);
             const scheduleText = requestItem.timeslots?.map((slot) => `${slot.start_time} - ${slot.end_time}`).join(' • ') || 'Chua co khung gio';
             const matchTitle = requestItem.accepted_team_name
@@ -580,7 +624,9 @@ const Teams = () => {
         </div>
       ) : (
         <div className="rounded-[32px] border border-slate-200 bg-white p-8 text-sm text-slate-500 shadow-[0_20px_45px_rgba(15,23,42,0.06)]">
-          Chua co yeu cau giao luu nao. Hay vao trang chi tiet san va tao mot yeu cau moi.
+          {matchDateFilter
+            ? 'Khong co yeu cau giao luu nao trong ngay ban da chon.'
+            : 'Chua co yeu cau giao luu nao. Hay vao trang chi tiet san va tao mot yeu cau moi.'}
         </div>
       )}
 
