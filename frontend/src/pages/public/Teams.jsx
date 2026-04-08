@@ -385,6 +385,15 @@ const Teams = () => {
             const matchTitle = requestItem.accepted_team_name
               ? `${requestItem.created_team_name} vs ${requestItem.accepted_team_name}`
               : requestItem.created_team_name;
+            const shouldShowDepositButton = Boolean(requestItem.accepted_team_name);
+            const depositButtonDisabled = !requestItem.can_pay_deposit;
+            const depositButtonLabel = requestItem.can_pay_deposit
+              ? 'Thanh toan coc'
+              : requestItem.viewer_role === 'accepted'
+                ? 'Doi tao se thanh toan coc'
+                : requestItem.reservation_status === 'da_dat'
+                  ? 'Da dat thanh cong'
+                  : 'Cho doi tao thanh toan coc';
 
             return (
               <article
@@ -477,13 +486,22 @@ const Teams = () => {
                           Xem thong tin doi
                         </button>
                       )}
-                      {requestItem.can_pay_deposit && (
+                      {shouldShowDepositButton && (
                         <button
                           type="button"
-                          onClick={() => handlePayDeposit(requestItem)}
-                          className="inline-flex items-center justify-center rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(20,184,166,0.24)] transition hover:bg-teal-600"
+                          onClick={() => {
+                            if (!depositButtonDisabled) {
+                              handlePayDeposit(requestItem);
+                            }
+                          }}
+                          disabled={depositButtonDisabled}
+                          className={`inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold transition ${
+                            depositButtonDisabled
+                              ? 'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-500'
+                              : 'bg-primary text-white shadow-[0_14px_30px_rgba(20,184,166,0.24)] hover:bg-teal-600'
+                          }`}
                         >
-                          Thanh toan coc
+                          {depositButtonLabel}
                         </button>
                       )}
                     </div>
