@@ -6,6 +6,7 @@ import uuid
 from .models import Payment
 from apps.bookings.models import Booking
 from apps.bookings.serializers import BookingListSerializer
+from apps.matches.services import cancel_match_requests_blocked_by_bookings
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -87,5 +88,6 @@ class PaymentConfirmSerializer(serializers.Serializer):
         booking = payment.booking
         booking.status = 'confirmed'
         booking.save(update_fields=['status', 'updated_at'])
+        cancel_match_requests_blocked_by_bookings()
 
         return payment

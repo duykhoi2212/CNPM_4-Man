@@ -13,15 +13,7 @@ from apps.payments.serializers import PaymentConfirmSerializer
 
 from .models import MatchRequest
 from .serializers import MatchRequestCreateSerializer, MatchRequestListSerializer
-
-
-def _expire_stale_match_requests():
-    stale_queryset = MatchRequest.objects.filter(
-        status=MatchRequest.STATUS_ACCEPTED_WAITING_DEPOSIT,
-        reserved_until__isnull=False,
-        reserved_until__lte=timezone.now(),
-    )
-    stale_queryset.update(status=MatchRequest.STATUS_EXPIRED)
+from .services import cancel_match_requests_blocked_by_bookings, expire_stale_match_requests
 
 
 def _team_snapshot_for_user(user):
@@ -46,7 +38,8 @@ class MatchRequestListCreateView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     def get_queryset(self):
-        _expire_stale_match_requests()
+        expire_stale_match_requests()
+        cancel_match_requests_blocked_by_bookings()
         queryset = (
             MatchRequest.objects.select_related('created_by', 'field')
             .prefetch_related('match_timeslots__timeslot')
@@ -88,7 +81,8 @@ class MatchRequestDetailView(generics.RetrieveAPIView):
     lookup_url_kwarg = 'pk'
 
     def get_queryset(self):
-        _expire_stale_match_requests()
+        expire_stale_match_requests()
+        cancel_match_requests_blocked_by_bookings()
         return MatchRequest.objects.select_related('created_by', 'field').prefetch_related('match_timeslots__timeslot')
 
     def get_serializer_context(self):
@@ -100,7 +94,8 @@ class MatchRequestDetailView(generics.RetrieveAPIView):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def match_request_accept_view(request, pk):
-    _expire_stale_match_requests()
+    expire_stale_match_requests()
+    cancel_match_requests_blocked_by_bookings()
 
     try:
         match_request = MatchRequest.objects.select_related('created_by', 'field').get(pk=pk)
@@ -148,7 +143,8 @@ def match_request_accept_view(request, pk):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def match_request_complete_deposit_view(request, pk):
-    _expire_stale_match_requests()
+    expire_stale_match_requests()
+    cancel_match_requests_blocked_by_bookings()
 
     try:
         match_request = MatchRequest.objects.select_related('created_by', 'field').prefetch_related('match_timeslots__timeslot').get(pk=pk)
@@ -208,7 +204,8 @@ def match_request_complete_deposit_view(request, pk):
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def match_request_pay_deposit_view(request, pk):
-    _expire_stale_match_requests()
+    expire_stale_match_requests()
+    cancel_match_requests_blocked_by_bookings()
 
     try:
         match_request = MatchRequest.objects.select_related('created_by', 'field').prefetch_related('match_timeslots__timeslot').get(pk=pk)

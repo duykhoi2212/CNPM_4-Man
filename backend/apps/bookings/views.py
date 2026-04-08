@@ -11,6 +11,7 @@ from .serializers import (
     BookingCancelSerializer,
     BookingConfirmSerializer
 )
+from apps.matches.services import cancel_match_requests_blocked_by_bookings
 
 
 class IsOwnerOrAdmin(permissions.BasePermission):
@@ -64,6 +65,7 @@ class BookingCreateView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         booking = serializer.save()
+        cancel_match_requests_blocked_by_bookings()
 
         detail_serializer = BookingDetailSerializer(booking, context={'request': request})
 

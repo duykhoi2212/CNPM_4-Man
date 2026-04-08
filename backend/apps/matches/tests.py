@@ -8,6 +8,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import UserProfile
+from apps.bookings.models import Booking, BookingTimeSlot
 from apps.fields.models import Field, FieldType, TimeSlot
 
 from .models import MatchRequest, MatchRequestTimeSlot
@@ -141,3 +142,57 @@ class MatchRequestTests(TestCase):
         self.assertEqual(accepted_response.data['viewer_role'], 'accepted')
         self.assertEqual(accepted_response.data['counterpart_team_name'], 'FC Creator')
         self.assertTrue(accepted_response.data['counterpart_team_image_url'])
+
+    def test_conflicting_confirmed_booking_removes_waiting_match_request_from_active_list(self):
+        match_request = self._create_request()
+
+        booking = Booking.objects.create(
+            user=self.opponent,
+            field=self.field,
+            booking_date=timezone.localdate() + timedelta(days=1),
+            customer_name='Opponent',
+            customer_phone='0900000002',
+            customer_email='opponent@example.com',
+            total_amount=300000,
+            deposit_amount=90000,
+            status='confirmed',
+        )
+        BookingTimeSlot.objects.create(booking=booking, timeslot=self.timeslot)
+
+        response = self.client.get(reverse('matches:match-request-list-create'))
+
+        self.assertEqual(response.status_code, 200)
+        returned_ids = [item['id'] for item in response.data['results']]
+        self.assertNotIn(match_request['id'], returned_ids)
+
+        match_request_obj = MatchRequest.objects.get(pk=match_request['id'])
+        self.assertEqual(match_request_obj.status, MatchRequest.STATUS_CANCELLED)
+
+    def test_cannot_accept_waiting_match_request_if_slot_was_booked(self):
+        match_request = self._create_request()
+
+        booking = Booking.objects.create(
+            user=self.creator,
+            field=self.field,
+            booking_date=timezone.localdate() + timedelta(days=1),
+            customer_name='Creator',
+            customer_phone='0900000001',
+            customer_email='creator@example.com',
+            total_amount=300000,
+            deposit_amount=90000,
+            status='pending_payment',
+        )
+        BookingTimeSlot.objects.create(booking=booking, timeslot=self.timeslot)
+
+        self.client.force_authenticate(self.opponent)
+        response = self.client.post(
+            reverse('matches:match-request-accept', args=[match_request['id']]),
+            {},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['error'], 'Yeu cau giao luu nay khong con hop le de chap nhan')
+
+        match_request_obj = MatchRequest.objects.get(pk=match_request['id'])
+        self.assertEqual(match_request_obj.status, MatchRequest.STATUS_CANCELLED)
