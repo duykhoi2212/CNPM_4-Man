@@ -385,15 +385,16 @@ const Teams = () => {
             const matchTitle = requestItem.accepted_team_name
               ? `${requestItem.created_team_name} vs ${requestItem.accepted_team_name}`
               : requestItem.created_team_name;
-            const shouldShowDepositButton = Boolean(requestItem.accepted_team_name);
+            const canCurrentUserAccept = !requestItem.accepted_team_name && requestItem.can_accept;
+            const isCreatorViewingAcceptedRequest = Boolean(
+              requestItem.accepted_team_name && requestItem.viewer_role === 'creator'
+            );
             const depositButtonDisabled = !requestItem.can_pay_deposit;
             const depositButtonLabel = requestItem.can_pay_deposit
               ? 'Thanh toan coc'
-              : requestItem.viewer_role === 'accepted'
-                ? 'Doi tao se thanh toan coc'
-                : requestItem.reservation_status === 'da_dat'
-                  ? 'Da dat thanh cong'
-                  : 'Cho doi tao thanh toan coc';
+              : requestItem.reservation_status === 'da_dat'
+                ? 'Da dat thanh cong'
+                : 'Thanh toan coc';
 
             return (
               <article
@@ -467,7 +468,7 @@ const Teams = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-3">
-                      {!requestItem.accepted_team_name && requestItem.can_accept && (
+                      {canCurrentUserAccept && (
                         <button
                           type="button"
                           onClick={() => handleAcceptRequest(requestItem.id)}
@@ -475,6 +476,20 @@ const Teams = () => {
                           className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 disabled:opacity-60"
                         >
                           {busyRequestId === requestItem.id ? 'Dang xu ly...' : 'Chap nhan giao luu'}
+                        </button>
+                      )}
+                      {!requestItem.accepted_team_name && requestItem.viewer_role === 'creator' && (
+                        <div className="inline-flex items-center rounded-2xl border border-slate-200 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-500">
+                          Ban dang la doi tao loi moi nay
+                        </div>
+                      )}
+                      {!requestItem.accepted_team_name && requestItem.viewer_role === 'guest' && (
+                        <button
+                          type="button"
+                          onClick={() => navigate('/login')}
+                          className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary hover:text-primary"
+                        >
+                          Dang nhap de chap nhan
                         </button>
                       )}
                       {requestItem.accepted_team_name && (
@@ -486,7 +501,7 @@ const Teams = () => {
                           Xem thong tin doi
                         </button>
                       )}
-                      {shouldShowDepositButton && (
+                      {isCreatorViewingAcceptedRequest && (
                         <button
                           type="button"
                           onClick={() => {
