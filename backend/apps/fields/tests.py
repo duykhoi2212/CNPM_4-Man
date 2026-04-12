@@ -154,3 +154,87 @@ class FieldAvailabilityMatchFlowTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['timeslots'][0]['is_available'], False)
         self.assertEqual(response.data['timeslots'][0]['reservation_status'], 'da_dat')
+
+
+class FieldAdminOwnershipTests(APITestCase):
+    def setUp(self):
+        self.super_admin = User.objects.create_user(
+            username='rootadmin',
+            password='StrongPass123!',
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.owner_admin = User.objects.create_user(
+            username='owneradmin',
+            password='StrongPass123!',
+            is_staff=True,
+        )
+        self.other_admin = User.objects.create_user(
+            username='otheradmin',
+            password='StrongPass123!',
+            is_staff=True,
+        )
+        self.field_type = FieldType.objects.create(name='San owner')
+        self.owner_field = Field.objects.create(
+            field_type=self.field_type,
+            owner=self.owner_admin,
+            name='Owner Field',
+            location='Da Nang',
+            price_per_hour=Decimal('300000.00'),
+            peak_hour_price=Decimal('360000.00'),
+            deposit_percent=Decimal('30.00'),
+            is_active=True,
+        )
+        self.other_field = Field.objects.create(
+            field_type=self.field_type,
+            owner=self.other_admin,
+            name='Other Field',
+            location='Hue',
+            price_per_hour=Decimal('320000.00'),
+            peak_hour_price=Decimal('380000.00'),
+            deposit_percent=Decimal('30.00'),
+            is_active=True,
+        )
+
+    def test_owner_admin_only_lists_managed_fields_with_admin_scope(self):
+        self.client.force_authenticate(user=self.owner_admin)
+
+        response = self.client.get('/api/fields/', {'admin_scope': 'managed'})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        returned_ids = {item['id'] for item in response.data['results']}
+        self.assertEqual(returned_ids, {self.owner_field.id})
+
+    def test_non_super_admin_create_field_assigns_self_as_owner(self):
+        self.client.force_authenticate(user=self.owner_admin)
+
+        response = self.client.post(
+            '/api/fields/create/',
+            {
+                'field_type': self.field_type.id,
+                'owner': self.other_admin.id,
+                'name': 'Created by owner admin',
+                'description': 'Scoped pitch',
+                'location': 'Quang Nam',
+                'price_per_hour': 350000,
+                'peak_hour_price': 420000,
+                'deposit_percent': 30,
+                'is_active': True,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        created_field = Field.objects.get(name='Created by owner admin')
+        self.assertEqual(created_field.owner_id, self.owner_admin.id)
+
+    def test_owner_admin_cannot_update_other_owner_field(self):
+        self.client.force_authenticate(user=self.owner_admin)
+
+        response = self.client.patch(
+            f'/api/fields/{self.other_field.id}/update/',
+            {'name': 'Illegal update'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

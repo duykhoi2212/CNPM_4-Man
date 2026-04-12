@@ -119,6 +119,7 @@ const Profile = () => {
         team_name: response.data.user.profile?.team_name || '',
         team_image_url: response.data.user.profile?.team_image_url || null,
         is_staff: storedUser?.is_staff || false,
+        is_superuser: storedUser?.is_superuser || false,
       };
       updateStoredUser(updatedUser);
       window.dispatchEvent(new Event('auth-changed'));

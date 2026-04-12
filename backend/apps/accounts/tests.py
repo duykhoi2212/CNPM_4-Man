@@ -46,6 +46,7 @@ class AccountsApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('token', response.data)
+        self.assertIn('is_superuser', response.data['user'])
 
     def test_profile_requires_authentication(self):
         response = self.client.get('/api/auth/profile/')

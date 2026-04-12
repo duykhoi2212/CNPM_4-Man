@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
 from .models import FieldType, Field, FieldImage, TimeSlot
 
 
@@ -73,6 +74,8 @@ class TimeSlotAdminSerializer(serializers.ModelSerializer):
 class FieldListSerializer(serializers.ModelSerializer):
     field_type = FieldTypeSerializer(read_only=True)
     primary_image = serializers.SerializerMethodField()
+    owner_id = serializers.IntegerField(source='owner.id', read_only=True)
+    owner_username = serializers.CharField(source='owner.username', read_only=True)
 
     class Meta:
         model = Field
@@ -80,7 +83,7 @@ class FieldListSerializer(serializers.ModelSerializer):
             'id', 'name', 'field_type', 'location',
             'price_per_hour', 'peak_hour_price', 'deposit_percent',
             'avg_rating', 'total_reviews', 'is_active',
-            'primary_image'
+            'primary_image', 'owner_id', 'owner_username'
         ]
 
     def get_primary_image(self, obj):
@@ -114,6 +117,8 @@ class FieldDetailSerializer(serializers.ModelSerializer):
     field_type = FieldTypeSerializer(read_only=True)
     images = FieldImageSerializer(many=True, read_only=True)
     time_slots = TimeSlotSerializer(many=True, read_only=True)
+    owner_id = serializers.IntegerField(source='owner.id', read_only=True)
+    owner_username = serializers.CharField(source='owner.username', read_only=True)
 
     class Meta:
         model = Field
@@ -121,15 +126,22 @@ class FieldDetailSerializer(serializers.ModelSerializer):
             'id', 'name', 'field_type', 'description', 'location',
             'price_per_hour', 'peak_hour_price', 'deposit_percent',
             'avg_rating', 'total_reviews', 'is_active',
-            'images', 'time_slots', 'created_at', 'updated_at'
+            'images', 'time_slots', 'created_at', 'updated_at',
+            'owner_id', 'owner_username'
         ]
 
 
 class FieldCreateUpdateSerializer(serializers.ModelSerializer):
+    owner = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(is_staff=True),
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = Field
         fields = [
-            'field_type', 'name', 'description', 'location',
+            'field_type', 'owner', 'name', 'description', 'location',
             'price_per_hour', 'peak_hour_price', 'deposit_percent',
             'is_active'
         ]
@@ -141,6 +153,25 @@ class FieldCreateUpdateSerializer(serializers.ModelSerializer):
                     'peak_hour_price': 'Peak hour price must be greater than or equal to regular price'
                 })
         return attrs
+
+    def validate_owner(self, value):
+        if value and not value.is_staff:
+            raise serializers.ValidationError('Chu san phai la tai khoan admin')
+        return value
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user.is_staff and not request.user.is_superuser:
+            validated_data['owner'] = request.user
+        elif request and request.user.is_superuser and 'owner' not in validated_data:
+            validated_data['owner'] = request.user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        if request and request.user.is_staff and not request.user.is_superuser:
+            validated_data.pop('owner', None)
+        return super().update(instance, validated_data)
 
 
 class TimeSlotAvailabilitySerializer(serializers.Serializer):

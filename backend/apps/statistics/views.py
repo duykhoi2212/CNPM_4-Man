@@ -21,6 +21,7 @@ def admin_overview_view(request):
         date_from=data.get('date_from'),
         date_to=data.get('date_to'),
         field_id=data.get('field_id'),
+        admin_user=request.user,
     )
     return Response(result, status=status.HTTP_200_OK)
 
@@ -37,6 +38,7 @@ def admin_revenue_view(request):
         date_to=data.get('date_to'),
         field_id=data.get('field_id'),
         group_by=data.get('group_by', 'day'),
+        admin_user=request.user,
     )
     return Response(result, status=status.HTTP_200_OK)
 
@@ -51,7 +53,9 @@ def admin_top_fields_view(request):
     result = services.get_admin_top_fields(
         date_from=data.get('date_from'),
         date_to=data.get('date_to'),
+        field_id=data.get('field_id'),
         limit=data.get('limit', 5),
+        admin_user=request.user,
     )
     return Response(result, status=status.HTTP_200_OK)
 
@@ -67,17 +71,21 @@ def admin_export_report_view(request):
         date_from=data.get('date_from'),
         date_to=data.get('date_to'),
         field_id=data.get('field_id'),
+        admin_user=request.user,
     )
     revenue = services.get_admin_revenue_series(
         date_from=data.get('date_from'),
         date_to=data.get('date_to'),
         field_id=data.get('field_id'),
         group_by=data.get('group_by', 'day'),
+        admin_user=request.user,
     )
     top_fields = services.get_admin_top_fields(
         date_from=data.get('date_from'),
         date_to=data.get('date_to'),
+        field_id=data.get('field_id'),
         limit=data.get('limit', 5),
+        admin_user=request.user,
     )
 
     response = HttpResponse(content_type='text/csv; charset=utf-8')

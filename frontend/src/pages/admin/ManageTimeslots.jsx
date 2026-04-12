@@ -65,7 +65,7 @@ const ManageTimeslots = () => {
         setLoading(true);
         setError('');
         const [fieldResponse, timeslotResponse] = await Promise.all([
-          axiosInstance.get('/fields/'),
+          axiosInstance.get('/fields/', { params: { admin_scope: 'managed' } }),
           axiosInstance.get('/fields/timeslots/'),
         ]);
 

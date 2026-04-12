@@ -70,7 +70,7 @@ const ManageBookings = () => {
         setError('');
         const [bookingResponse, fieldResponse] = await Promise.all([
           axiosInstance.get('/bookings/'),
-          axiosInstance.get('/fields/'),
+          axiosInstance.get('/fields/', { params: { admin_scope: 'managed' } }),
         ]);
         setBookings(bookingResponse.data.results || []);
         setFields(fieldResponse.data.results || []);

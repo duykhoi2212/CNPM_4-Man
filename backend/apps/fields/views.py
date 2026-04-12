@@ -1,6 +1,7 @@
 # apps/fields/views.py
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from django.db import IntegrityError
 from django.db.models import Q, Count
@@ -10,6 +11,7 @@ from datetime import datetime, date
 from django.utils import timezone
 
 from .models import Field, FieldType, TimeSlot, FieldImage
+from .access import can_manage_field, get_managed_fields_queryset
 from .serializers import (
     FieldListSerializer,
     FieldDetailSerializer,
@@ -60,10 +62,13 @@ class FieldListView(generics.ListAPIView):
     
     def get_queryset(self):
         queryset = Field.objects.select_related('field_type')
+        admin_scope = self.request.query_params.get('admin_scope')
 
-        if not self.request.user.is_authenticated or not self.request.user.is_staff:
+        if admin_scope == 'managed' and self.request.user.is_authenticated and self.request.user.is_staff:
+            queryset = get_managed_fields_queryset(self.request.user, queryset=queryset)
+        elif not self.request.user.is_authenticated or not self.request.user.is_staff:
             queryset = queryset.filter(is_active=True)
-        
+
         # Filter by field type
         field_type = self.request.query_params.get('type')
         if field_type:
@@ -93,9 +98,15 @@ class FieldDetailView(generics.RetrieveAPIView):
     Xem chi tiết sân (bao gồm ảnh, khung giờ)
     Public API
     """
-    queryset = Field.objects.filter(is_active=True).select_related('field_type').prefetch_related('images', 'time_slots')
     serializer_class = FieldDetailSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        queryset = Field.objects.select_related('field_type').prefetch_related('images', 'time_slots')
+        admin_scope = self.request.query_params.get('admin_scope')
+        if admin_scope == 'managed' and self.request.user.is_authenticated and self.request.user.is_staff:
+            return get_managed_fields_queryset(self.request.user, queryset=queryset)
+        return queryset.filter(is_active=True)
 
 
 class FieldCreateView(generics.CreateAPIView):
@@ -119,6 +130,11 @@ class FieldCreateView(generics.CreateAPIView):
     serializer_class = FieldCreateUpdateSerializer
     permission_classes = [permissions.IsAdminUser]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
 
 class FieldUpdateView(generics.UpdateAPIView):
     """
@@ -126,9 +142,19 @@ class FieldUpdateView(generics.UpdateAPIView):
     
     Cập nhật thông tin sân (Admin only)
     """
-    queryset = Field.objects.all()
     serializer_class = FieldCreateUpdateSerializer
     permission_classes = [permissions.IsAdminUser]
+
+    def get_queryset(self):
+        return get_managed_fields_queryset(
+            self.request.user,
+            queryset=Field.objects.all(),
+        )
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 class FieldDeleteView(generics.DestroyAPIView):
@@ -137,8 +163,13 @@ class FieldDeleteView(generics.DestroyAPIView):
     
     Xóa sân (Admin only)
     """
-    queryset = Field.objects.all()
     permission_classes = [permissions.IsAdminUser]
+
+    def get_queryset(self):
+        return get_managed_fields_queryset(
+            self.request.user,
+            queryset=Field.objects.all(),
+        )
 
 
 class TimeSlotAdminListCreateView(generics.ListCreateAPIView):
@@ -157,6 +188,7 @@ class TimeSlotAdminListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        queryset = queryset.filter(field__in=get_managed_fields_queryset(self.request.user))
         field_id = self.request.query_params.get('field')
         if field_id:
             queryset = queryset.filter(field_id=field_id)
@@ -171,6 +203,12 @@ class TimeSlotAdminListCreateView(generics.ListCreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+    def perform_create(self, serializer):
+        field = serializer.validated_data['field']
+        if not can_manage_field(self.request.user, field):
+            raise PermissionDenied('Ban khong co quyen quan ly san nay')
+        serializer.save()
+
 
 class TimeSlotAdminUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -178,9 +216,13 @@ class TimeSlotAdminUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     PUT/PATCH /api/fields/timeslots/:id/
     DELETE /api/fields/timeslots/:id/
     """
-    queryset = TimeSlot.objects.select_related('field')
     serializer_class = TimeSlotAdminSerializer
     permission_classes = [permissions.IsAdminUser]
+
+    def get_queryset(self):
+        return TimeSlot.objects.select_related('field').filter(
+            field__in=get_managed_fields_queryset(self.request.user)
+        )
 
     def update(self, request, *args, **kwargs):
         try:
@@ -199,6 +241,9 @@ def field_image_upload_view(request, pk):
         field = Field.objects.get(pk=pk)
     except Field.DoesNotExist:
         return Response({'error': 'Field not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if not can_manage_field(request.user, field):
+        return Response({'error': 'Ban khong co quyen quan ly san nay'}, status=status.HTTP_403_FORBIDDEN)
 
     image_file = request.FILES.get('image')
     if not image_file:
@@ -232,6 +277,9 @@ def field_image_set_primary_view(request, pk, image_id):
     except FieldImage.DoesNotExist:
         return Response({'error': 'Field image not found'}, status=status.HTTP_404_NOT_FOUND)
 
+    if not can_manage_field(request.user, field_image.field):
+        return Response({'error': 'Ban khong co quyen quan ly san nay'}, status=status.HTTP_403_FORBIDDEN)
+
     field_image.is_primary = True
     field_image.save()
 
@@ -252,6 +300,9 @@ def field_image_delete_view(request, pk, image_id):
         field_image = FieldImage.objects.get(pk=image_id, field_id=pk)
     except FieldImage.DoesNotExist:
         return Response({'error': 'Field image not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if not can_manage_field(request.user, field_image.field):
+        return Response({'error': 'Ban khong co quyen quan ly san nay'}, status=status.HTTP_403_FORBIDDEN)
 
     field_image.delete()
     return Response({'message': 'Field image deleted successfully'}, status=status.HTTP_200_OK)

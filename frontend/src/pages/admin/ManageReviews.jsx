@@ -44,7 +44,7 @@ const ManageReviews = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   const loadReviews = async (nextFilters = filters) => {
-    const params = {};
+    const params = { admin_scope: 'managed' };
     if (nextFilters.field) params.field = nextFilters.field;
     if (nextFilters.rating_min) params.rating_min = nextFilters.rating_min;
 
@@ -58,8 +58,8 @@ const ManageReviews = () => {
         setLoading(true);
         setError('');
         const [reviewResponse, fieldResponse] = await Promise.all([
-          axiosInstance.get('/reviews/'),
-          axiosInstance.get('/fields/'),
+          axiosInstance.get('/reviews/', { params: { admin_scope: 'managed' } }),
+          axiosInstance.get('/fields/', { params: { admin_scope: 'managed' } }),
         ]);
         setReviews(reviewResponse.data.results || reviewResponse.data || []);
         setFields(fieldResponse.data.results || fieldResponse.data || []);

@@ -19,6 +19,7 @@ from .serializers import (
     UpdateProfileSerializer,
     UserProfileDetailSerializer,
 )
+from apps.fields.access import get_managed_fields_queryset
 
 
 def _get_user_phone(user):
@@ -75,6 +76,7 @@ def _serialize_auth_user(user, request=None):
         'team_name': _get_user_team_name(user),
         'team_image_url': _get_user_team_image_url(user, request),
         'is_staff': user.is_staff,
+        'is_superuser': user.is_superuser,
     }
 
 
@@ -266,14 +268,21 @@ def admin_nav_summary_view(request):
         defaults={'phone': f'admin-{request.user.id}', 'address': ''},
     )
 
-    bookings_count = Booking.objects.filter(
-        status__in=['pending_payment', 'confirmed'],
-        created_at__gt=profile.last_seen_bookings_at,
-    ).count() if profile.last_seen_bookings_at else Booking.objects.filter(status__in=['pending_payment', 'confirmed']).count()
+    managed_fields = get_managed_fields_queryset(request.user)
 
-    reviews_count = Review.objects.filter(
+    bookings_queryset = Booking.objects.filter(status__in=['pending_payment', 'confirmed'])
+    reviews_queryset = Review.objects.all()
+    if not request.user.is_superuser:
+        bookings_queryset = bookings_queryset.filter(field__in=managed_fields)
+        reviews_queryset = reviews_queryset.filter(field__in=managed_fields)
+
+    bookings_count = bookings_queryset.filter(
+        created_at__gt=profile.last_seen_bookings_at,
+    ).count() if profile.last_seen_bookings_at else bookings_queryset.count()
+
+    reviews_count = reviews_queryset.filter(
         created_at__gt=profile.last_seen_reviews_at,
-    ).count() if profile.last_seen_reviews_at else Review.objects.count()
+    ).count() if profile.last_seen_reviews_at else reviews_queryset.count()
 
     contacts_count = ContactMessage.objects.filter(
         is_resolved=False,

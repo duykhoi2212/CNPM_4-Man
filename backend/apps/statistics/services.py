@@ -24,8 +24,19 @@ def get_bookings_queryset(date_from=None, date_to=None, field_id=None, user=None
     return queryset
 
 
-def get_admin_overview(date_from=None, date_to=None, field_id=None):
+def scope_bookings_queryset_for_admin(queryset, admin_user):
+    if admin_user is None or not admin_user.is_staff:
+        return queryset.none()
+
+    if admin_user.is_superuser:
+        return queryset
+
+    return queryset.filter(field__owner=admin_user)
+
+
+def get_admin_overview(date_from=None, date_to=None, field_id=None, admin_user=None):
     bookings = get_bookings_queryset(date_from=date_from, date_to=date_to, field_id=field_id)
+    bookings = scope_bookings_queryset_for_admin(bookings, admin_user)
     booking_ids = bookings.values('id')
 
     booking_summary = bookings.aggregate(
@@ -79,8 +90,9 @@ def get_admin_overview(date_from=None, date_to=None, field_id=None):
     }
 
 
-def get_admin_revenue_series(date_from=None, date_to=None, field_id=None, group_by='day'):
+def get_admin_revenue_series(date_from=None, date_to=None, field_id=None, group_by='day', admin_user=None):
     bookings = get_bookings_queryset(date_from=date_from, date_to=date_to, field_id=field_id)
+    bookings = scope_bookings_queryset_for_admin(bookings, admin_user)
     completed = bookings.filter(status='completed')
     aggregated = {}
 
@@ -124,8 +136,9 @@ def get_admin_revenue_series(date_from=None, date_to=None, field_id=None, group_
     }
 
 
-def get_admin_top_fields(date_from=None, date_to=None, limit=5):
-    bookings = get_bookings_queryset(date_from=date_from, date_to=date_to)
+def get_admin_top_fields(date_from=None, date_to=None, field_id=None, limit=5, admin_user=None):
+    bookings = get_bookings_queryset(date_from=date_from, date_to=date_to, field_id=field_id)
+    bookings = scope_bookings_queryset_for_admin(bookings, admin_user)
 
     top_fields = list(
         bookings.values('field_id', 'field__name')
@@ -141,6 +154,7 @@ def get_admin_top_fields(date_from=None, date_to=None, limit=5):
         'period': {
             'date_from': date_from,
             'date_to': date_to,
+            'field_id': field_id,
             'limit': limit,
         },
         'top_fields': top_fields,

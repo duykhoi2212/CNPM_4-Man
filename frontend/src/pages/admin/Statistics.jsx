@@ -307,7 +307,7 @@ const Statistics = () => {
         setLoading(true);
         setError('');
         const [fieldResponse] = await Promise.all([
-          axiosInstance.get('/fields/'),
+          axiosInstance.get('/fields/', { params: { admin_scope: 'managed' } }),
           loadStatistics(initialFilters),
         ]);
         setFields(fieldResponse.data.results || []);

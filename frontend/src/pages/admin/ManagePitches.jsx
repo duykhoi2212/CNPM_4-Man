@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 import AdminNav from '../../components/admin/AdminNav';
+import { getStoredUser } from '../../utils/auth';
 
 const emptyForm = {
   field_type: '',
+  owner: '',
   name: '',
   description: '',
   location: '',
@@ -23,8 +25,11 @@ const createDraftImage = (file, order, isPrimary) => ({
 });
 
 const ManagePitches = () => {
+  const currentUser = getStoredUser();
+  const canAssignOwner = Boolean(currentUser?.is_superuser);
   const [pitches, setPitches] = useState([]);
   const [fieldTypes, setFieldTypes] = useState([]);
+  const [adminUsers, setAdminUsers] = useState([]);
   const [pitchImages, setPitchImages] = useState([]);
   const [formData, setFormData] = useState(emptyForm);
   const [imageFile, setImageFile] = useState(null);
@@ -43,7 +48,7 @@ const ManagePitches = () => {
   const isEditing = useMemo(() => Boolean(editingPitchId), [editingPitchId]);
 
   const loadPitches = async () => {
-    const response = await axiosInstance.get('/fields/');
+    const response = await axiosInstance.get('/fields/', { params: { admin_scope: 'managed' } });
     setPitches(response.data.results || []);
     return response.data.results || [];
   };
@@ -54,13 +59,21 @@ const ManagePitches = () => {
         setLoading(true);
         setError('');
 
-        const [pitchResponse, typeResponse] = await Promise.all([
-          axiosInstance.get('/fields/'),
+        const requests = [
+          axiosInstance.get('/fields/', { params: { admin_scope: 'managed' } }),
           axiosInstance.get('/fields/types/'),
-        ]);
+        ];
+        if (canAssignOwner) {
+          requests.push(axiosInstance.get('/auth/admin/users/', { params: { role: 'admin' } }));
+        }
+
+        const [pitchResponse, typeResponse, ownerResponse] = await Promise.all(requests);
 
         setPitches(pitchResponse.data.results || []);
         setFieldTypes(typeResponse.data.results || typeResponse.data || []);
+        if (ownerResponse) {
+          setAdminUsers(ownerResponse.data.results || ownerResponse.data || []);
+        }
       } catch (requestError) {
         setError(requestError.response?.data?.error || 'Khong the tai du lieu quan ly san.');
       } finally {
@@ -69,7 +82,7 @@ const ManagePitches = () => {
     };
 
     fetchData();
-  }, []);
+  }, [canAssignOwner]);
 
   const resetForm = () => {
     pendingCreateImages.forEach((image) => {
@@ -100,7 +113,9 @@ const ManagePitches = () => {
     try {
       setFormError('');
       setSuccessMessage('');
-      const response = await axiosInstance.get(`/fields/${pitchId}/`);
+      const response = await axiosInstance.get(`/fields/${pitchId}/`, {
+        params: { admin_scope: 'managed' },
+      });
       const pitch = response.data;
 
       setEditingPitchId(pitch.id);
@@ -113,6 +128,7 @@ const ManagePitches = () => {
       setPendingCreateImages([]);
       setFormData({
         field_type: String(pitch.field_type?.id || ''),
+        owner: String(pitch.owner_id || ''),
         name: pitch.name || '',
         description: pitch.description || '',
         location: pitch.location || '',
@@ -132,7 +148,9 @@ const ManagePitches = () => {
       return;
     }
 
-    const response = await axiosInstance.get(`/fields/${pitchId}/`);
+    const response = await axiosInstance.get(`/fields/${pitchId}/`, {
+      params: { admin_scope: 'managed' },
+    });
     setPitchImages(response.data.images || []);
   };
 
@@ -172,6 +190,11 @@ const ManagePitches = () => {
         peak_hour_price: Number(formData.peak_hour_price),
         deposit_percent: Number(formData.deposit_percent),
       };
+      if (canAssignOwner) {
+        payload.owner = formData.owner ? Number(formData.owner) : null;
+      } else {
+        delete payload.owner;
+      }
 
       if (isEditing) {
         await axiosInstance.patch(`/fields/${editingPitchId}/update/`, payload);
@@ -385,6 +408,25 @@ const ManagePitches = () => {
                 ))}
               </select>
             </label>
+
+            {canAssignOwner && (
+              <label className="block">
+                <span className="text-sm font-medium text-gray-700">Chu san</span>
+                <select
+                  name="owner"
+                  value={formData.owner}
+                  onChange={handleChange}
+                  className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+                >
+                  <option value="">Chon admin quan ly</option>
+                  {adminUsers.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.username}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
 
             <label className="block">
               <span className="text-sm font-medium text-gray-700">Ten san</span>
@@ -708,6 +750,7 @@ const ManagePitches = () => {
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ten san</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loai</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chu san</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gia / gio</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tien coc</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trang thai</th>
@@ -719,6 +762,7 @@ const ManagePitches = () => {
                     <tr key={pitch.id}>
                       <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{pitch.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-500">{pitch.field_type?.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">{pitch.owner_username || 'Chua gan'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                         {Number(pitch.price_per_hour).toLocaleString('vi-VN')} d
                       </td>

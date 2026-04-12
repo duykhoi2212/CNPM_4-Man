@@ -9,11 +9,18 @@ from .serializers import (
     ReviewCreateSerializer,
     ReviewUpdateSerializer,
 )
+from apps.fields.access import get_managed_fields_queryset
 
 
 class IsOwnerOrAdmin(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        return obj.user == request.user or request.user.is_staff
+        if obj.user == request.user:
+            return True
+        if not request.user.is_staff:
+            return False
+        if request.user.is_superuser:
+            return True
+        return obj.field.owner_id == request.user.id
 
 
 class ReviewListView(generics.ListAPIView):
@@ -22,6 +29,10 @@ class ReviewListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Review.objects.select_related('user', 'field').prefetch_related('images').order_by('-created_at')
+        admin_scope = self.request.query_params.get('admin_scope')
+
+        if admin_scope == 'managed' and self.request.user.is_authenticated and self.request.user.is_staff:
+            queryset = queryset.filter(field__in=get_managed_fields_queryset(self.request.user))
 
         field_id = self.request.query_params.get('field')
         if field_id:
@@ -140,6 +151,8 @@ def review_delete_image_view(request, pk, image_id):
         return Response({'error': 'Khong tim thay danh gia hoac anh'}, status=status.HTTP_404_NOT_FOUND)
 
     if review.user != request.user and not request.user.is_staff:
+        return Response({'error': 'Ban khong co quyen xoa anh cua danh gia nay'}, status=status.HTTP_403_FORBIDDEN)
+    if request.user.is_staff and not request.user.is_superuser and review.user != request.user and review.field.owner_id != request.user.id:
         return Response({'error': 'Ban khong co quyen xoa anh cua danh gia nay'}, status=status.HTTP_403_FORBIDDEN)
 
     review_image.delete()

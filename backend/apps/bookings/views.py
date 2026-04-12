@@ -12,11 +12,18 @@ from .serializers import (
     BookingConfirmSerializer
 )
 from apps.matches.services import cancel_match_requests_blocked_by_bookings
+from apps.fields.access import get_managed_fields_queryset
 
 
 class IsOwnerOrAdmin(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        return obj.user == request.user or request.user.is_staff
+        if obj.user == request.user:
+            return True
+        if not request.user.is_staff:
+            return False
+        if request.user.is_superuser:
+            return True
+        return obj.field.owner_id == request.user.id
 
 
 class BookingListView(generics.ListAPIView):
@@ -28,6 +35,8 @@ class BookingListView(generics.ListAPIView):
 
         if user.is_staff:
             queryset = Booking.objects.all()
+            if not user.is_superuser:
+                queryset = queryset.filter(field__in=get_managed_fields_queryset(user))
         else:
             queryset = Booking.objects.filter(user=user)
 
@@ -85,6 +94,8 @@ def booking_cancel_view(request, pk):
 
     if booking.user != request.user and not request.user.is_staff:
         return Response({'error': 'Ban khong co quyen huy booking nay'}, status=status.HTTP_403_FORBIDDEN)
+    if request.user.is_staff and not request.user.is_superuser and booking.user != request.user and booking.field.owner_id != request.user.id:
+        return Response({'error': 'Ban khong co quyen huy booking nay'}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = BookingCancelSerializer(instance=booking, data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -106,6 +117,9 @@ def booking_confirm_view(request, pk):
     except Booking.DoesNotExist:
         return Response({'error': 'Khong tim thay booking'}, status=status.HTTP_404_NOT_FOUND)
 
+    if not request.user.is_superuser and booking.field.owner_id != request.user.id:
+        return Response({'error': 'Ban khong co quyen quan ly booking nay'}, status=status.HTTP_403_FORBIDDEN)
+
     serializer = BookingConfirmSerializer(instance=booking, data=request.data)
     serializer.is_valid(raise_exception=True)
     return Response({'booking_id': booking.id}, status=status.HTTP_200_OK)
@@ -118,6 +132,9 @@ def booking_complete_view(request, pk):
         booking = Booking.objects.get(pk=pk)
     except Booking.DoesNotExist:
         return Response({'error': 'Khong tim thay booking'}, status=status.HTTP_404_NOT_FOUND)
+
+    if not request.user.is_superuser and booking.field.owner_id != request.user.id:
+        return Response({'error': 'Ban khong co quyen quan ly booking nay'}, status=status.HTTP_403_FORBIDDEN)
 
     if booking.status != 'confirmed':
         return Response({'error': 'Chi booking da xac nhan moi co the hoan thanh'}, status=status.HTTP_400_BAD_REQUEST)
