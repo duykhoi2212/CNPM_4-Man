@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 import AdminNav from '../../components/admin/AdminNav';
+import LocationPicker from '../../components/LocationPicker';
 import { getStoredUser } from '../../utils/auth';
 
 const emptyForm = {
@@ -469,31 +470,28 @@ const ManagePitches = () => {
               />
             </label>
 
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Vi do</span>
-              <input
-                type="number"
-                step="0.000001"
-                name="latitude"
-                value={formData.latitude}
-                onChange={handleChange}
-                placeholder="16.054407"
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+            <label className="block md:col-span-2">
+              <span className="text-sm font-medium text-gray-700 mb-2 block">Vi tri tren ban do</span>
+              <LocationPicker
+                value={{
+                  latitude: formData.latitude,
+                  longitude: formData.longitude,
+                }}
+                onChange={(location) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                  }));
+                }}
+                height="400px"
+                defaultLocation={{ lat: 16.054407, lng: 108.202164 }}
               />
             </label>
 
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Kinh do</span>
-              <input
-                type="number"
-                step="0.000001"
-                name="longitude"
-                value={formData.longitude}
-                onChange={handleChange}
-                placeholder="108.202164"
-                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
-              />
-            </label>
+            {/* Hidden fields for latitude and longitude */}
+            <input type="hidden" name="latitude" value={formData.latitude} />
+            <input type="hidden" name="longitude" value={formData.longitude} />
 
             <label className="block">
               <span className="text-sm font-medium text-gray-700">Gia gio thuong</span>
