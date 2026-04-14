@@ -62,6 +62,22 @@ def admin_top_fields_view(request):
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAdminUser])
+def admin_field_performance_view(request):
+    serializer = StatsQuerySerializer(data=request.query_params)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+
+    result = services.get_admin_field_performance(
+        date_from=data.get('date_from'),
+        date_to=data.get('date_to'),
+        field_id=data.get('field_id'),
+        admin_user=request.user,
+    )
+    return Response(result, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAdminUser])
 def admin_export_report_view(request):
     serializer = StatsQuerySerializer(data=request.query_params)
     serializer.is_valid(raise_exception=True)
@@ -85,6 +101,12 @@ def admin_export_report_view(request):
         date_to=data.get('date_to'),
         field_id=data.get('field_id'),
         limit=data.get('limit', 5),
+        admin_user=request.user,
+    )
+    field_performance = services.get_admin_field_performance(
+        date_from=data.get('date_from'),
+        date_to=data.get('date_to'),
+        field_id=data.get('field_id'),
         admin_user=request.user,
     )
 
@@ -128,6 +150,32 @@ def admin_export_report_view(request):
             field['bookings_count'],
             field['completed_revenue'],
             field['cancelled_count'],
+        ])
+    writer.writerow([])
+
+    writer.writerow(['Hieu suat theo san'])
+    writer.writerow([
+        'San',
+        'Tong booking',
+        'Cho coc',
+        'Da xac nhan',
+        'Da hoan thanh',
+        'Da huy',
+        'Doanh thu hoan tat',
+        'Tien coc da thu',
+        'Ty le hoan thanh',
+    ])
+    for field in field_performance['fields']:
+        writer.writerow([
+            field['field__name'],
+            field['total_bookings'],
+            field['pending_bookings'],
+            field['confirmed_bookings'],
+            field['completed_bookings'],
+            field['cancelled_bookings'],
+            field['completed_revenue'],
+            field['completed_deposit'],
+            field['completion_rate_percent'],
         ])
     writer.writerow([])
 

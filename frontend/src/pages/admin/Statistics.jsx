@@ -270,6 +270,7 @@ const Statistics = () => {
   const [overview, setOverview] = useState(null);
   const [revenueSeries, setRevenueSeries] = useState([]);
   const [topFields, setTopFields] = useState([]);
+  const [fieldPerformance, setFieldPerformance] = useState([]);
   const [fields, setFields] = useState([]);
   const [filters, setFilters] = useState({
     date_from: '',
@@ -285,15 +286,17 @@ const Statistics = () => {
   const loadStatistics = useCallback(async (nextFilters) => {
     const params = buildStatsParams(nextFilters);
 
-    const [overviewResponse, revenueResponse, topFieldsResponse] = await Promise.all([
+    const [overviewResponse, revenueResponse, topFieldsResponse, fieldPerformanceResponse] = await Promise.all([
       axiosInstance.get('/statistics/admin/overview/', { params }),
       axiosInstance.get('/statistics/admin/revenue/', { params }),
       axiosInstance.get('/statistics/admin/top-fields/', { params: { ...params, limit: 5 } }),
+      axiosInstance.get('/statistics/admin/field-performance/', { params }),
     ]);
 
     setOverview(overviewResponse.data);
     setRevenueSeries(revenueResponse.data.series || []);
     setTopFields(topFieldsResponse.data.top_fields || []);
+    setFieldPerformance(fieldPerformanceResponse.data.fields || []);
   }, []);
 
   useEffect(() => {
@@ -644,6 +647,53 @@ const Statistics = () => {
                 )}
               </section>
             </div>
+
+            <section className="rounded-2xl bg-white p-6 shadow-sm">
+              <div className="mb-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Operations</p>
+                <h2 className="text-2xl font-bold text-gray-950">Hieu suat theo san</h2>
+                <p className="mt-2 text-sm text-gray-500">
+                  Tong hop nhanh theo tung san trong bo loc hien tai de doi chieu doanh thu, tien coc va trang thai booking.
+                </p>
+              </div>
+
+              {fieldPerformance.length === 0 ? (
+                <p className="text-gray-500">Chua co du lieu hieu suat theo san trong bo loc hien tai.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">San</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tong booking</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Cho coc</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Da xac nhan</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Da hoan thanh</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Da huy</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tien coc da thu</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Doanh thu</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Ty le hoan thanh</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white">
+                      {fieldPerformance.map((row) => (
+                        <tr key={row.field_id}>
+                          <td className="px-4 py-4 font-medium text-gray-900">{row.field__name}</td>
+                          <td className="px-4 py-4 text-gray-600">{row.total_bookings}</td>
+                          <td className="px-4 py-4 text-amber-700">{row.pending_bookings}</td>
+                          <td className="px-4 py-4 text-blue-700">{row.confirmed_bookings}</td>
+                          <td className="px-4 py-4 text-emerald-700">{row.completed_bookings}</td>
+                          <td className="px-4 py-4 text-red-700">{row.cancelled_bookings}</td>
+                          <td className="px-4 py-4 text-gray-700">{formatMoney(row.completed_deposit)}</td>
+                          <td className="px-4 py-4 font-semibold text-gray-900">{formatMoney(row.completed_revenue)}</td>
+                          <td className="px-4 py-4 text-gray-700">{row.completion_rate_percent}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
           </>
         )}
       </div>

@@ -93,6 +93,19 @@ class StatisticsApiTests(APITestCase):
         self.assertEqual(len(response.data['series']), 1)
         self.assertEqual(str(response.data['series'][0]['period'])[:4], str(date.today().year))
 
+    def test_admin_field_performance_returns_expected_metrics(self):
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get('/api/statistics/admin/field-performance/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['fields']), 1)
+        row = response.data['fields'][0]
+        self.assertEqual(row['field_id'], self.field.id)
+        self.assertEqual(row['completed_bookings'], 1)
+        self.assertEqual(Decimal(str(row['completed_revenue'])), Decimal('400000.00'))
+        self.assertEqual(Decimal(str(row['completed_deposit'])), Decimal('120000.00'))
+
 
 class StatisticsOwnerScopeTests(APITestCase):
     def setUp(self):
@@ -166,3 +179,12 @@ class StatisticsOwnerScopeTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['booking']['completed_bookings'], 1)
         self.assertEqual(Decimal(str(response.data['booking']['total_revenue'])), Decimal('400000.00'))
+
+    def test_owner_admin_field_performance_is_scoped_to_owned_fields(self):
+        self.client.force_authenticate(user=self.owner_admin)
+
+        response = self.client.get('/api/statistics/admin/field-performance/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['fields']), 1)
+        self.assertEqual(response.data['fields'][0]['field_id'], self.owner_field.id)

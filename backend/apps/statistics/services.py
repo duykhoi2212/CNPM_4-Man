@@ -163,6 +163,55 @@ def get_admin_top_fields(date_from=None, date_to=None, field_id=None, limit=5, a
     }
 
 
+def get_admin_field_performance(date_from=None, date_to=None, field_id=None, admin_user=None):
+    bookings = get_bookings_queryset(date_from=date_from, date_to=date_to, field_id=field_id)
+    bookings = scope_bookings_queryset_for_admin(bookings, admin_user)
+    payment_booking_ids = bookings.values('id')
+
+    completed_deposits_by_field = {
+        item['booking__field_id']: item['completed_deposit']
+        for item in Payment.objects.filter(booking_id__in=payment_booking_ids)
+        .values('booking__field_id')
+        .annotate(completed_deposit=Coalesce(Sum('amount', filter=Q(status='completed')), DECIMAL_ZERO))
+    }
+
+    field_rows = list(
+        bookings.values('field_id', 'field__name')
+        .annotate(
+            total_bookings=Count('id'),
+            pending_bookings=Count('id', filter=Q(status='pending_payment')),
+            confirmed_bookings=Count('id', filter=Q(status='confirmed')),
+            completed_bookings=Count('id', filter=Q(status='completed')),
+            cancelled_bookings=Count('id', filter=Q(status='cancelled')),
+            completed_revenue=Coalesce(Sum('total_amount', filter=Q(status='completed')), DECIMAL_ZERO),
+            average_booking_value=Coalesce(Avg('total_amount'), DECIMAL_ZERO),
+        )
+        .order_by('-completed_revenue', '-total_bookings', 'field__name')
+    )
+
+    performance_rows = []
+    for row in field_rows:
+        total_bookings = row['total_bookings'] or 0
+        completed_bookings = row['completed_bookings'] or 0
+        completion_rate_percent = round((completed_bookings / total_bookings) * 100, 2) if total_bookings else 0
+        performance_rows.append(
+            {
+                **row,
+                'completed_deposit': completed_deposits_by_field.get(row['field_id'], 0),
+                'completion_rate_percent': completion_rate_percent,
+            }
+        )
+
+    return {
+        'period': {
+            'date_from': date_from,
+            'date_to': date_to,
+            'field_id': field_id,
+        },
+        'fields': performance_rows,
+    }
+
+
 def get_my_overview(user, date_from=None, date_to=None):
     bookings = get_bookings_queryset(user=user, date_from=date_from, date_to=date_to)
     booking_ids = bookings.values('id')
