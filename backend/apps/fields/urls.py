@@ -11,6 +11,7 @@ urlpatterns = [
     path('timeslots/<int:pk>/', views.TimeSlotAdminUpdateDeleteView.as_view(), name='timeslot-admin-update-delete'),
     
     path('recommendations/', views.recommended_fields_view, name='field-recommendations'),
+    path('nearby/', views.nearby_fields_view, name='field-nearby'),
     
     # Fields - Public
     path('', views.FieldListView.as_view(), name='field-list'),

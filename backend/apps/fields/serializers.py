@@ -81,6 +81,7 @@ class FieldListSerializer(serializers.ModelSerializer):
         model = Field
         fields = [
             'id', 'name', 'field_type', 'location',
+            'latitude', 'longitude',
             'price_per_hour', 'peak_hour_price', 'deposit_percent',
             'avg_rating', 'total_reviews', 'is_active',
             'primary_image', 'owner_id', 'owner_username'
@@ -123,7 +124,7 @@ class FieldDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Field
         fields = [
-            'id', 'name', 'field_type', 'description', 'location',
+            'id', 'name', 'field_type', 'description', 'location', 'latitude', 'longitude',
             'price_per_hour', 'peak_hour_price', 'deposit_percent',
             'avg_rating', 'total_reviews', 'is_active',
             'images', 'time_slots', 'created_at', 'updated_at',
@@ -141,7 +142,7 @@ class FieldCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Field
         fields = [
-            'field_type', 'owner', 'name', 'description', 'location',
+            'field_type', 'owner', 'name', 'description', 'location', 'latitude', 'longitude',
             'price_per_hour', 'peak_hour_price', 'deposit_percent',
             'is_active'
         ]

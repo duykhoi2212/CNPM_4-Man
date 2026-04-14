@@ -29,6 +29,8 @@ class Field(models.Model):
     name = models.CharField(max_length=255, verbose_name='Ten san')
     description = models.TextField(blank=True, null=True, verbose_name='Mo ta')
     location = models.CharField(max_length=500, verbose_name='Dia chi')
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name='Vi do')
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name='Kinh do')
     price_per_hour = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Gia gio thuong (VND)')
     peak_hour_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Gia gio cao diem (VND)')
     deposit_percent = models.DecimalField(max_digits=5, decimal_places=2, default=30.00, verbose_name='% tien coc')

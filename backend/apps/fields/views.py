@@ -8,6 +8,8 @@ from django.db.models import Q, Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from datetime import datetime, date
+from decimal import Decimal
+from math import asin, cos, radians, sin, sqrt
 from django.utils import timezone
 
 from .models import Field, FieldType, TimeSlot, FieldImage
@@ -405,6 +407,79 @@ def recommended_fields_view(request):
         }
     )
     return Response({'results': serializer.data}, status=status.HTTP_200_OK)
+
+
+def _haversine_distance_km(lat1, lon1, lat2, lon2):
+    earth_radius_km = 6371
+    lat1_rad, lon1_rad, lat2_rad, lon2_rad = map(radians, [lat1, lon1, lat2, lon2])
+    delta_lat = lat2_rad - lat1_rad
+    delta_lon = lon2_rad - lon1_rad
+    a = sin(delta_lat / 2) ** 2 + cos(lat1_rad) * cos(lat2_rad) * sin(delta_lon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    return earth_radius_km * c
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def nearby_fields_view(request):
+    latitude = request.query_params.get('latitude')
+    longitude = request.query_params.get('longitude')
+    radius_km = request.query_params.get('radius_km', 10)
+    limit = request.query_params.get('limit', 6)
+
+    if latitude is None or longitude is None:
+        return Response({'error': 'latitude va longitude la bat buoc'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        latitude = float(latitude)
+        longitude = float(longitude)
+        radius_km = max(1, min(float(radius_km), 100))
+        limit = max(1, min(int(limit), 12))
+    except (TypeError, ValueError):
+        return Response({'error': 'Gia tri toa do hoac ban kinh khong hop le'}, status=status.HTTP_400_BAD_REQUEST)
+
+    queryset = Field.objects.filter(
+        is_active=True,
+        latitude__isnull=False,
+        longitude__isnull=False,
+    ).select_related('field_type').prefetch_related('images')
+
+    nearby_fields = []
+    for field in queryset:
+        distance_km = _haversine_distance_km(
+            latitude,
+            longitude,
+            float(field.latitude),
+            float(field.longitude),
+        )
+        if distance_km <= radius_km:
+            nearby_fields.append((distance_km, field))
+
+    nearby_fields.sort(key=lambda item: (item[0], item[1].name.lower()))
+    selected_fields = nearby_fields[:limit]
+    serializer = FieldListSerializer([field for _, field in selected_fields], many=True, context={'request': request})
+
+    results = []
+    for index, item in enumerate(serializer.data):
+        distance_km = round(selected_fields[index][0], 2)
+        results.append(
+            {
+                **item,
+                'distance_km': distance_km,
+            }
+        )
+
+    return Response(
+        {
+            'origin': {
+                'latitude': latitude,
+                'longitude': longitude,
+                'radius_km': radius_km,
+            },
+            'results': results,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 
 @api_view(['GET'])

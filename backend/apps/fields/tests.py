@@ -238,3 +238,46 @@ class FieldAdminOwnershipTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class NearbyFieldsApiTests(APITestCase):
+    def setUp(self):
+        self.field_type = FieldType.objects.create(name='San nearby')
+        self.near_field = Field.objects.create(
+            field_type=self.field_type,
+            name='San Gan',
+            location='Da Nang',
+            latitude=Decimal('16.054407'),
+            longitude=Decimal('108.202164'),
+            price_per_hour=Decimal('300000.00'),
+            peak_hour_price=Decimal('360000.00'),
+            deposit_percent=Decimal('30.00'),
+            is_active=True,
+        )
+        self.far_field = Field.objects.create(
+            field_type=self.field_type,
+            name='San Xa',
+            location='Ha Noi',
+            latitude=Decimal('21.027764'),
+            longitude=Decimal('105.834160'),
+            price_per_hour=Decimal('320000.00'),
+            peak_hour_price=Decimal('380000.00'),
+            deposit_percent=Decimal('30.00'),
+            is_active=True,
+        )
+
+    def test_nearby_fields_returns_only_fields_inside_radius(self):
+        response = self.client.get(
+            '/api/fields/nearby/',
+            {
+                'latitude': '16.054500',
+                'longitude': '108.202200',
+                'radius_km': 5,
+            },
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        result_ids = [item['id'] for item in response.data['results']]
+        self.assertIn(self.near_field.id, result_ids)
+        self.assertNotIn(self.far_field.id, result_ids)
+        self.assertIn('distance_km', response.data['results'][0])

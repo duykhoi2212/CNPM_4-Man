@@ -10,6 +10,8 @@ const emptyForm = {
   name: '',
   description: '',
   location: '',
+  latitude: '',
+  longitude: '',
   price_per_hour: '',
   peak_hour_price: '',
   deposit_percent: '30',
@@ -132,6 +134,8 @@ const ManagePitches = () => {
         name: pitch.name || '',
         description: pitch.description || '',
         location: pitch.location || '',
+        latitude: pitch.latitude || '',
+        longitude: pitch.longitude || '',
         price_per_hour: pitch.price_per_hour || '',
         peak_hour_price: pitch.peak_hour_price || '',
         deposit_percent: pitch.deposit_percent || '30',
@@ -186,6 +190,8 @@ const ManagePitches = () => {
       const payload = {
         ...formData,
         field_type: Number(formData.field_type),
+        latitude: formData.latitude ? Number(formData.latitude) : null,
+        longitude: formData.longitude ? Number(formData.longitude) : null,
         price_per_hour: Number(formData.price_per_hour),
         peak_hour_price: Number(formData.peak_hour_price),
         deposit_percent: Number(formData.deposit_percent),
@@ -459,6 +465,32 @@ const ManagePitches = () => {
                 value={formData.location}
                 onChange={handleChange}
                 required
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Vi do</span>
+              <input
+                type="number"
+                step="0.000001"
+                name="latitude"
+                value={formData.latitude}
+                onChange={handleChange}
+                placeholder="16.054407"
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Kinh do</span>
+              <input
+                type="number"
+                step="0.000001"
+                name="longitude"
+                value={formData.longitude}
+                onChange={handleChange}
+                placeholder="108.202164"
                 className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
               />
             </label>
