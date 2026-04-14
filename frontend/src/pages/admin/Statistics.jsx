@@ -42,6 +42,9 @@ const formatChartMoney = (value) => {
 
 const formatPeriodLabel = (period, groupBy) => {
   if (!period) return '';
+  if (groupBy === 'year') {
+    return String(period).slice(0, 4);
+  }
   if (groupBy === 'month') {
     const [year, month] = String(period).split('-');
     return `${month}/${year}`;
@@ -524,6 +527,7 @@ const Statistics = () => {
                         >
                           <option value="day">Ngay</option>
                           <option value="month">Thang</option>
+                          <option value="year">Nam</option>
                         </select>
                         </label>
                       </div>

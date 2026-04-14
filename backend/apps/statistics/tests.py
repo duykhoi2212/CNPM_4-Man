@@ -84,6 +84,15 @@ class StatisticsApiTests(APITestCase):
         self.assertIn('payment', response.data)
         self.assertEqual(response.data['booking']['total_bookings'], 1)
 
+    def test_admin_revenue_supports_year_grouping(self):
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get('/api/statistics/admin/revenue/', {'group_by': 'year'})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['series']), 1)
+        self.assertEqual(str(response.data['series'][0]['period'])[:4], str(date.today().year))
+
 
 class StatisticsOwnerScopeTests(APITestCase):
     def setUp(self):

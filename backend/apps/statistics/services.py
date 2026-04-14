@@ -101,7 +101,9 @@ def get_admin_revenue_series(date_from=None, date_to=None, field_id=None, group_
         if not booking_date:
             continue
 
-        if group_by == 'month':
+        if group_by == 'year':
+            period_key = booking_date.replace(month=1, day=1)
+        elif group_by == 'month':
             period_key = booking_date.replace(day=1)
         else:
             period_key = booking_date
