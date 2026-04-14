@@ -1,3 +1,6 @@
+from datetime import datetime
+
+from django.db.models import Max
 from django.utils import timezone
 
 from apps.bookings.models import BookingTimeSlot
@@ -11,7 +14,36 @@ def expire_stale_match_requests():
         reserved_until__isnull=False,
         reserved_until__lte=timezone.now(),
     )
-    stale_queryset.update(status=MatchRequest.STATUS_EXPIRED)
+    stale_queryset.update(status=MatchRequest.STATUS_EXPIRED, reserved_until=None)
+
+    now = timezone.localtime()
+    scheduled_queryset = (
+        MatchRequest.objects.filter(
+            status__in=[
+                MatchRequest.STATUS_WAITING_OPPONENT,
+                MatchRequest.STATUS_ACCEPTED_WAITING_DEPOSIT,
+            ]
+        )
+        .annotate(latest_end_time=Max('match_timeslots__timeslot__end_time'))
+    )
+
+    expired_request_ids = []
+    for match_request in scheduled_queryset:
+        if not match_request.latest_end_time or not match_request.booking_date:
+            continue
+
+        match_end = timezone.make_aware(
+            datetime.combine(match_request.booking_date, match_request.latest_end_time),
+            timezone.get_current_timezone(),
+        )
+        if match_end <= now:
+            expired_request_ids.append(match_request.id)
+
+    if expired_request_ids:
+        MatchRequest.objects.filter(id__in=expired_request_ids).update(
+            status=MatchRequest.STATUS_EXPIRED,
+            reserved_until=None,
+        )
 
 
 def cancel_match_requests_blocked_by_bookings():

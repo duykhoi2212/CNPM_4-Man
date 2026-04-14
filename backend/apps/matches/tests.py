@@ -196,3 +196,39 @@ class MatchRequestTests(TestCase):
 
         match_request_obj = MatchRequest.objects.get(pk=match_request['id'])
         self.assertEqual(match_request_obj.status, MatchRequest.STATUS_CANCELLED)
+
+    def test_past_waiting_match_request_is_expired_and_hidden_from_active_list(self):
+        self.client.force_authenticate(self.creator)
+        response = self.client.post(
+            reverse('matches:match-request-list-create'),
+            {
+                'field': self.field.id,
+                'booking_date': (timezone.localdate() - timedelta(days=1)).isoformat(),
+                'timeslot_ids': [self.timeslot.id],
+                'notes': 'Da qua gio thi dau',
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, 400)
+
+        past_request = MatchRequest.objects.create(
+            created_by=self.creator,
+            field=self.field,
+            booking_date=timezone.localdate() - timedelta(days=1),
+            created_team_name='FC Creator',
+            created_team_image_url='http://testserver/media/creator-team.png',
+            notes='Da qua gio thi dau',
+            total_amount=300000,
+            deposit_amount=90000,
+            status=MatchRequest.STATUS_WAITING_OPPONENT,
+        )
+        MatchRequestTimeSlot.objects.create(match_request=past_request, timeslot=self.timeslot)
+
+        list_response = self.client.get(reverse('matches:match-request-list-create'))
+
+        self.assertEqual(list_response.status_code, 200)
+        returned_ids = [item['id'] for item in list_response.data['results']]
+        self.assertNotIn(past_request.id, returned_ids)
+
+        past_request.refresh_from_db()
+        self.assertEqual(past_request.status, MatchRequest.STATUS_EXPIRED)
