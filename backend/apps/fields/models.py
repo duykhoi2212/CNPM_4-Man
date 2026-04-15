@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+from .schedule_models import FieldSchedule, FieldClosure
+from .incident_models import IncidentReport, FieldSwap
+
 
 class FieldType(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name='Ten loai san')

@@ -25,6 +25,21 @@ from .serializers import (
     RecommendedFieldSerializer
 )
 
+# Import schedule and incident views
+from .schedule_views import (
+    FieldScheduleListCreateView,
+    FieldScheduleUpdateDeleteView,
+    generate_time_slots_from_schedule,
+    FieldClosureListCreateView,
+    FieldClosureUpdateDeleteView,
+    IncidentReportListCreateView,
+    IncidentReportDetailView,
+    FieldSwapListCreateView,
+    FieldSwapDetailView,
+    find_alternative_fields,
+    confirm_field_swap,
+)
+
 
 class FieldTypeListView(generics.ListAPIView):
     """
