@@ -8,17 +8,12 @@ const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} d`
 const getPitchPlaceholder = (name) => {
   const safeName = (name || '4-Man Sport').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240">
-    <defs>
-      <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-        <stop offset="0%" stop-color="#0f172a"/>
-        <stop offset="100%" stop-color="#14b8a6"/>
-      </linearGradient>
-    </defs>
+    <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#0f172a"/><stop offset="100%" stop-color="#14b8a6"/></linearGradient></defs>
     <rect width="400" height="240" fill="url(#g)"/>
     <circle cx="320" cy="48" r="36" fill="rgba(255,255,255,0.12)"/>
     <circle cx="80" cy="188" r="48" fill="rgba(255,255,255,0.10)"/>
-    <text x="32" y="120" fill="white" font-size="30" font-family="Arial, sans-serif" font-weight="700">${safeName}</text>
-    <text x="32" y="156" fill="rgba(255,255,255,0.78)" font-size="16" font-family="Arial, sans-serif">Goi y san thong minh</text>
+    <text x="32" y="120" fill="white" font-size="30" font-family="Arial" font-weight="700">${safeName}</text>
+    <text x="32" y="156" fill="rgba(255,255,255,0.78)" font-size="16" font-family="Arial">Goi y san thong minh</text>
   </svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
@@ -27,25 +22,59 @@ const Home = () => {
   const user = getUserInfo();
   const isAuthenticated = Boolean(user);
   const [recommendedFields, setRecommendedFields] = useState([]);
-  const [loadingRecommendations, setLoadingRecommendations] = useState(true);
-  const [recommendationError, setRecommendationError] = useState('');
+  const [loadingRec, setLoadingRec] = useState(true);
+  const [recError, setRecError] = useState('');
+
+  // Nearby state
+  const [nearbyFields, setNearbyFields] = useState([]);
+  const [loadingNearby, setLoadingNearby] = useState(false);
+  const [nearbyError, setNearbyError] = useState('');
+  const [userLocation, setUserLocation] = useState(null);
+  const [locDenied, setLocDenied] = useState(false);
 
   useEffect(() => {
-    const fetchRecommendations = async () => {
+    const fetchRec = async () => {
       try {
-        setLoadingRecommendations(true);
-        setRecommendationError('');
-        const response = await axiosInstance.get('/fields/recommendations/', { params: { limit: 4 } });
-        setRecommendedFields(response.data.results || []);
-      } catch (error) {
-        setRecommendationError(error.response?.data?.error || 'Khong the tai goi y san luc nay.');
+        setLoadingRec(true);
+        setRecError('');
+        const res = await axiosInstance.get('/fields/recommendations/', { params: { limit: 4 } });
+        setRecommendedFields(res.data.results || []);
+      } catch (err) {
+        setRecError(err.response?.data?.error || 'Khong the tai goi y.');
       } finally {
-        setLoadingRecommendations(false);
+        setLoadingRec(false);
       }
     };
-
-    fetchRecommendations();
+    fetchRec();
   }, []);
+
+  useEffect(() => {
+    if (!userLocation) return;
+    const fetchNearby = async () => {
+      try {
+        setLoadingNearby(true);
+        setNearbyError('');
+        const res = await axiosInstance.get('/fields/nearby/', {
+          params: { latitude: userLocation.lat, longitude: userLocation.lng, radius_km: 10, limit: 6 },
+        });
+        setNearbyFields(res.data.results || []);
+      } catch {
+        setNearbyError('Khong the tai san gan day.');
+      } finally {
+        setLoadingNearby(false);
+      }
+    };
+    fetchNearby();
+  }, [userLocation]);
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) { setLocDenied(true); return; }
+    setLoadingNearby(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocDenied(false); },
+      () => { setLocDenied(true); setLoadingNearby(false); }
+    );
+  };
 
   return (
     <div className="bg-gray-50">
@@ -84,10 +113,10 @@ const Home = () => {
                 Chon tu cac san co danh gia cao, gia hop ly, de dat nhanh va phu hop voi xu huong dat san hien tai.
               </p>
               <div className="mt-6 space-y-3">
-                {loadingRecommendations ? (
+                {loadingRec ? (
                   <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm text-slate-300">Dang tai goi y san...</div>
-                ) : recommendationError ? (
-                  <div className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-4 text-sm text-red-200">{recommendationError}</div>
+                ) : recError ? (
+                  <div className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-4 text-sm text-red-200">{recError}</div>
                 ) : recommendedFields.length === 0 ? (
                   <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm text-slate-300">Chua co san de goi y luc nay.</div>
                 ) : (
@@ -138,7 +167,7 @@ const Home = () => {
           </div>
 
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-            {loadingRecommendations ? (
+            {loadingRec ? (
               Array.from({ length: 4 }).map((_, index) => (
                 <div key={index} className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 animate-pulse h-64" />
               ))
@@ -179,6 +208,71 @@ const Home = () => {
             )}
           </div>
         </div>
+      </section>
+
+      {/* Nearby Fields */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">San gan ban</h2>
+            <p className="text-gray-500 mt-1">Tim san bong gan vi tri cua ban</p>
+          </div>
+          {!userLocation && !locDenied && (
+            <button onClick={handleGetLocation} disabled={loadingNearby}
+              className="bg-primary text-white px-5 py-2 rounded-full font-semibold hover:bg-teal-700 transition disabled:opacity-50">
+              {loadingNearby ? 'Dang lay vi tri...' : '📍 Tim san gan toi'}
+            </button>
+          )}
+        </div>
+
+        {locDenied && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
+            <p className="text-yellow-800 font-medium">Trinh duyet da tu oc truy cap vi tri.</p>
+            <button onClick={handleGetLocation} className="mt-3 text-primary font-semibold hover:underline">Thu lai</button>
+          </div>
+        )}
+
+        {userLocation && (
+          <>
+            {nearbyError && <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 mb-4">{nearbyError}</div>}
+            {loadingNearby ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 animate-pulse h-64" />
+                ))}
+              </div>
+            ) : nearbyFields.length === 0 ? (
+              <div className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-500">
+                Khong co san nao trong ban kinh 10km.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {nearbyFields.map((field) => (
+                  <article key={field.id} className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-lg transition-shadow">
+                    <div className="relative">
+                      <img src={field.primary_image || getPitchPlaceholder(field.name)} alt={field.name} className="h-44 w-full object-cover" />
+                      <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-primary text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                        {field.distance_km} km
+                      </span>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="text-lg font-bold text-gray-950">{field.name}</h3>
+                      <p className="mt-1 text-sm text-gray-500">{field.field_type?.name || 'Loai san'}</p>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-primary font-bold">{formatMoney(field.price_per_hour)}</span>
+                        <span className="text-sm text-yellow-600 font-medium">{Number(field.avg_rating || 0).toFixed(1)}/5</span>
+                      </div>
+                      <Link to={isAuthenticated ? `/pitches/${field.id}` : '/login'}
+                        className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-teal-600">
+                        Dat san ngay
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </section>
     </div>
   );
