@@ -1,8 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import axiosInstance from '../../api/axios';
 import AdminNav from '../../components/admin/AdminNav';
 import { getStoredUser } from '../../utils/auth';
+
+// Fix Leaflet default icon
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
 
 const emptyForm = {
   field_type: '',
@@ -47,6 +57,11 @@ const ManagePitches = () => {
   const [imageError, setImageError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Leaflet refs
+  const mapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markerRef = useRef(null);
+
   const isEditing = useMemo(() => Boolean(editingPitchId), [editingPitchId]);
 
   const loadPitches = async () => {
@@ -85,6 +100,49 @@ const ManagePitches = () => {
 
     fetchData();
   }, [canAssignOwner]);
+
+  // Init Leaflet map
+  useEffect(() => {
+    if (!mapContainerRef.current || mapInstanceRef.current) return;
+    const map = L.map(mapContainerRef.current).setView([16.0544, 108.2022], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19,
+    }).addTo(map);
+
+    map.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      setFormData((p) => ({ ...p, latitude: lat.toFixed(6), longitude: lng.toFixed(6) }));
+      if (markerRef.current) {
+        markerRef.current.setLatLng([lat, lng]);
+      } else {
+        markerRef.current = L.marker([lat, lng], { draggable: true }).addTo(map);
+        markerRef.current.on('dragend', (ev) => {
+          const { lat: dLat, lng: dLng } = ev.target.getLatLng();
+          setFormData((p) => ({ ...p, latitude: dLat.toFixed(6), longitude: dLng.toFixed(6) }));
+        });
+      }
+    });
+    mapInstanceRef.current = map;
+    return () => { if (mapInstanceRef.current) { mapInstanceRef.current.remove(); mapInstanceRef.current = null; } };
+  }, []);
+
+  // Sync marker when lat/lng changes
+  useEffect(() => {
+    const lat = parseFloat(formData.latitude);
+    const lng = parseFloat(formData.longitude);
+    if (!isNaN(lat) && !isNaN(lng) && mapInstanceRef.current) {
+      mapInstanceRef.current.setView([lat, lng], 15);
+      if (markerRef.current) {
+        markerRef.current.setLatLng([lat, lng]);
+      } else {
+        markerRef.current = L.marker([lat, lng], { draggable: true }).addTo(mapInstanceRef.current);
+        markerRef.current.on('dragend', (e) => {
+          const { lat: dLat, lng: dLng } = e.target.getLatLng();
+          setFormData((p) => ({ ...p, latitude: dLat.toFixed(6), longitude: dLng.toFixed(6) }));
+        });
+      }
+    }
+  }, [formData.latitude, formData.longitude]);
 
   const resetForm = () => {
     pendingCreateImages.forEach((image) => {
@@ -494,6 +552,24 @@ const ManagePitches = () => {
                 className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
               />
             </label>
+
+            {/* Leaflet Mini Map */}
+            <div className="md:col-span-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">Vi tri tren ban do</span>
+                <span className="text-xs text-gray-500">Click vao ban do hoac keo marker de chon vi tri</span>
+              </div>
+              <div
+                ref={mapContainerRef}
+                className="w-full h-64 rounded-lg border border-gray-300 overflow-hidden"
+                style={{ zIndex: 1 }}
+              />
+              {formData.latitude && formData.longitude && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Toa do: {formData.latitude}, {formData.longitude}
+                </p>
+              )}
+            </div>
 
             <label className="block">
               <span className="text-sm font-medium text-gray-700">Gia gio thuong</span>
