@@ -48,7 +48,57 @@ const ManagePitches = () => {
   const [imageError, setImageError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Search & Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterFieldType, setFilterFieldType] = useState('');
+  const [filterOwner, setFilterOwner] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+
   const isEditing = useMemo(() => Boolean(editingPitchId), [editingPitchId]);
+
+  // Filter pitches based on search and filters
+  const filteredPitches = useMemo(() => {
+    let result = [...pitches];
+
+    // Filter by search query (name or location)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (pitch) =>
+          pitch.name?.toLowerCase().includes(query) ||
+          pitch.location?.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter by field type
+    if (filterFieldType) {
+      result = result.filter((pitch) => String(pitch.field_type?.id) === filterFieldType);
+    }
+
+    // Filter by owner
+    if (filterOwner) {
+      result = result.filter((pitch) => String(pitch.owner_id) === filterOwner);
+    }
+
+    // Filter by status
+    if (filterStatus) {
+      const isActive = filterStatus === 'active';
+      result = result.filter((pitch) => pitch.is_active === isActive);
+    }
+
+    return result;
+  }, [pitches, searchQuery, filterFieldType, filterOwner, filterStatus]);
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchQuery('');
+    setFilterFieldType('');
+    setFilterOwner('');
+    setFilterStatus('');
+  };
+
+  const hasActiveFilters = searchQuery || filterFieldType || filterOwner || filterStatus;
 
   const loadPitches = async () => {
     const response = await axiosInstance.get('/fields/', { params: { admin_scope: 'managed' } });
@@ -762,17 +812,139 @@ const ManagePitches = () => {
         )}
 
         <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-            <h2 className="font-semibold text-gray-700">Danh sach san hien tai</h2>
-            <span className="text-sm text-gray-500">{pitches.length} san</span>
+          {/* Table Header with Search */}
+          <div className="p-4 border-b bg-gray-50">
+            <div className="flex flex-col gap-4">
+              <div className="flex justify-between items-center">
+                <h2 className="font-semibold text-gray-700">Danh sach san hien tai</h2>
+                <span className="text-sm text-gray-500">
+                  {filteredPitches.length} / {pitches.length} san
+                </span>
+              </div>
+
+              {/* Search Bar */}
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                  </svg>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Tim kiem theo ten san hoac dia chi..."
+                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-teal-100"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`px-4 py-2.5 rounded-lg font-medium transition flex items-center gap-2 ${
+                    showFilters || hasActiveFilters
+                      ? 'bg-primary text-white'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
+                  </svg>
+                  Bo loc
+                </button>
+              </div>
+
+              {/* Extended Filters */}
+              {showFilters && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+                  {/* Filter by Field Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Loai san</label>
+                    <select
+                      value={filterFieldType}
+                      onChange={(e) => setFilterFieldType(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none focus:border-primary"
+                    >
+                      <option value="">Tat ca</option>
+                      {fieldTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Filter by Owner */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Chu san</label>
+                    <select
+                      value={filterOwner}
+                      onChange={(e) => setFilterOwner(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none focus:border-primary"
+                    >
+                      <option value="">Tat ca</option>
+                      <option value="null">Chua gan</option>
+                      {adminUsers.map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.username}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Filter by Status */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Trang thai</label>
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none focus:border-primary"
+                    >
+                      <option value="">Tat ca</option>
+                      <option value="active">Hoat dong</option>
+                      <option value="inactive">Tam dung</option>
+                    </select>
+                  </div>
+
+                  {/* Reset Button */}
+                  <div className="flex items-end">
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        onClick={resetFilters}
+                        className="w-full px-4 py-2 rounded-lg bg-red-50 text-red-700 font-medium hover:bg-red-100 transition"
+                      >
+                        Xoa bo loc
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
+          {/* Table Content */}
           {loading ? (
             <div className="p-8 text-center text-primary font-semibold">Dang tai danh sach san...</div>
           ) : error ? (
             <div className="p-8 text-center text-red-500">{error}</div>
-          ) : pitches.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">Chua co san nao trong he thong.</div>
+          ) : filteredPitches.length === 0 ? (
+            <div className="p-8 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-gray-500 text-lg">
+                {hasActiveFilters
+                  ? 'Khong tim thay san nao phu hop bo loc cua ban.'
+                  : 'Chua co san nao trong he thong.'}
+              </p>
+              {hasActiveFilters && (
+                <button
+                  onClick={resetFilters}
+                  className="mt-4 text-primary hover:text-teal-700 font-medium"
+                >
+                  Xoa bo loc va thu lai
+                </button>
+              )}
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -788,7 +960,7 @@ const ManagePitches = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {pitches.map((pitch) => (
+                  {filteredPitches.map((pitch) => (
                     <tr key={pitch.id}>
                       <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{pitch.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-500">{pitch.field_type?.name}</td>
