@@ -54,7 +54,7 @@ const FieldSwapManager = ({ refreshKey }) => {
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
       <div>
         <h3 className="text-lg font-bold text-gray-900">FieldSwapManager</h3>
-        <p className="text-sm text-gray-500 mt-1">Theo doi va xac nhan cac yeu cau doi san.</p>
+        <p className="text-sm text-gray-500 mt-1">Theo doi lich su doi san va ket qua xu ly su co.</p>
       </div>
 
       <label className="block max-w-xs">
@@ -97,15 +97,12 @@ const FieldSwapManager = ({ refreshKey }) => {
                 </span>
               </div>
               <p className="text-sm text-gray-700 mt-3">{swap.swap_reason}</p>
-              <div className="mt-3 flex items-center gap-2 text-xs">
-                <span className={`inline-flex rounded-full px-2 py-1 ${swap.customer_notified ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                  {swap.customer_notified ? 'Da thong bao khach' : 'Chua thong bao khach'}
-                </span>
-                <span className={`inline-flex rounded-full px-2 py-1 ${swap.customer_accepted ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                  {swap.customer_accepted ? 'Khach da chap nhan' : 'Cho khach xac nhan'}
-                </span>
-              </div>
-              {swap.status === 'proposed' && (
+              {swap.admin_notes && (
+                <div className="mt-3 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                  {swap.admin_notes}
+                </div>
+              )}
+              {['proposed', 'pending'].includes(swap.status) && (
                 <button
                   type="button"
                   onClick={() => handleConfirm(swap.id)}

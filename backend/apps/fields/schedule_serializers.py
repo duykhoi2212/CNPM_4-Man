@@ -82,9 +82,29 @@ class FieldSwapSerializer(serializers.ModelSerializer):
 
 
 class FieldSwapCreateSerializer(serializers.ModelSerializer):
+    # Những trường sau được dùng trong luồng admin đề xuất đổi sân.
+    price_difference = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        default=0
+    )
+    compensation_amount = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        default=0
+    )
+    status = serializers.ChoiceField(
+        choices=FieldSwap.STATUS_CHOICES,
+        required=False,
+        default='proposed'
+    )
+
     class Meta:
         model = FieldSwap
         fields = [
             'incident', 'original_field', 'new_field',
-            'original_booking', 'swap_reason'
+            'original_booking', 'swap_reason',
+            'price_difference', 'compensation_amount', 'status',
         ]

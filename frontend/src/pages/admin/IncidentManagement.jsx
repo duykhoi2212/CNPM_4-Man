@@ -41,6 +41,7 @@ const IncidentManagement = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [creatingSwap, setCreatingSwap] = useState(false);
+  const [processingFieldId, setProcessingFieldId] = useState(null);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -109,7 +110,7 @@ const IncidentManagement = () => {
     }
   };
 
-  const handleCreateSwapFromAlternative = async (alternative) => {
+  const handleCreateSwapFromAlternative = async (alternative, options = {}) => {
     if (!selectedIncident) {
       setError('Vui long chon mot su co truoc khi tao doi san.');
       return;
@@ -117,22 +118,55 @@ const IncidentManagement = () => {
 
     try {
       setCreatingSwap(true);
+      setProcessingFieldId(alternative.field_id);
       setError('');
       setSuccessMessage('');
-      await axiosInstance.post('/fields/swaps/', {
+      const createSwapResponse = await axiosInstance.post('/fields/swaps/', {
         incident: selectedIncident.id,
         original_field: selectedIncident.field,
         new_field: alternative.field_id,
         original_booking: selectedIncident.booking,
-        swap_reason: `Tu dong de xuat tu su co #${selectedIncident.id}`,
+        swap_reason: options.forceCancelConflicts
+          ? `Doi san va huy booking xung dot cho su co #${selectedIncident.id}`
+          : `Doi truc tiep tu su co #${selectedIncident.id}`,
+        price_difference: alternative.price_difference || 0,
+        compensation_amount: 0,
+        status: 'proposed',
       });
+
+      const createdSwapId = createSwapResponse.data?.id || createSwapResponse.data?.results?.id;
+      const swapId = createdSwapId || createSwapResponse.data?.swap?.id || createSwapResponse.data?.pk;
+
+      if (!swapId) {
+        const swapListResponse = await axiosInstance.get('/fields/swaps/', { params: { status: 'proposed' } });
+        const latestSwap = (swapListResponse.data.results || swapListResponse.data || []).find(
+          (item) => item.incident === selectedIncident.id && item.new_field === alternative.field_id
+        );
+        if (!latestSwap?.id) {
+          throw new Error('Khong xac dinh duoc ban ghi doi san vua tao.');
+        }
+        await axiosInstance.post(`/fields/swaps/${latestSwap.id}/confirm/`, {
+          force_cancel_conflicts: Boolean(options.forceCancelConflicts),
+        });
+      } else {
+        await axiosInstance.post(`/fields/swaps/${swapId}/confirm/`, {
+          force_cancel_conflicts: Boolean(options.forceCancelConflicts),
+        });
+      }
+
       setSelectedAlternative(alternative);
       setSwapRefreshKey((prev) => prev + 1);
-      setSuccessMessage('Da tao de xuat doi san. Vui long xac nhan trong FieldSwapManager.');
+      await loadData();
+      setSuccessMessage(
+        options.forceCancelConflicts
+          ? 'Da huy booking xung dot va doi san thanh cong.'
+          : 'Da doi san thanh cong va cap nhat booking hien tai.'
+      );
     } catch (requestError) {
-      setError(requestError.response?.data?.error || 'Khong the tao doi san.');
+      setError(requestError.response?.data?.error || requestError.message || 'Khong the doi san.');
     } finally {
       setCreatingSwap(false);
+      setProcessingFieldId(null);
     }
   };
 
@@ -361,12 +395,13 @@ const IncidentManagement = () => {
             <AlternativeFieldFinder
               incidentId={selectedIncidentId}
               onAlternativeSelected={handleCreateSwapFromAlternative}
+              actionLoadingFieldId={processingFieldId}
             />
 
             {selectedAlternative && (
               <div className="rounded-lg bg-green-50 border border-green-100 px-4 py-3 text-sm text-green-800">
-                Da chon san thay the: <strong>{selectedAlternative.field_name}</strong>
-                {creatingSwap ? ' (dang tao swap...)' : ' (swap da duoc tao)'}
+                Da xu ly doi san voi san: <strong>{selectedAlternative.field_name}</strong>
+                {creatingSwap ? ' (dang cap nhat booking...)' : ' (booking da duoc cap nhat)'}
               </div>
             )}
           </div>

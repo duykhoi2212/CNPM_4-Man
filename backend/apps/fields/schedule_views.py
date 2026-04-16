@@ -2,6 +2,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.utils import timezone
+from django.db import transaction
 from datetime import datetime, timedelta
 
 from .schedule_models import FieldSchedule, FieldClosure
@@ -216,6 +217,15 @@ class FieldSwapListCreateView(generics.ListCreateAPIView):
             return FieldSwapCreateSerializer
         return FieldSwapSerializer
 
+    def perform_create(self, serializer):
+        # Trong luồng admin: khi tạo swap từ danh sách đề xuất,
+        # hệ thống mặc định đưa swap vào trạng thái "proposed"
+        # để admin có thể xác nhận ngay.
+        swap = serializer.save()
+        if getattr(swap, 'status', None) == 'pending':
+            swap.status = 'proposed'
+            swap.save(update_fields=['status'])
+
 
 class FieldSwapDetailView(generics.RetrieveUpdateAPIView):
     """
@@ -263,13 +273,13 @@ def find_alternative_fields(request, incident_id=None):
     # Tìm sân thay thế
     alternative_fields = []
     
-    # Lấy tất cả sân cùng loại
-    same_type_fields = Field.objects.filter(
-        field_type=original_field.field_type,
+    # Chỉ lấy sân cùng vị trí để việc đổi sân sát thực tế vận hành hơn.
+    same_location_fields = Field.objects.filter(
+        location=original_field.location,
         is_active=True
     ).exclude(id=original_field.id)
     
-    for field in same_type_fields:
+    for field in same_location_fields:
         # Kiểm tra xem sân có đóng cửa ngày đó không
         is_closed = FieldClosure.objects.filter(
             field=field,
@@ -290,68 +300,136 @@ def find_alternative_fields(request, incident_id=None):
         
         if not schedule:
             continue
-        
-        # Kiểm tra xem các khung giờ có trống không
-        available_slots = []
+
+        # Kiểm tra xem các khung giờ có trống không (bao gồm cả booking + giao lưu match giữ chỗ)
+        #
+        # Lưu ý: TimeSlot không gắn theo ngày cụ thể, nên để ổn định, ta:
+        # 1) tạo/đồng bộ TimeSlot theo đúng start/end của time_ranges nếu cần
+        # 2) kiểm tra các timeslot đó có bị "booked" hoặc "reserved" bởi booking/match trong booking_date hay không
+        from apps.matches.models import MatchRequestTimeSlot
+
+        # slot_duration của schedule phải khớp với booking cũ để đảm bảo timeslot trùng nhau
+        required_duration_minutes = int(
+            (datetime.combine(booking_date, time_ranges[0][1]) - datetime.combine(booking_date, time_ranges[0][0])).total_seconds() / 60
+        )
+        if schedule.slot_duration != required_duration_minutes:
+            continue
+
+        open_time = schedule.open_time
+        close_time = schedule.close_time
+
+        # Bắt buộc toàn bộ time_ranges đều nằm trong khoảng mở cửa của schedule
+        if any(start_time < open_time or end_time > close_time for start_time, end_time in time_ranges):
+            continue
+
+        required_slots = []
         for start_time, end_time in time_ranges:
-            # Tìm timeslot tương ứng ở sân mới
-            matching_slot = TimeSlot.objects.filter(
+            is_peak = start_time.hour >= 18 and start_time.hour < 21
+            price = field.peak_hour_price if is_peak else field.price_per_hour
+
+            slot, _ = TimeSlot.objects.get_or_create(
                 field=field,
                 start_time=start_time,
                 end_time=end_time,
-                is_active=True
-            ).first()
-            
-            if matching_slot:
-                # Kiểm tra xem slot đã được booking chưa
-                is_booked = BookingTimeSlot.objects.filter(
-                    timeslot=matching_slot,
-                    booking__booking_date=booking_date,
-                    booking__status__in=['pending_payment', 'confirmed']
-                ).exists()
-                
-                if not is_booked:
-                    available_slots.append(matching_slot)
-        
-        # Nếu có đủ slot trống
-        if len(available_slots) >= len(time_ranges):
-            # Tính khoảng cách
-            from math import asin, cos, radians, sin, sqrt
-            
-            distance_km = None
-            if original_field.latitude and original_field.longitude and field.latitude and field.longitude:
-                earth_radius_km = 6371
-                lat1, lon1, lat2, lon2 = map(radians, [
-                    float(original_field.latitude),
-                    float(original_field.longitude),
-                    float(field.latitude),
-                    float(field.longitude)
-                ])
-                delta_lat = lat2 - lat1
-                delta_lon = lon2 - lon1
-                a = sin(delta_lat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(delta_lon / 2) ** 2
-                c = 2 * asin(sqrt(a))
-                distance_km = round(earth_radius_km * c, 2)
-            
-            # Tính giá
-            total_price = sum(slot.price for slot in available_slots)
-            original_price = booking.total_amount
-            price_diff = total_price - original_price
-            
-            alternative_fields.append({
-                'field_id': field.id,
-                'field_name': field.name,
-                'field_type': field.field_type.name,
-                'location': field.location,
-                'distance_km': distance_km,
-                'total_price': float(total_price),
-                'price_difference': float(price_diff),
-                'available_slots': len(available_slots),
-                'required_slots': len(time_ranges),
-            })
+                defaults={
+                    'price': price,
+                    'is_peak_hour': is_peak,
+                    'is_active': True,
+                }
+            )
+
+            # Đồng bộ price/is_peak/is_active nếu có thay đổi
+            updated_fields = []
+            if slot.price != price:
+                slot.price = price
+                updated_fields.append('price')
+            if slot.is_peak_hour != is_peak:
+                slot.is_peak_hour = is_peak
+                updated_fields.append('is_peak_hour')
+            if not slot.is_active:
+                slot.is_active = True
+                updated_fields.append('is_active')
+            if updated_fields:
+                slot.save(update_fields=updated_fields)
+
+            required_slots.append(slot)
+
+        required_slot_ids = [s.id for s in required_slots]
+        now = timezone.now()
+
+        booked_slot_ids = set(
+            BookingTimeSlot.objects.filter(
+                booking__booking_date=booking_date,
+                booking__status__in=['pending_payment', 'confirmed'],
+                timeslot__in=required_slots
+            ).values_list('timeslot_id', flat=True)
+        )
+
+        match_reserved_slot_ids = set(
+            MatchRequestTimeSlot.objects.filter(
+                match_request__field=field,
+                match_request__booking_date=booking_date,
+                match_request__status='accepted_waiting_deposit',
+                match_request__reserved_until__gt=now,
+                timeslot__in=required_slots
+            ).values_list('timeslot_id', flat=True)
+        )
+
+        match_booked_slot_ids = set(
+            MatchRequestTimeSlot.objects.filter(
+                match_request__field=field,
+                match_request__booking_date=booking_date,
+                match_request__status='deposit_paid',
+                timeslot__in=required_slots
+            ).values_list('timeslot_id', flat=True)
+        )
+
+        available_slots = [
+            slot for slot in required_slots
+            if slot.id not in booked_slot_ids
+            and slot.id not in match_reserved_slot_ids
+            and slot.id not in match_booked_slot_ids
+        ]
+
+        conflicting_booking_ids = list(
+            BookingTimeSlot.objects.filter(
+                booking__booking_date=booking_date,
+                booking__status__in=['pending_payment', 'confirmed'],
+                timeslot__in=required_slots
+            )
+            .exclude(booking=booking)
+            .values_list('booking_id', flat=True)
+            .distinct()
+        )
+
+        # Tính giá
+        total_price = sum(slot.price for slot in required_slots)
+        original_price = booking.total_amount
+        price_diff = total_price - original_price
+
+        alternative_fields.append({
+            'field_id': field.id,
+            'field_name': field.name,
+            'field_type': field.field_type.name,
+            'location': field.location,
+            'same_location': True,
+            'total_price': float(total_price),
+            'price_difference': float(price_diff),
+            'available_slots': len(available_slots),
+            'required_slots': len(time_ranges),
+            'can_swap_directly': len(available_slots) >= len(time_ranges),
+            'requires_cancelling_bookings': bool(conflicting_booking_ids) and len(available_slots) < len(time_ranges),
+            'conflicting_booking_ids': conflicting_booking_ids,
+        })
     
-    # Sắp xếp theo khoảng cách và giá
-    alternative_fields.sort(key=lambda x: (x['distance_km'] or 999, x['price_difference']))
+    # Ưu tiên sân đổi được ngay trước, rồi đến sân cần hủy booking xung đột.
+    alternative_fields.sort(
+        key=lambda x: (
+            0 if x['can_swap_directly'] else 1,
+            0 if not x['requires_cancelling_bookings'] else 1,
+            x['price_difference']
+        )
+    )
     
     return Response({
         'incident_id': incident_id,
@@ -379,10 +457,15 @@ def confirm_field_swap(request, swap_id):
     if swap.status != 'proposed':
         return Response({'error': 'Swap must be in proposed status'}, status=status.HTTP_400_BAD_REQUEST)
     
-    # Tạo booking mới
+    force_cancel_conflicts = bool(request.data.get('force_cancel_conflicts'))
+
+    # Cập nhật trực tiếp trên booking cũ thay vì tạo booking mới.
     original_booking = swap.original_booking
     new_field = swap.new_field
     
+    if not new_field:
+        return Response({'error': 'Swap does not have a target field'}, status=status.HTTP_400_BAD_REQUEST)
+
     # Lấy timeslots từ sân mới
     booked_timeslots = BookingTimeSlot.objects.filter(booking=original_booking).values_list('timeslot_id', flat=True)
     original_timeslots = TimeSlot.objects.filter(id__in=booked_timeslots)
@@ -397,45 +480,78 @@ def confirm_field_swap(request, swap_id):
         ).first()
         if new_ts:
             new_timeslots.append(new_ts)
-    
-    # Tạo booking mới
-    new_booking = Booking.objects.create(
-        user=original_booking.user,
-        field=new_field,
+
+    if len(new_timeslots) != original_timeslots.count():
+        return Response({'error': 'San moi khong co day du khung gio tuong ung'}, status=status.HTTP_400_BAD_REQUEST)
+
+    conflicting_bookings = Booking.objects.filter(
         booking_date=original_booking.booking_date,
-        customer_name=original_booking.customer_name,
-        customer_phone=original_booking.customer_phone,
-        customer_email=original_booking.customer_email,
-        total_amount=original_booking.total_amount + swap.price_difference,
-        deposit_amount=original_booking.deposit_amount + (swap.price_difference * original_booking.deposit_percent / 100),
-        status='confirmed'
+        status__in=['pending_payment', 'confirmed'],
+        booking_timeslots__timeslot__in=new_timeslots
+    ).exclude(id=original_booking.id).distinct()
+
+    from apps.matches.models import MatchRequest, MatchRequestTimeSlot
+    conflicting_match_request_ids = list(
+        MatchRequestTimeSlot.objects.filter(
+            match_request__field=new_field,
+            match_request__booking_date=original_booking.booking_date,
+            match_request__status__in=['accepted_waiting_deposit', 'deposit_paid'],
+            timeslot__in=new_timeslots
+        ).values_list('match_request_id', flat=True).distinct()
     )
-    
-    # Link timeslots với booking mới
-    for ts in new_timeslots:
-        BookingTimeSlot.objects.create(
-            booking=new_booking,
-            timeslot=ts
+
+    if (conflicting_bookings.exists() or conflicting_match_request_ids) and not force_cancel_conflicts:
+        return Response(
+            {
+                'error': 'San moi dang co booking trung khung gio',
+                'conflicting_booking_ids': list(conflicting_bookings.values_list('id', flat=True)),
+                'conflicting_match_request_ids': conflicting_match_request_ids,
+            },
+            status=status.HTTP_409_CONFLICT
         )
-    
-    # Cập nhật swap
-    swap.new_booking = new_booking
-    swap.status = 'confirmed'
-    swap.confirmed_at = timezone.now()
-    swap.customer_notified = True
-    swap.save()
-    
-    # Hủy booking cũ
-    original_booking.status = 'cancelled'
-    original_booking.save()
-    
-    # Cập nhật incident
-    swap.incident.status = 'resolved'
-    swap.incident.resolved_at = timezone.now()
-    swap.incident.save()
+
+    with transaction.atomic():
+        if conflicting_bookings.exists() and force_cancel_conflicts:
+            conflicting_bookings.update(status='cancelled')
+        if conflicting_match_request_ids and force_cancel_conflicts:
+            MatchRequest.objects.filter(
+                id__in=conflicting_match_request_ids
+            ).update(status='cancelled', reserved_until=None)
+
+        BookingTimeSlot.objects.filter(booking=original_booking).delete()
+        for ts in new_timeslots:
+            BookingTimeSlot.objects.create(
+                booking=original_booking,
+                timeslot=ts
+            )
+
+        original_booking.field = new_field
+        original_booking.total_amount = original_booking.total_amount + swap.price_difference
+        original_booking.deposit_amount = new_field.calculate_deposit(original_booking.total_amount)
+        original_booking.save(update_fields=['field', 'total_amount', 'deposit_amount', 'updated_at'])
+
+        # Cập nhật swap như một log lịch sử đổi sân
+        swap.new_booking = None
+        swap.status = 'confirmed'
+        swap.confirmed_at = timezone.now()
+        swap.customer_notified = False
+        swap.customer_accepted = None
+        swap.admin_notes = (
+            f"Da doi truc tiep booking #{original_booking.id} sang {new_field.name}."
+            + (" Da huy booking xung dot." if conflicting_bookings.exists() and force_cancel_conflicts else "")
+        )
+        swap.save()
+
+        # Cập nhật incident
+        swap.incident.field = new_field
+        swap.incident.status = 'resolved'
+        swap.incident.resolved_at = timezone.now()
+        swap.incident.save(update_fields=['field', 'status', 'resolved_at', 'updated_at'])
     
     return Response({
-        'message': 'Field swap confirmed successfully',
-        'new_booking_id': new_booking.id,
+        'message': 'Da doi san thanh cong va cap nhat booking hien tai',
+        'updated_booking_id': original_booking.id,
+        'cancelled_booking_ids': list(conflicting_bookings.values_list('id', flat=True)) if conflicting_bookings.exists() and force_cancel_conflicts else [],
+        'conflicting_match_request_ids': conflicting_match_request_ids,
         'swap': FieldSwapSerializer(swap).data
     }, status=status.HTTP_200_OK)
