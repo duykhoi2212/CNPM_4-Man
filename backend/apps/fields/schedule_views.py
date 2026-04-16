@@ -27,12 +27,21 @@ class FieldScheduleListCreateView(generics.ListCreateAPIView):
     GET /api/fields/schedules/ - Lấy danh sách lịch theo field_id
     POST /api/fields/schedules/ - Tạo lịch mới
     """
-    permission_classes = [permissions.IsAdminUser]
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
     
     def get_queryset(self):
         field_id = self.request.query_params.get('field')
         if field_id:
-            return FieldSchedule.objects.filter(field_id=field_id).order_by('day_of_week')
+            queryset = FieldSchedule.objects.filter(field_id=field_id)
+            if not (self.request.user.is_authenticated and self.request.user.is_staff):
+                queryset = queryset.filter(field__is_active=True)
+            return queryset.order_by('day_of_week')
+
+        if not (self.request.user.is_authenticated and self.request.user.is_staff):
+            return FieldSchedule.objects.filter(field__is_active=True).order_by('field', 'day_of_week')
         return FieldSchedule.objects.filter(
             field__in=get_managed_fields_queryset(self.request.user)
         ).order_by('field', 'day_of_week')
@@ -103,13 +112,19 @@ class FieldClosureListCreateView(generics.ListCreateAPIView):
     POST /api/fields/closures/ - Tạo ngày đóng cửa mới
     """
     serializer_class = FieldClosureSerializer
-    permission_classes = [permissions.IsAdminUser]
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
     
     def get_queryset(self):
         field_id = self.request.query_params.get('field')
         queryset = FieldClosure.objects.all()
         if field_id:
             queryset = queryset.filter(field_id=field_id)
+
+        if not (self.request.user.is_authenticated and self.request.user.is_staff):
+            return queryset.filter(field__is_active=True).order_by('-start_date')
         return queryset.filter(
             field__in=get_managed_fields_queryset(self.request.user)
         ).order_by('-start_date')
@@ -215,11 +230,17 @@ class FieldSwapDetailView(generics.RetrieveUpdateAPIView):
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAdminUser])
-def find_alternative_fields(request, incident_id):
+def find_alternative_fields(request, incident_id=None):
     """
     POST /api/field-swaps/find-alternative/
     Tìm sân thay thế khi có sự cố
     """
+    if incident_id is None:
+        incident_id = request.data.get('incident_id') or request.query_params.get('incident_id')
+
+    if not incident_id:
+        return Response({'error': 'incident_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         incident = IncidentReport.objects.get(pk=incident_id)
     except IncidentReport.DoesNotExist:
@@ -401,6 +422,7 @@ def confirm_field_swap(request, swap_id):
     swap.new_booking = new_booking
     swap.status = 'confirmed'
     swap.confirmed_at = timezone.now()
+    swap.customer_notified = True
     swap.save()
     
     # Hủy booking cũ

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.utils import timezone
 from django.contrib.auth.models import User
 from .models import FieldType, Field, FieldImage, TimeSlot
 
@@ -76,6 +77,9 @@ class FieldListSerializer(serializers.ModelSerializer):
     primary_image = serializers.SerializerMethodField()
     owner_id = serializers.IntegerField(source='owner.id', read_only=True)
     owner_username = serializers.CharField(source='owner.username', read_only=True)
+    is_open_today = serializers.SerializerMethodField()
+    today_open_time = serializers.SerializerMethodField()
+    today_close_time = serializers.SerializerMethodField()
 
     class Meta:
         model = Field
@@ -84,7 +88,8 @@ class FieldListSerializer(serializers.ModelSerializer):
             'latitude', 'longitude',
             'price_per_hour', 'peak_hour_price', 'deposit_percent',
             'avg_rating', 'total_reviews', 'is_active',
-            'primary_image', 'owner_id', 'owner_username'
+            'primary_image', 'owner_id', 'owner_username',
+            'is_open_today', 'today_open_time', 'today_close_time'
         ]
 
     def get_primary_image(self, obj):
@@ -93,6 +98,29 @@ class FieldListSerializer(serializers.ModelSerializer):
             if request:
                 return request.build_absolute_uri(obj.primary_image.url)
         return None
+
+    def _get_today_schedule(self, obj):
+        local_today = timezone.localdate()
+        day_of_week = local_today.weekday()
+        closure_exists = obj.closures.filter(
+            start_date__lte=local_today,
+            end_date__gte=local_today
+        ).exists()
+        if closure_exists:
+            return None
+        return obj.schedules.filter(day_of_week=day_of_week).first()
+
+    def get_is_open_today(self, obj):
+        schedule = self._get_today_schedule(obj)
+        return bool(schedule and schedule.is_open)
+
+    def get_today_open_time(self, obj):
+        schedule = self._get_today_schedule(obj)
+        return schedule.open_time if schedule and schedule.is_open else None
+
+    def get_today_close_time(self, obj):
+        schedule = self._get_today_schedule(obj)
+        return schedule.close_time if schedule and schedule.is_open else None
 
 
 class RecommendedFieldSerializer(FieldListSerializer):
@@ -118,6 +146,8 @@ class FieldDetailSerializer(serializers.ModelSerializer):
     field_type = FieldTypeSerializer(read_only=True)
     images = FieldImageSerializer(many=True, read_only=True)
     time_slots = TimeSlotSerializer(many=True, read_only=True)
+    schedules = serializers.SerializerMethodField()
+    active_closures = serializers.SerializerMethodField()
     owner_id = serializers.IntegerField(source='owner.id', read_only=True)
     owner_username = serializers.CharField(source='owner.username', read_only=True)
 
@@ -128,7 +158,34 @@ class FieldDetailSerializer(serializers.ModelSerializer):
             'price_per_hour', 'peak_hour_price', 'deposit_percent',
             'avg_rating', 'total_reviews', 'is_active',
             'images', 'time_slots', 'created_at', 'updated_at',
-            'owner_id', 'owner_username'
+            'owner_id', 'owner_username', 'schedules', 'active_closures'
+        ]
+
+    def get_schedules(self, obj):
+        return [
+            {
+                'day_of_week': schedule.day_of_week,
+                'day_name': schedule.get_day_of_week_display(),
+                'is_open': schedule.is_open,
+                'open_time': schedule.open_time,
+                'close_time': schedule.close_time,
+                'slot_duration': schedule.slot_duration,
+            }
+            for schedule in obj.schedules.all().order_by('day_of_week')
+        ]
+
+    def get_active_closures(self, obj):
+        local_today = timezone.localdate()
+        closures = obj.closures.filter(end_date__gte=local_today).order_by('start_date')[:5]
+        return [
+            {
+                'id': closure.id,
+                'start_date': closure.start_date,
+                'end_date': closure.end_date,
+                'reason': closure.reason,
+                'closure_type': closure.closure_type,
+            }
+            for closure in closures
         ]
 
 

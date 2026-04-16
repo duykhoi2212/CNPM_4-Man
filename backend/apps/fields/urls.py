@@ -43,5 +43,6 @@ urlpatterns = [
     path('swaps/', views.FieldSwapListCreateView.as_view(), name='swap-list-create'),
     path('swaps/<int:pk>/', views.FieldSwapDetailView.as_view(), name='swap-detail'),
     path('swaps/find-alternative/', views.find_alternative_fields, name='find-alternative'),
+    path('swaps/find-alternative/<int:incident_id>/', views.find_alternative_fields, name='find-alternative-by-incident'),
     path('swaps/<int:swap_id>/confirm/', views.confirm_field_swap, name='confirm-swap'),
 ]

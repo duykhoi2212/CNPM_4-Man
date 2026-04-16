@@ -4,7 +4,8 @@ import axiosInstance from '../../api/axios';
 
 const adminLinks = [
   { to: '/admin/pitches', label: 'San bong' },
-  { to: '/admin/timeslots', label: 'Khung gio' },
+  { to: '/admin/timeslots', label: 'Lich hoat dong' },
+  { to: '/admin/incidents', label: 'Su co & doi san' },
   { to: '/admin/bookings', label: 'Booking', countKey: 'bookings' },
   { to: '/admin/reviews', label: 'Review', countKey: 'reviews' },
   { to: '/admin/users', label: 'User' },

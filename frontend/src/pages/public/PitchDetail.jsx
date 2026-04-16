@@ -11,6 +11,8 @@ const getTomorrow = () => {
   return next.toISOString().split('T')[0];
 };
 
+const formatDate = (value) => new Date(value).toLocaleDateString('vi-VN');
+
 const renderReviewStars = (rating) => (
   <div className="flex items-center gap-1 text-sm font-semibold text-yellow-500">
     {[1, 2, 3, 4, 5].map((value) => (
@@ -141,6 +143,14 @@ const PitchDetail = () => {
   const selectedSlotDetails = useMemo(
     () => availability.filter((slot) => selectedSlots.includes(slot.timeslot_id)),
     [availability, selectedSlots]
+  );
+  const availableSlots = useMemo(
+    () => availability.filter((slot) => slot.is_available),
+    [availability]
+  );
+  const unavailableSlots = useMemo(
+    () => availability.filter((slot) => !slot.is_available),
+    [availability]
   );
 
   const totalAmount = selectedSlotDetails.reduce((sum, slot) => sum + Number(slot.price), 0);
@@ -300,6 +310,42 @@ const PitchDetail = () => {
             </div>
           </dl>
 
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Lich hoat dong theo tuan</h3>
+            {pitch.schedules?.length ? (
+              <div className="grid grid-cols-1 gap-2">
+                {pitch.schedules.map((schedule) => (
+                  <div key={schedule.day_of_week} className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
+                    <span className="text-sm font-medium text-gray-700">{schedule.day_name}</span>
+                    <span className={`text-sm font-semibold ${schedule.is_open ? 'text-green-700' : 'text-red-700'}`}>
+                      {schedule.is_open ? `${String(schedule.open_time).slice(0, 5)} - ${String(schedule.close_time).slice(0, 5)}` : 'Dong cua'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Chua co cau hinh lich hoat dong.</p>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Ngay dong cua sap toi</h3>
+            {pitch.active_closures?.length ? (
+              <div className="space-y-2">
+                {pitch.active_closures.map((closure) => (
+                  <div key={closure.id} className="rounded-lg border border-red-100 bg-red-50 px-3 py-2">
+                    <p className="text-sm font-semibold text-red-800">
+                      {formatDate(closure.start_date)} - {formatDate(closure.end_date)}
+                    </p>
+                    <p className="text-xs text-red-700">{closure.reason}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Khong co lich dong cua dac biet.</p>
+            )}
+          </div>
+
           {isAdminViewer && (
             <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-700">
               Ban dang xem chi tiet san bang tai khoan admin. Nut dat san duoc an de tranh nham lan voi khu quan ly.
@@ -342,69 +388,94 @@ const PitchDetail = () => {
           {loadingSlots ? (
             <div className="px-5 py-6 text-sm font-medium text-primary">Dang kiem tra lich trong...</div>
           ) : availability.length ? (
-            <div className="divide-y divide-gray-100">
-              {availability.map((slot) => {
-                const isSelected = selectedSlots.includes(slot.timeslot_id);
-                const isAvailable = slot.is_available;
-                const reservationStatus = slot.reservation_status || (isAvailable ? 'con_trong' : 'da_dat');
-                const statusLabel = !isAvailable
-                  ? 'Da dat'
-                  : isSelected
-                    ? 'Da chon'
-                    : 'Con trong';
-                const statusTone = reservationStatus === 'dang_giu_cho'
-                  ? 'bg-amber-100 text-amber-700'
-                  : !isAvailable
-                    ? 'bg-gray-100 text-gray-500'
-                    : isSelected
-                      ? 'bg-primary text-white'
-                      : 'bg-green-100 text-green-700';
-                const statusNote = reservationStatus === 'dang_giu_cho'
-                  ? 'Khung gio dang duoc giu cho trong 1 phut de thanh toan coc.'
-                  : reservationStatus === 'da_dat'
-                    ? 'Khung gio nay da duoc dat.'
-                    : '';
+            <div className="space-y-4 p-4">
+              <div>
+                <h4 className="mb-2 text-sm font-semibold text-green-700">Khung gio co the chon ({availableSlots.length})</h4>
+                {availableSlots.length === 0 ? (
+                  <div className="rounded-lg border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
+                    Khong co khung gio trong de dat o ngay nay.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100 rounded-lg border border-green-100">
+                    {availableSlots.map((slot) => {
+                      const isSelected = selectedSlots.includes(slot.timeslot_id);
+                      return (
+                        <button
+                          key={slot.timeslot_id}
+                          type="button"
+                          disabled={isAdminViewer}
+                          onClick={() => toggleSlot(slot.timeslot_id)}
+                          className={`w-full px-5 py-4 text-left transition ${
+                            isSelected ? 'bg-teal-50' : 'bg-white hover:bg-gray-50'
+                          } ${isAdminViewer ? 'cursor-not-allowed opacity-70' : ''}`}
+                        >
+                          <div className="grid gap-3 md:grid-cols-[1.1fr_0.9fr_0.8fr_0.9fr] md:items-center">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{slot.start_time} - {slot.end_time}</p>
+                              <p className="mt-1 text-xs text-gray-500 md:hidden">
+                                {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}  {Number(slot.price).toLocaleString('vi-VN')} d
+                              </p>
+                            </div>
+                            <div className="hidden md:block text-sm text-gray-600">
+                              {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}
+                            </div>
+                            <div className="hidden md:block text-sm font-semibold text-gray-900">
+                              {Number(slot.price).toLocaleString('vi-VN')} d
+                            </div>
+                            <div className="flex items-center justify-between gap-3 md:justify-start">
+                              <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                                isSelected ? 'bg-primary text-white' : 'bg-green-100 text-green-700'
+                              }`}>
+                                {isSelected ? 'Da chon' : 'Con trong'}
+                              </span>
+                              {isAdminViewer && <span className="text-xs text-gray-400">Xem-only</span>}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
-                return (
-                  <button
-                    key={slot.timeslot_id}
-                    type="button"
-                    disabled={!isAvailable || isAdminViewer}
-                    onClick={() => toggleSlot(slot.timeslot_id)}
-                    className={`w-full px-5 py-4 text-left transition ${
-                      isSelected
-                        ? 'bg-teal-50'
-                        : 'bg-white hover:bg-gray-50'
-                    } ${(!isAvailable || isAdminViewer) ? 'cursor-not-allowed opacity-70' : ''}`}
-                  >
-                    <div className="grid gap-3 md:grid-cols-[1.1fr_0.9fr_0.8fr_0.9fr] md:items-center">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{slot.start_time} - {slot.end_time}</p>
-                        <p className="mt-1 text-xs text-gray-500 md:hidden">
-                          {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}  {Number(slot.price).toLocaleString('vi-VN')} d
-                        </p>
-                      </div>
-                      <div className="hidden md:block text-sm text-gray-600">
-                        {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}
-                      </div>
-                      <div className="hidden md:block text-sm font-semibold text-gray-900">
-                        {Number(slot.price).toLocaleString('vi-VN')} d
-                      </div>
-                      <div className="flex items-center justify-between gap-3 md:justify-start">
-                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusTone}`}>
-                          {statusLabel}
-                        </span>
-                        {isAdminViewer && <span className="text-xs text-gray-400">Xem-only</span>}
-                      </div>
-                    </div>
-                    {statusNote && (
-                      <p className="mt-2 text-xs text-gray-500">
-                        {statusNote}
-                      </p>
-                    )}
-                  </button>
-                );
-              })}
+              <div>
+                <h4 className="mb-2 text-sm font-semibold text-red-700">Khung gio khong the chon ({unavailableSlots.length})</h4>
+                {unavailableSlots.length === 0 ? (
+                  <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    Tat ca khung gio deu dang kha dung.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100 rounded-lg border border-red-100">
+                    {unavailableSlots.map((slot) => {
+                      const reservationStatus = slot.reservation_status || 'da_dat';
+                      const statusNote = reservationStatus === 'dang_giu_cho'
+                        ? 'Khung gio dang duoc giu cho trong 1 phut de thanh toan coc.'
+                        : 'Khung gio nay da duoc dat.';
+                      return (
+                        <div key={slot.timeslot_id} className="w-full bg-white px-5 py-4 opacity-80">
+                          <div className="grid gap-3 md:grid-cols-[1.1fr_0.9fr_0.8fr_0.9fr] md:items-center">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{slot.start_time} - {slot.end_time}</p>
+                            </div>
+                            <div className="hidden md:block text-sm text-gray-600">
+                              {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}
+                            </div>
+                            <div className="hidden md:block text-sm font-semibold text-gray-900">
+                              {Number(slot.price).toLocaleString('vi-VN')} d
+                            </div>
+                            <div className="flex items-center justify-between gap-3 md:justify-start">
+                              <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500">
+                                Da dat
+                              </span>
+                            </div>
+                          </div>
+                          <p className="mt-2 text-xs text-gray-500">{statusNote}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="px-5 py-6 text-sm text-gray-500">Khong co khung gio trong cho ngay da chon.</div>

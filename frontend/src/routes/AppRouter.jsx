@@ -25,6 +25,7 @@ import ManageBookings from '../pages/admin/ManageBookings';
 import ManageReviews from '../pages/admin/ManageReviews';
 import ManageUsers from '../pages/admin/ManageUsers';
 import ManageContacts from '../pages/admin/ManageContacts';
+import IncidentManagement from '../pages/admin/IncidentManagement';
 
 const AppRouter = () => {
   return (
@@ -49,6 +50,7 @@ const AppRouter = () => {
       <Route path="/admin/statistics" element={<Statistics />} />
       <Route path="/admin/pitches" element={<ManagePitches />} />
       <Route path="/admin/timeslots" element={<ManageTimeslots />} />
+      <Route path="/admin/incidents" element={<IncidentManagement />} />
       <Route path="/admin/bookings" element={<ManageBookings />} />
       <Route path="/admin/reviews" element={<ManageReviews />} />
       <Route path="/admin/users" element={<ManageUsers />} />

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 
 const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
+const formatTime = (value) => (value ? String(value).slice(0, 5) : '--:--');
 
 const PitchList = () => {
   const [pitches, setPitches] = useState([]);
@@ -406,6 +407,18 @@ const PitchList = () => {
                 <h3 className="text-xl font-bold text-gray-900 mb-1">{pitch.name}</h3>
                 <p className="text-sm text-gray-500 mb-2">{pitch.field_type?.name || 'Loại sân'}</p>
                 <p className="text-sm text-gray-500 mb-3">{pitch.location || 'Chưa cập nhật địa chỉ'}</p>
+
+                <div className="mb-3">
+                  {pitch.is_open_today ? (
+                    <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
+                      Mo hom nay: {formatTime(pitch.today_open_time)} - {formatTime(pitch.today_close_time)}
+                    </span>
+                  ) : (
+                    <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800">
+                      Dong hom nay
+                    </span>
+                  )}
+                </div>
 
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-primary font-bold text-xl">

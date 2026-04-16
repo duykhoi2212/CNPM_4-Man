@@ -78,7 +78,7 @@ class FieldListView(generics.ListAPIView):
     ordering = ['-avg_rating']  # Default ordering
     
     def get_queryset(self):
-        queryset = Field.objects.select_related('field_type')
+        queryset = Field.objects.select_related('field_type').prefetch_related('schedules', 'closures')
         admin_scope = self.request.query_params.get('admin_scope')
 
         if admin_scope == 'managed' and self.request.user.is_authenticated and self.request.user.is_staff:
@@ -119,7 +119,7 @@ class FieldDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        queryset = Field.objects.select_related('field_type').prefetch_related('images', 'time_slots')
+        queryset = Field.objects.select_related('field_type').prefetch_related('images', 'time_slots', 'schedules', 'closures')
         admin_scope = self.request.query_params.get('admin_scope')
         if admin_scope == 'managed' and self.request.user.is_authenticated and self.request.user.is_staff:
             return get_managed_fields_queryset(self.request.user, queryset=queryset)

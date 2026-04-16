@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 import AdminNav from '../../components/admin/AdminNav';
 import LocationPicker from '../../components/LocationPicker';
-import FieldScheduleManager from '../../components/admin/FieldScheduleManager';
-import FieldClosureManager from '../../components/admin/FieldClosureManager';
 import { getStoredUser } from '../../utils/auth';
 
 const emptyForm = {
@@ -56,9 +54,6 @@ const ManagePitches = () => {
   const [filterOwner, setFilterOwner] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-
-  // Tab state
-  const [activeTab, setActiveTab] = useState('info'); // 'info', 'schedule', 'closures'
 
   const isEditing = useMemo(() => Boolean(editingPitchId), [editingPitchId]);
 
@@ -719,65 +714,21 @@ const ManagePitches = () => {
 
         {isEditing && (
           <>
-            {/* Tabs Navigation */}
             <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-              <div className="border-b border-gray-200">
-                <nav className="flex -mb-px">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('info')}
-                    className={`py-4 px-6 text-sm font-medium border-b-2 transition ${
-                      activeTab === 'info'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                    </svg>
-                    Thông tin & Ảnh
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('schedule')}
-                    className={`py-4 px-6 text-sm font-medium border-b-2 transition ${
-                      activeTab === 'schedule'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                    </svg>
-                    Lịch hoạt động
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('closures')}
-                    className={`py-4 px-6 text-sm font-medium border-b-2 transition ${
-                      activeTab === 'closures'
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-2" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                    Ngày đóng cửa
-                  </button>
-                </nav>
+              <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
+                <h2 className="text-xl font-bold text-gray-900">Quản lý ảnh sân</h2>
+                <p className="text-sm text-gray-500 mt-2">
+                  Chuc nang lich hoat dong va ngay dong cua da chuyen sang trang `Lich hoat dong` de toi uu quy trinh.
+                </p>
               </div>
 
-              {/* Tab Content */}
               <div className="p-6">
-                {activeTab === 'info' && (
-                  <div className="space-y-6">
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-900">Quản lý ảnh sân</h2>
-                      <p className="text-sm text-gray-500 mt-2">
-                        Upload ảnh cho sân đang được chỉnh sửa. Bạn có thể đặt ảnh chính và xóa ảnh không cần dùng.
-                      </p>
-                    </div>
+                <div className="space-y-6">
+                  <div>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Upload ảnh cho sân đang được chỉnh sửa. Bạn có thể đặt ảnh chính và xóa ảnh không cần dùng.
+                    </p>
+                  </div>
 
             <form onSubmit={handleImageUpload} className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
               <label className="block md:col-span-2">
@@ -866,19 +817,7 @@ const ManagePitches = () => {
                 ))}
               </div>
             )}
-              </div>
-                )}
-
-                {activeTab === 'schedule' && (
-                  <FieldScheduleManager
-                    fieldId={editingPitchId}
-                    fieldName={pitches.find(p => p.id === editingPitchId)?.name || 'Sân'}
-                  />
-                )}
-
-                {activeTab === 'closures' && (
-                  <FieldClosureManager fieldId={editingPitchId} />
-                )}
+                </div>
               </div>
             </div>
           </>
