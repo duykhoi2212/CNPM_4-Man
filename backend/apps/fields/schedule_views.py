@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.db import transaction
 from datetime import datetime, timedelta
+import unicodedata
+import re
 
 from .schedule_models import FieldSchedule, FieldClosure
 from .incident_models import IncidentReport, FieldSwap
@@ -19,6 +21,31 @@ from .schedule_serializers import (
 from .models import Field, TimeSlot
 from .access import can_manage_field, get_managed_fields_queryset
 from apps.bookings.models import Booking, BookingTimeSlot
+
+
+def _normalize_location_text(value):
+    if not value:
+        return ''
+    # Remove accents then normalize spacing/punctuation to compare "cùng vị trí" mềm dẻo hơn.
+    no_accents = ''.join(
+        ch for ch in unicodedata.normalize('NFD', value)
+        if unicodedata.category(ch) != 'Mn'
+    )
+    cleaned = re.sub(r'[^a-zA-Z0-9, ]+', ' ', no_accents.lower())
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    return cleaned
+
+
+def _build_location_key(location):
+    normalized = _normalize_location_text(location)
+    if not normalized:
+        return ('', '')
+    parts = [part.strip() for part in normalized.split(',') if part.strip()]
+    if not parts:
+        return ('', '')
+    first_part = parts[0]
+    last_part = parts[-1]
+    return (first_part, last_part)
 
 
 # ==================== FIELD SCHEDULE APIs ====================
@@ -273,11 +300,17 @@ def find_alternative_fields(request, incident_id=None):
     # Tìm sân thay thế
     alternative_fields = []
     
-    # Chỉ lấy sân cùng vị trí để việc đổi sân sát thực tế vận hành hơn.
-    same_location_fields = Field.objects.filter(
-        location=original_field.location,
-        is_active=True
+    # Chỉ lấy sân cùng vị trí (so khớp mềm theo "đường + thành phố") và cùng loại sân.
+    original_location_key = _build_location_key(original_field.location)
+    candidate_fields = Field.objects.filter(
+        is_active=True,
+        field_type=original_field.field_type
     ).exclude(id=original_field.id)
+    same_location_fields = [
+        candidate
+        for candidate in candidate_fields
+        if _build_location_key(candidate.location) == original_location_key
+    ]
     
     for field in same_location_fields:
         # Kiểm tra xem sân có đóng cửa ngày đó không
