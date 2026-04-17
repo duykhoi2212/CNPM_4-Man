@@ -558,10 +558,10 @@ def confirm_field_swap(request, swap_id):
                 timeslot=ts
             )
 
+        # Giữ nguyên tiền cọc khách đã thanh toán; chỉ cập nhật tổng tiền sau đổi sân.
         original_booking.field = new_field
         original_booking.total_amount = original_booking.total_amount + swap.price_difference
-        original_booking.deposit_amount = new_field.calculate_deposit(original_booking.total_amount)
-        original_booking.save(update_fields=['field', 'total_amount', 'deposit_amount', 'updated_at'])
+        original_booking.save(update_fields=['field', 'total_amount', 'updated_at'])
 
         # Cập nhật swap như một log lịch sử đổi sân
         swap.new_booking = None
