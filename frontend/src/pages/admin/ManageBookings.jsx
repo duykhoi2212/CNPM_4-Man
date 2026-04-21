@@ -239,11 +239,22 @@ const ManageBookings = () => {
                           <div>
                             <p className="font-semibold text-gray-900">Thong tin dat san</p>
                             <p>Ngay su dung: {booking.booking_date}</p>
+                            <p>Tien san: {formatMoney(booking.field_amount)}</p>
+                            <p>Tien dich vu: {formatMoney(booking.service_amount)}</p>
                             <p>Tong tien: {formatMoney(booking.total_amount)}</p>
                             <p>Tien coc: {formatMoney(booking.deposit_amount)}</p>
                             <p>Con lai: {formatMoney(booking.remaining_amount)}</p>
                           </div>
                         </div>
+
+                        {booking.service_items?.length > 0 && (
+                          <div className="rounded-lg border border-teal-100 bg-teal-50/50 px-4 py-3 text-sm text-teal-900">
+                            <p className="font-semibold">Dich vu kem: {booking.service_items.length} loai</p>
+                            <p className="mt-1 text-teal-700">
+                              {booking.service_items.map((item) => `${item.service_name_snapshot} x${item.quantity}`).join(', ')}
+                            </p>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap lg:flex-col gap-3 lg:w-40 shrink-0">
@@ -343,6 +354,25 @@ const ManageBookings = () => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
+                  <div className="rounded-xl border border-gray-100 p-4 space-y-3">
+                    <h4 className="font-semibold text-gray-900">Dich vu kem</h4>
+                    {selectedBooking.service_items?.length ? (
+                      <div className="space-y-2">
+                        {selectedBooking.service_items.map((item) => (
+                          <div key={item.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 text-sm gap-3">
+                            <div>
+                              <p className="font-semibold text-gray-900">{item.service_name_snapshot}</p>
+                              <p className="text-gray-500">{formatMoney(item.unit_price_snapshot)} / {item.unit_label_snapshot} · So luong: {item.quantity}</p>
+                            </div>
+                            <div className="font-semibold text-gray-900 whitespace-nowrap">{formatMoney(item.line_total)}</div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">Booking nay khong co dich vu kem.</p>
+                    )}
+                  </div>
+
                   <div className="rounded-xl border border-gray-100 p-4 space-y-2">
                     <h4 className="font-semibold text-gray-900">Thanh toan coc</h4>
                     {selectedBooking.payment ? (
@@ -350,6 +380,8 @@ const ManageBookings = () => {
                         <p><span className="font-semibold text-gray-900">Trang thai:</span> {selectedBooking.payment.status_display}</p>
                         <p><span className="font-semibold text-gray-900">Phuong thuc:</span> {selectedBooking.payment.payment_method_display}</p>
                         <p><span className="font-semibold text-gray-900">So tien:</span> {formatMoney(selectedBooking.payment.amount)}</p>
+                        <p><span className="font-semibold text-gray-900">Trong do tien coc:</span> {formatMoney(selectedBooking.payment.deposit_component)}</p>
+                        <p><span className="font-semibold text-gray-900">Trong do dich vu:</span> {formatMoney(selectedBooking.payment.service_component)}</p>
                         <p className="break-all"><span className="font-semibold text-gray-900">Ma giao dich:</span> {selectedBooking.payment.transaction_id || 'Chua co'}</p>
                         <p><span className="font-semibold text-gray-900">Da thanh toan luc:</span> {formatDateTime(selectedBooking.payment.paid_at)}</p>
                       </div>
@@ -361,6 +393,8 @@ const ManageBookings = () => {
                   <div className="rounded-xl border border-gray-100 p-4 space-y-2">
                     <h4 className="font-semibold text-gray-900">Tong ket tai chinh</h4>
                     <div className="space-y-2 text-sm text-gray-700">
+                      <p><span className="font-semibold text-gray-900">Tien san:</span> {formatMoney(selectedBooking.field_amount)}</p>
+                      <p><span className="font-semibold text-gray-900">Tien dich vu:</span> {formatMoney(selectedBooking.service_amount)}</p>
                       <p><span className="font-semibold text-gray-900">Tong tien:</span> {formatMoney(selectedBooking.total_amount)}</p>
                       <p><span className="font-semibold text-gray-900">Tien coc:</span> {formatMoney(selectedBooking.deposit_amount)}</p>
                       <p><span className="font-semibold text-gray-900">Con lai:</span> {formatMoney(selectedBooking.remaining_amount)}</p>

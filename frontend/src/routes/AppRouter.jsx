@@ -20,6 +20,7 @@ import ChangePassword from '../pages/user/ChangePassword';
 import Dashboard from '../pages/admin/Dashboard';
 import Statistics from '../pages/admin/Statistics';
 import ManagePitches from '../pages/admin/ManagePitches';
+import ManageServices from '../pages/admin/ManageServices';
 import ManageTimeslots from '../pages/admin/ManageTimeslots';
 import ManageBookings from '../pages/admin/ManageBookings';
 import ManageReviews from '../pages/admin/ManageReviews';
@@ -49,6 +50,7 @@ const AppRouter = () => {
       <Route path="/admin/dashboard" element={<Dashboard />} />
       <Route path="/admin/statistics" element={<Statistics />} />
       <Route path="/admin/pitches" element={<ManagePitches />} />
+      <Route path="/admin/services" element={<ManageServices />} />
       <Route path="/admin/timeslots" element={<ManageTimeslots />} />
       <Route path="/admin/incidents" element={<IncidentManagement />} />
       <Route path="/admin/bookings" element={<ManageBookings />} />

@@ -11,6 +11,7 @@ from .serializers import (
     BookingCancelSerializer,
     BookingConfirmSerializer,
     ServiceProductListSerializer,
+    ServiceProductAdminSerializer,
 )
 from .models import ServiceProduct
 from apps.matches.services import cancel_match_requests_blocked_by_bookings
@@ -79,6 +80,20 @@ class ServiceProductListView(generics.ListAPIView):
         if active_only:
             queryset = queryset.filter(is_active=True)
         return queryset
+
+
+class ServiceProductAdminListCreateView(generics.ListCreateAPIView):
+    serializer_class = ServiceProductAdminSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def get_queryset(self):
+        return ServiceProduct.objects.all().order_by('sort_order', 'name', 'id')
+
+
+class ServiceProductAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ServiceProductAdminSerializer
+    permission_classes = [permissions.IsAdminUser]
+    queryset = ServiceProduct.objects.all()
 
 
 class BookingCreateView(generics.CreateAPIView):

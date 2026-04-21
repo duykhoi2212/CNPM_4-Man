@@ -20,7 +20,7 @@ class BookingTimeSlotSerializer(serializers.ModelSerializer):
 
 
 class BookingServiceItemSerializer(serializers.ModelSerializer):
-    service_product_id = serializers.IntegerField(source='service_product_id', read_only=True)
+    service_product_id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = BookingServiceItem
@@ -39,6 +39,30 @@ class ServiceProductListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceProduct
         fields = ['id', 'name', 'code', 'unit_label', 'unit_price', 'is_active', 'sort_order']
+
+
+class ServiceProductAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceProduct
+        fields = ['id', 'name', 'code', 'unit_label', 'unit_price', 'is_active', 'sort_order', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+
+    def validate_code(self, value):
+        normalized = (value or '').strip().lower().replace(' ', '_')
+        if not normalized:
+            raise serializers.ValidationError('Ma dich vu khong duoc de trong')
+        return normalized
+
+    def validate_name(self, value):
+        normalized = (value or '').strip()
+        if not normalized:
+            raise serializers.ValidationError('Ten dich vu khong duoc de trong')
+        return normalized
+
+    def validate(self, attrs):
+        if not attrs.get('code') and attrs.get('name'):
+            attrs['code'] = attrs['name'].strip().lower().replace(' ', '_')
+        return attrs
 
 
 class BookingListSerializer(serializers.ModelSerializer):
