@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 
+const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} VND`;
+
 const Checkout = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -16,6 +18,8 @@ const Checkout = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [serviceProducts, setServiceProducts] = useState([]);
+  const [serviceQuantities, setServiceQuantities] = useState({});
 
   useEffect(() => {
     if (!bookingState) {
@@ -25,13 +29,18 @@ const Checkout = () => {
 
     const fetchProfile = async () => {
       try {
-        const response = await axiosInstance.get('/auth/profile/');
-        setProfile(response.data);
+        const [profileResponse, serviceResponse] = await Promise.all([
+          axiosInstance.get('/auth/profile/'),
+          axiosInstance.get('/bookings/services/products/'),
+        ]);
+
+        setProfile(profileResponse.data);
+        setServiceProducts(serviceResponse.data.results || serviceResponse.data || []);
         setFormData((prev) => ({
           ...prev,
-          customer_name: `${response.data.first_name || ''} ${response.data.last_name || ''}`.trim(),
-          customer_phone: response.data.profile?.phone || '',
-          customer_email: response.data.email || '',
+          customer_name: `${profileResponse.data.first_name || ''} ${profileResponse.data.last_name || ''}`.trim(),
+          customer_phone: profileResponse.data.profile?.phone || '',
+          customer_email: profileResponse.data.email || '',
         }));
       } catch {
         setError('Khong the tai thong tin nguoi dung. Vui long dang nhap lai.');
@@ -46,6 +55,22 @@ const Checkout = () => {
   }
 
   const { pitch, bookingDate, selectedSlots, totalAmount, depositAmount, matchRequestId, returnToMatchTab } = bookingState;
+
+  const serviceLineItems = serviceProducts
+    .map((product) => {
+      const quantity = Number(serviceQuantities[product.id] || 0);
+      const unitPrice = Number(product.unit_price || 0);
+      return {
+        ...product,
+        quantity,
+        lineTotal: quantity * unitPrice,
+      };
+    })
+    .filter((item) => item.quantity > 0);
+
+  const serviceAmount = serviceLineItems.reduce((sum, item) => sum + item.lineTotal, 0);
+  const payableNowAmount = Number(depositAmount || 0) + serviceAmount;
+  const bookingGrandTotal = Number(totalAmount || 0) + serviceAmount;
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -73,6 +98,10 @@ const Checkout = () => {
           customer_phone: formData.customer_phone,
           customer_email: formData.customer_email,
           notes: formData.notes,
+          service_items: serviceLineItems.map((item) => ({
+            service_id: item.id,
+            quantity: item.quantity,
+          })),
         });
 
         const bookingId = bookingResponse.data.booking.id;
@@ -113,6 +142,17 @@ const Checkout = () => {
     }
   };
 
+  const updateQuantity = (serviceId, delta) => {
+    setServiceQuantities((prev) => {
+      const current = Number(prev[serviceId] || 0);
+      const next = Math.max(0, current + delta);
+      return {
+        ...prev,
+        [serviceId]: next,
+      };
+    });
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Xac nhan dat san va thanh toan</h2>
@@ -124,14 +164,58 @@ const Checkout = () => {
             <p><span className="font-medium">San:</span> {pitch.name}</p>
             <p><span className="font-medium">Ngay dat:</span> {bookingDate}</p>
             <p><span className="font-medium">Khung gio:</span> {selectedSlots.map((slot) => `${slot.start_time} - ${slot.end_time}`).join(', ')}</p>
-            <p><span className="font-medium">Tong tien:</span> {Number(totalAmount).toLocaleString('vi-VN')} VND</p>
+            <p><span className="font-medium">Tien san:</span> {formatMoney(totalAmount)}</p>
+            <p><span className="font-medium">Tien dich vu kem:</span> {formatMoney(serviceAmount)}</p>
+            <p><span className="font-medium">Tong gia tri don:</span> {formatMoney(bookingGrandTotal)}</p>
           </div>
         </div>
 
+        {!matchRequestId && (
+          <div className="border-b pb-6">
+            <h3 className="text-xl font-semibold mb-4">Dich vu kem</h3>
+            {serviceProducts.length === 0 ? (
+              <p className="text-sm text-gray-500">Hien tai san chua mo ban dich vu kem.</p>
+            ) : (
+              <div className="space-y-3">
+                {serviceProducts.map((product) => {
+                  const quantity = Number(serviceQuantities[product.id] || 0);
+                  return (
+                    <div key={product.id} className="rounded-lg border border-gray-200 px-4 py-3">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-gray-900">{product.name}</p>
+                          <p className="text-sm text-gray-500">{formatMoney(product.unit_price)} / {product.unit_label}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(product.id, -1)}
+                            className="h-8 w-8 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
+                          >
+                            -
+                          </button>
+                          <span className="min-w-8 text-center font-semibold text-gray-900">{quantity}</span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(product.id, 1)}
+                            className="h-8 w-8 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         <div>
           <h3 className="text-xl font-semibold mb-4 text-primary">Tien coc can thanh toan</h3>
-          <p className="text-3xl font-bold text-gray-900 mb-2">{Number(depositAmount).toLocaleString('vi-VN')} VND</p>
-          <p className="text-sm text-gray-500">He thong se tao giao dich dat coc qua VNPay. Ban se thanh toan phan con lai tai san sau khi su dung dich vu.</p>
+          <p className="text-3xl font-bold text-gray-900 mb-2">{formatMoney(payableNowAmount)}</p>
+          <p className="text-sm text-gray-500">Bao gom tien coc san {formatMoney(depositAmount)} va tien dich vu kem {formatMoney(serviceAmount)}.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

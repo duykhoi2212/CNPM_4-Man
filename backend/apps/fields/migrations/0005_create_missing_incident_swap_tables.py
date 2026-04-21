@@ -60,13 +60,21 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(
-            sql=INCIDENT_REPORTS_SQL,
-            reverse_sql="DROP TABLE IF EXISTS `incident_reports`;",
+        migrations.RunPython(
+            code=lambda apps, schema_editor: schema_editor.execute(INCIDENT_REPORTS_SQL)
+            if schema_editor.connection.vendor == 'mysql'
+            else None,
+            reverse_code=lambda apps, schema_editor: schema_editor.execute("DROP TABLE IF EXISTS `incident_reports`;")
+            if schema_editor.connection.vendor == 'mysql'
+            else None,
         ),
-        migrations.RunSQL(
-            sql=FIELD_SWAPS_SQL,
-            reverse_sql="DROP TABLE IF EXISTS `field_swaps`;",
+        migrations.RunPython(
+            code=lambda apps, schema_editor: schema_editor.execute(FIELD_SWAPS_SQL)
+            if schema_editor.connection.vendor == 'mysql'
+            else None,
+            reverse_code=lambda apps, schema_editor: schema_editor.execute("DROP TABLE IF EXISTS `field_swaps`;")
+            if schema_editor.connection.vendor == 'mysql'
+            else None,
         ),
     ]
 

@@ -45,14 +45,20 @@ def get_admin_overview(date_from=None, date_to=None, field_id=None, admin_user=N
         confirmed_bookings=Count('id', filter=Q(status='confirmed')),
         completed_bookings=Count('id', filter=Q(status='completed')),
         cancelled_bookings=Count('id', filter=Q(status='cancelled')),
+        completed_field_revenue=Coalesce(Sum('field_amount', filter=Q(status='completed')), DECIMAL_ZERO),
+        completed_service_revenue=Coalesce(Sum('service_amount', filter=Q(status='completed')), DECIMAL_ZERO),
         total_revenue=Coalesce(Sum('total_amount', filter=Q(status='completed')), DECIMAL_ZERO),
         average_booking_value=Coalesce(Avg('total_amount'), DECIMAL_ZERO),
     )
 
     payments = Payment.objects.filter(booking_id__in=booking_ids)
     payment_summary = payments.aggregate(
-        completed_deposit=Coalesce(Sum('amount', filter=Q(status='completed')), DECIMAL_ZERO),
-        pending_deposit=Coalesce(Sum('amount', filter=Q(status='pending')), DECIMAL_ZERO),
+        completed_deposit=Coalesce(Sum('booking__deposit_amount', filter=Q(status='completed')), DECIMAL_ZERO),
+        pending_deposit=Coalesce(Sum('booking__deposit_amount', filter=Q(status='pending')), DECIMAL_ZERO),
+        completed_service=Coalesce(Sum('booking__service_amount', filter=Q(status='completed')), DECIMAL_ZERO),
+        pending_service=Coalesce(Sum('booking__service_amount', filter=Q(status='pending')), DECIMAL_ZERO),
+        completed_collected_total=Coalesce(Sum('amount', filter=Q(status='completed')), DECIMAL_ZERO),
+        pending_collected_total=Coalesce(Sum('amount', filter=Q(status='pending')), DECIMAL_ZERO),
         failed_deposit=Coalesce(Sum('amount', filter=Q(status='failed')), DECIMAL_ZERO),
     )
 
@@ -69,6 +75,8 @@ def get_admin_overview(date_from=None, date_to=None, field_id=None, admin_user=N
             'booking_date',
             'customer_name',
             'status',
+            'field_amount',
+            'service_amount',
             'total_amount',
             'deposit_amount',
         )[:5]
@@ -146,6 +154,8 @@ def get_admin_top_fields(date_from=None, date_to=None, field_id=None, limit=5, a
         bookings.values('field_id', 'field__name')
         .annotate(
             bookings_count=Count('id'),
+            completed_field_revenue=Coalesce(Sum('field_amount', filter=Q(status='completed')), DECIMAL_ZERO),
+            completed_service_revenue=Coalesce(Sum('service_amount', filter=Q(status='completed')), DECIMAL_ZERO),
             completed_revenue=Coalesce(Sum('total_amount', filter=Q(status='completed')), DECIMAL_ZERO),
             cancelled_count=Count('id', filter=Q(status='cancelled')),
         )
@@ -172,7 +182,7 @@ def get_admin_field_performance(date_from=None, date_to=None, field_id=None, adm
         item['booking__field_id']: item['completed_deposit']
         for item in Payment.objects.filter(booking_id__in=payment_booking_ids)
         .values('booking__field_id')
-        .annotate(completed_deposit=Coalesce(Sum('amount', filter=Q(status='completed')), DECIMAL_ZERO))
+        .annotate(completed_deposit=Coalesce(Sum('booking__deposit_amount', filter=Q(status='completed')), DECIMAL_ZERO))
     }
 
     field_rows = list(
@@ -183,6 +193,8 @@ def get_admin_field_performance(date_from=None, date_to=None, field_id=None, adm
             confirmed_bookings=Count('id', filter=Q(status='confirmed')),
             completed_bookings=Count('id', filter=Q(status='completed')),
             cancelled_bookings=Count('id', filter=Q(status='cancelled')),
+            completed_field_revenue=Coalesce(Sum('field_amount', filter=Q(status='completed')), DECIMAL_ZERO),
+            completed_service_revenue=Coalesce(Sum('service_amount', filter=Q(status='completed')), DECIMAL_ZERO),
             completed_revenue=Coalesce(Sum('total_amount', filter=Q(status='completed')), DECIMAL_ZERO),
             average_booking_value=Coalesce(Avg('total_amount'), DECIMAL_ZERO),
         )
@@ -227,8 +239,12 @@ def get_my_overview(user, date_from=None, date_to=None):
     )
 
     payment_summary = Payment.objects.filter(booking_id__in=booking_ids).aggregate(
-        total_deposit_paid=Coalesce(Sum('amount', filter=Q(status='completed')), DECIMAL_ZERO),
-        total_deposit_pending=Coalesce(Sum('amount', filter=Q(status='pending')), DECIMAL_ZERO),
+        total_deposit_paid=Coalesce(Sum('booking__deposit_amount', filter=Q(status='completed')), DECIMAL_ZERO),
+        total_deposit_pending=Coalesce(Sum('booking__deposit_amount', filter=Q(status='pending')), DECIMAL_ZERO),
+        total_service_paid=Coalesce(Sum('booking__service_amount', filter=Q(status='completed')), DECIMAL_ZERO),
+        total_service_pending=Coalesce(Sum('booking__service_amount', filter=Q(status='pending')), DECIMAL_ZERO),
+        total_collected_paid=Coalesce(Sum('amount', filter=Q(status='completed')), DECIMAL_ZERO),
+        total_collected_pending=Coalesce(Sum('amount', filter=Q(status='pending')), DECIMAL_ZERO),
     )
 
     recent_bookings = list(
@@ -240,6 +256,8 @@ def get_my_overview(user, date_from=None, date_to=None):
             'field__name',
             'booking_date',
             'status',
+            'field_amount',
+            'service_amount',
             'total_amount',
             'deposit_amount',
         )[:5]

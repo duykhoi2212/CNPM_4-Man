@@ -9,8 +9,10 @@ from .serializers import (
     BookingDetailSerializer,
     BookingCreateSerializer,
     BookingCancelSerializer,
-    BookingConfirmSerializer
+    BookingConfirmSerializer,
+    ServiceProductListSerializer,
 )
+from .models import ServiceProduct
 from apps.matches.services import cancel_match_requests_blocked_by_bookings
 from apps.fields.access import get_managed_fields_queryset
 
@@ -43,6 +45,7 @@ class BookingListView(generics.ListAPIView):
         queryset = queryset.select_related('user', 'field', 'field__field_type', 'payment').prefetch_related(
             'booking_timeslots__timeslot',
             'review',
+            'service_items',
         ).order_by('-created_at')
 
         status_filter = self.request.query_params.get('status')
@@ -61,9 +64,21 @@ class BookingListView(generics.ListAPIView):
 
 
 class BookingDetailView(generics.RetrieveAPIView):
-    queryset = Booking.objects.select_related('user', 'field', 'field__field_type', 'payment').prefetch_related('booking_timeslots__timeslot')
+    queryset = Booking.objects.select_related('user', 'field', 'field__field_type', 'payment').prefetch_related('booking_timeslots__timeslot', 'service_items')
     serializer_class = BookingDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+
+
+class ServiceProductListView(generics.ListAPIView):
+    serializer_class = ServiceProductListSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        queryset = ServiceProduct.objects.all().order_by('sort_order', 'name')
+        active_only = self.request.query_params.get('active_only', 'true').lower() != 'false'
+        if active_only:
+            queryset = queryset.filter(is_active=True)
+        return queryset
 
 
 class BookingCreateView(generics.CreateAPIView):

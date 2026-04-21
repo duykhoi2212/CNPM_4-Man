@@ -8,6 +8,7 @@ urlpatterns = [
     # List & Create
     path('', views.BookingListView.as_view(), name='booking-list'),
     path('create/', views.BookingCreateView.as_view(), name='booking-create'),
+    path('services/products/', views.ServiceProductListView.as_view(), name='service-product-list'),
     
     # Detail
     path('<int:pk>/', views.BookingDetailView.as_view(), name='booking-detail'),

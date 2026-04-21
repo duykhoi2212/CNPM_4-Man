@@ -392,19 +392,19 @@ const Statistics = () => {
 
   const summaryCards = overview ? [
     {
-      label: 'Doanh thu hoan tat',
-      value: formatMoney(overview.booking?.total_revenue),
+      label: 'Doanh thu tien san',
+      value: formatMoney(overview.booking?.completed_field_revenue),
       helper: `${overview.booking?.completed_bookings || 0} booking da hoan thanh`,
     },
     {
-      label: 'Tien coc da thu',
-      value: formatMoney(overview.payment?.completed_deposit),
-      helper: `${overview.booking?.confirmed_bookings || 0} booking dang xac nhan`,
+      label: 'Doanh thu dich vu',
+      value: formatMoney(overview.booking?.completed_service_revenue),
+      helper: `${overview.booking?.completed_bookings || 0} booking co the kem dich vu`,
     },
     {
-      label: 'Tong booking',
-      value: `${overview.booking?.total_bookings || 0}`,
-      helper: `${overview.booking?.pending_bookings || 0} booking cho thanh toan coc`,
+      label: 'Tong da thu checkout',
+      value: formatMoney(overview.payment?.completed_collected_total),
+      helper: `${overview.booking?.confirmed_bookings || 0} booking dang xac nhan`,
     },
     {
       label: 'Ty le hoan thanh',
@@ -470,8 +470,8 @@ const Statistics = () => {
                       <h2 className="text-2xl font-bold text-gray-950">Doanh thu hoan tat</h2>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-500">Tien coc dang cho thanh toan</p>
-                      <p className="text-lg font-bold text-gray-900">{formatMoney(overview?.payment?.pending_deposit)}</p>
+                      <p className="text-sm text-gray-500">Tong dang cho thanh toan</p>
+                      <p className="text-lg font-bold text-gray-900">{formatMoney(overview?.payment?.pending_collected_total)}</p>
                     </div>
                   </div>
                   </div>
@@ -584,6 +584,8 @@ const Statistics = () => {
                   </div>
                   <div className="rounded-xl border border-gray-100 p-4 text-sm text-gray-700">
                     <p><span className="font-semibold text-gray-900">Gia tri booking trung binh:</span> {formatMoney(overview?.booking?.average_booking_value)}</p>
+                    <p className="mt-2"><span className="font-semibold text-gray-900">Tien coc da thu:</span> {formatMoney(overview?.payment?.completed_deposit)}</p>
+                    <p className="mt-2"><span className="font-semibold text-gray-900">Tien dich vu da thu:</span> {formatMoney(overview?.payment?.completed_service)}</p>
                     <p className="mt-2"><span className="font-semibold text-gray-900">Tien coc that bai:</span> {formatMoney(overview?.payment?.failed_deposit)}</p>
                   </div>
                 </div>
@@ -610,6 +612,7 @@ const Statistics = () => {
                         <div className="text-right">
                           <p className="text-sm text-gray-500">Doanh thu hoan tat</p>
                           <p className="text-xl font-bold text-gray-900">{formatMoney(field.completed_revenue)}</p>
+                          <p className="text-xs text-gray-500">San: {formatMoney(field.completed_field_revenue)} · DV: {formatMoney(field.completed_service_revenue)}</p>
                         </div>
                       </div>
                     ))}
@@ -636,6 +639,10 @@ const Statistics = () => {
                           </span>
                         </div>
                         <div className="mt-3 flex items-center justify-between text-sm text-gray-600">
+                          <span>San: {formatMoney(booking.field_amount)}</span>
+                          <span>Dich vu: {formatMoney(booking.service_amount)}</span>
+                        </div>
+                        <div className="mt-1 flex items-center justify-between text-sm text-gray-600">
                           <span>Tong tien: {formatMoney(booking.total_amount)}</span>
                           <span>Coc: {formatMoney(booking.deposit_amount)}</span>
                         </div>
@@ -671,7 +678,9 @@ const Statistics = () => {
                         <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Da hoan thanh</th>
                         <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Da huy</th>
                         <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tien coc da thu</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Doanh thu</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Doanh thu tien san</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Doanh thu dich vu</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tong doanh thu</th>
                         <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Ty le hoan thanh</th>
                       </tr>
                     </thead>
@@ -685,6 +694,8 @@ const Statistics = () => {
                           <td className="px-4 py-4 text-emerald-700">{row.completed_bookings}</td>
                           <td className="px-4 py-4 text-red-700">{row.cancelled_bookings}</td>
                           <td className="px-4 py-4 text-gray-700">{formatMoney(row.completed_deposit)}</td>
+                          <td className="px-4 py-4 text-gray-700">{formatMoney(row.completed_field_revenue)}</td>
+                          <td className="px-4 py-4 text-gray-700">{formatMoney(row.completed_service_revenue)}</td>
                           <td className="px-4 py-4 font-semibold text-gray-900">{formatMoney(row.completed_revenue)}</td>
                           <td className="px-4 py-4 text-gray-700">{row.completion_rate_percent}%</td>
                         </tr>
