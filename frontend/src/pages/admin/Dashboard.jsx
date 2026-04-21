@@ -15,7 +15,7 @@ const Dashboard = () => {
         const response = await axiosInstance.get('/statistics/admin/overview/');
         setStats(response.data);
       } catch (requestError) {
-        setError(requestError.response?.data?.error || 'Khong the tai thong ke admin.');
+        setError(requestError.response?.data?.error || 'Không thể tải thống kê admin.');
       } finally {
         setLoading(false);
       }
@@ -30,7 +30,7 @@ const Dashboard = () => {
         <div className="flex justify-between items-start gap-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Quan tri he thong</h1>
-            <p className="text-gray-500 mt-2">Day la trang tong quan. Cac chuc nang quan ly se duoc tach thanh tung module rieng.</p>
+            <p className="text-gray-500 mt-2">Đây là trang tổng quan. Các chức năng quản lý sẽ được tách thành từng module riêng.</p>
           </div>
           <Link to="/" className="text-primary font-medium hover:underline">Quay lai trang khach</Link>
         </div>
@@ -38,7 +38,7 @@ const Dashboard = () => {
         <AdminNav />
 
         {loading ? (
-          <div className="rounded-lg bg-white p-8 text-center text-primary font-semibold shadow-sm">Dang tai dashboard...</div>
+          <div className="rounded-lg bg-white p-8 text-center text-primary font-semibold shadow-sm">Đang tải dashboard...</div>
         ) : error ? (
           <div className="rounded-lg bg-white p-8 text-center text-red-500 shadow-sm">{error}</div>
         ) : (
@@ -64,7 +64,7 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h2 className="text-xl font-bold mb-4">Trang thai booking</h2>
+                <h2 className="text-xl font-bold mb-4">Trạng thái booking</h2>
                 <div className="space-y-3 text-gray-700">
                   <div className="flex justify-between"><span>Cho xac nhan</span><span className="font-semibold">{stats?.booking?.pending_bookings || 0}</span></div>
                   <div className="flex justify-between"><span>Da xac nhan</span><span className="font-semibold">{stats?.booking?.confirmed_bookings || 0}</span></div>
@@ -76,8 +76,8 @@ const Dashboard = () => {
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <h2 className="text-xl font-bold mb-4">Hanh dong tiep theo</h2>
                 <div className="space-y-3 text-gray-600">
-                  <p>1. Quan ly san va hinh anh tai module San bong.</p>
-                  <p>2. Them trang thong ke chi tiet de xem doanh thu theo thoi gian.</p>
+                  <p>1. Quản lý sân và hình ảnh tại module Sân bóng.</p>
+                  <p>2. Thêm trang thống kê chi tiết để xem doanh thu theo thời gian.</p>
                   <p>3. Sau do minh se tiep tuc mo rong Khung gio, User, Booking va Review.</p>
                 </div>
               </div>

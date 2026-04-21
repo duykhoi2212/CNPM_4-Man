@@ -15,7 +15,6 @@ const PitchList = () => {
   const [error, setError] = useState('');
   const [nearbyError, setNearbyError] = useState('');
   
-  // Search & Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [minRating, setMinRating] = useState('');
@@ -47,12 +46,10 @@ const PitchList = () => {
   const filteredPitches = useMemo(() => {
     let result = [...pitches];
 
-    // Filter by field type
     if (activeFilter !== 'ALL') {
       result = result.filter((pitch) => pitch.field_type?.id === activeFilter);
     }
 
-    // Filter by search query (tên hoặc địa chỉ)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
@@ -62,7 +59,6 @@ const PitchList = () => {
       );
     }
 
-    // Filter by price range
     if (priceRange.min !== '') {
       result = result.filter((pitch) => pitch.price_per_hour >= Number(priceRange.min));
     }
@@ -70,12 +66,10 @@ const PitchList = () => {
       result = result.filter((pitch) => pitch.price_per_hour <= Number(priceRange.max));
     }
 
-    // Filter by minimum rating
     if (minRating !== '') {
       result = result.filter((pitch) => pitch.avg_rating >= Number(minRating));
     }
 
-    // Sort
     result.sort((a, b) => {
       switch (sortBy) {
         case 'price_asc':
@@ -99,7 +93,6 @@ const PitchList = () => {
     return result;
   }, [pitches, activeFilter, searchQuery, priceRange, minRating, sortBy, userLocation]);
 
-  // Xử lý tìm kiếm sân gần đây
   const handleFindNearby = () => {
     if (!navigator.geolocation) {
       setNearbyError('Trình duyệt hiện tại không hỗ trợ lấy vị trí.');
@@ -138,7 +131,6 @@ const PitchList = () => {
     );
   };
 
-  // Reset tất cả bộ lọc
   const resetFilters = () => {
     setSearchQuery('');
     setPriceRange({ min: '', max: '' });
@@ -153,11 +145,10 @@ const PitchList = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Danh sách sân bóng</h2>
 
-      {/* Nearby Fields Section */}
       <div className="mb-10 rounded-3xl border border-teal-100 bg-gradient-to-r from-teal-50 via-white to-slate-50 p-6 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Nearby fields</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Sân gần bạn</p>
             <h3 className="mt-2 text-2xl font-black text-gray-950">Tìm sân gần vị trí của bạn</h3>
             <p className="mt-3 text-gray-600 leading-7">
               Cho phép truy cập vị trí để xem nhanh các sân trong bán kính 15km. Tính năng này giúp bạn chọn sân nhanh hơn khi không nhớ rõ tên sân.
@@ -234,10 +225,8 @@ const PitchList = () => {
         )}
       </div>
 
-      {/* Search & Filters */}
       <div className="mb-8 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col gap-4">
-          {/* Search Bar + Toggle Filters */}
           <div className="flex gap-3">
             <div className="flex-1 relative">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -266,10 +255,8 @@ const PitchList = () => {
             </button>
           </div>
 
-          {/* Extended Filters */}
           {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-              {/* Price Range */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Giá từ</label>
                 <input
@@ -291,7 +278,6 @@ const PitchList = () => {
                 />
               </div>
 
-              {/* Minimum Rating */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Đánh giá tối thiểu</label>
                 <select
@@ -307,7 +293,6 @@ const PitchList = () => {
                 </select>
               </div>
 
-              {/* Sort By */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sắp xếp theo</label>
                 <select
@@ -323,7 +308,6 @@ const PitchList = () => {
                 </select>
               </div>
 
-              {/* Reset Button */}
               {hasActiveFilters && (
                 <div className="md:col-span-4 flex justify-end">
                   <button

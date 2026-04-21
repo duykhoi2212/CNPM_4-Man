@@ -44,7 +44,6 @@ const FieldScheduleManager = ({ fieldId, fieldName }) => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Form state cho từng ngày
   const [formData, setFormData] = useState(
     DAYS_OF_WEEK.map((day) => ({
       day_of_week: day.value,
@@ -70,7 +69,6 @@ const FieldScheduleManager = ({ fieldId, fieldName }) => {
       const existingSchedules = response.data.results || response.data || [];
       setSchedules(existingSchedules);
 
-      // Update form data với dữ liệu từ server
       const updatedFormData = DAYS_OF_WEEK.map((day) => {
         const existing = existingSchedules.find(
           (s) => s.day_of_week === day.value
@@ -114,12 +112,10 @@ const FieldScheduleManager = ({ fieldId, fieldName }) => {
       setError('');
       setSuccessMessage('');
 
-      // Xóa tất cả schedules cũ
       for (const schedule of schedules) {
         await axiosInstance.delete(`/fields/schedules/${schedule.id}/`);
       }
 
-      // Tạo schedules mới
       for (const dayData of formData) {
         await axiosInstance.post('/fields/schedules/', {
           field: fieldId,
@@ -137,7 +133,7 @@ const FieldScheduleManager = ({ fieldId, fieldName }) => {
   };
 
   const handleGenerateSlots = async () => {
-    if (!window.confirm('⚠️ Hành động này sẽ XÓA TẤT CẢ khung giờ hiện tại và tạo lại từ lịch. Bạn có chắc chắn?')) {
+    if (!window.confirm('Hành động này sẽ xóa tất cả khung giờ hiện tại và tạo lại từ lịch. Bạn có chắc chắn?')) {
       return;
     }
 

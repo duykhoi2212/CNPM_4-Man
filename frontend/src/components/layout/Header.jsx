@@ -23,29 +23,29 @@ const Header = () => {
 
         <nav className="hidden md:flex items-center space-x-8">
           <Link to="/" className="text-gray-700 hover:text-primary font-medium">
-            Trang chu
+            Trang chủ
           </Link>
           <Link to="/pitches" className="text-gray-700 hover:text-primary font-medium">
-            Danh sach san
+            Danh sách sân
           </Link>
           <Link to="/teams" className="text-gray-700 hover:text-primary font-medium">
-            Doi bong
+            Đội bóng
           </Link>
           <Link to="/contact" className="text-gray-700 hover:text-primary font-medium">
-            Lien he
+            Liên hệ
           </Link>
           {isAuthenticated && !isAdmin && (
             <Link to="/user/history" className="text-gray-700 hover:text-primary font-medium">
-              Lich su
+              Lịch sử
             </Link>
           )}
           {isAdmin && (
             <>
               <Link to="/admin/statistics" className="text-gray-700 hover:text-primary font-medium">
-                Thong ke
+                Thống kê
               </Link>
               <Link to="/admin/pitches" className="text-gray-700 hover:text-primary font-medium">
-                Quan ly
+                Quản lý
               </Link>
             </>
           )}
@@ -67,23 +67,23 @@ const Header = () => {
                   </div>
                 )}
                 <span>
-                  Xin chao, <strong>{user?.username}</strong>
+                  Xin chào, <strong>{user?.username}</strong>
                 </span>
               </Link>
               <button
                 onClick={handleLogout}
                 className="text-gray-700 hover:text-primary font-medium"
               >
-                Dang xuat
+                Đăng xuất
               </button>
             </>
           ) : (
             <>
               <Link to="/login" className="text-gray-700 hover:text-primary font-medium">
-                Dang nhap
+                Đăng nhập
               </Link>
               <Link to="/register" className="btn-primary">
-                Dang ky
+                Đăng ký
               </Link>
             </>
           )}

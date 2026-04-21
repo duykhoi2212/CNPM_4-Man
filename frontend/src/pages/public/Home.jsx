@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 import { getUserInfo } from '../../utils/auth';
 
-const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} d`;
+const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
 
 const getPitchPlaceholder = (name) => {
   const safeName = (name || '4-Man Sport').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -18,7 +18,7 @@ const getPitchPlaceholder = (name) => {
     <circle cx="320" cy="48" r="36" fill="rgba(255,255,255,0.12)"/>
     <circle cx="80" cy="188" r="48" fill="rgba(255,255,255,0.10)"/>
     <text x="32" y="120" fill="white" font-size="30" font-family="Arial, sans-serif" font-weight="700">${safeName}</text>
-    <text x="32" y="156" fill="rgba(255,255,255,0.78)" font-size="16" font-family="Arial, sans-serif">Goi y san thong minh</text>
+    <text x="32" y="156" fill="rgba(255,255,255,0.78)" font-size="16" font-family="Arial, sans-serif">Gợi ý sân thông minh</text>
   </svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
@@ -38,7 +38,7 @@ const Home = () => {
         const response = await axiosInstance.get('/fields/recommendations/', { params: { limit: 4 } });
         setRecommendedFields(response.data.results || []);
       } catch (error) {
-        setRecommendationError(error.response?.data?.error || 'Khong the tai goi y san luc nay.');
+        setRecommendationError(error.response?.data?.error || 'Không thể tải gợi ý sân lúc này.');
       } finally {
         setLoadingRecommendations(false);
       }
@@ -56,58 +56,58 @@ const Home = () => {
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">4-Man Sport</p>
               <h1 className="mt-4 text-4xl md:text-5xl font-extrabold text-gray-950 tracking-tight leading-tight">
-                Dat lich san bong nhanh, gon va de chon khung gio phu hop.
+                Đặt lịch sân bóng nhanh, gọn và dễ chọn khung giờ phù hợp.
               </h1>
               <p className="mt-5 max-w-2xl text-lg text-gray-600 leading-8">
-                Tim san theo muc gia, xem lich trong theo ngay va dat coc nhanh de giu cho. He thong uu tien cac san co danh gia cao va de dat trong thoi diem ban can.
+                Tìm sân theo mức giá, xem lịch trống theo ngày và đặt cọc nhanh để giữ chỗ. Hệ thống ưu tiên các sân có đánh giá cao và dễ đặt trong thời điểm bạn cần.
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <Link
                   to={isAuthenticated ? '/pitches' : '/login'}
                   className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 text-white font-semibold shadow-md hover:bg-teal-600 transition"
                 >
-                  Tim san ngay
+                  Tìm sân ngay
                 </Link>
                 <Link
                   to="/contact"
                   className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-3 text-gray-700 font-semibold hover:bg-gray-50 transition"
                 >
-                  Lien he tu van
+                  Liên hệ tư vấn
                 </Link>
               </div>
             </div>
 
             <div className="rounded-3xl bg-slate-950 p-6 text-white shadow-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-teal-300">Goi y san</p>
-              <h2 className="mt-3 text-2xl font-bold">De xuat thong minh cho ban</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-teal-300">Gợi ý sân</p>
+              <h2 className="mt-3 text-2xl font-bold">Đề xuất thông minh cho bạn</h2>
               <p className="mt-2 text-sm text-slate-300">
-                Chon tu cac san co danh gia cao, gia hop ly, de dat nhanh va phu hop voi xu huong dat san hien tai.
+                Chọn từ các sân có đánh giá cao, giá hợp lý, dễ đặt nhanh và phù hợp với xu hướng đặt sân hiện tại.
               </p>
               <div className="mt-6 space-y-3">
                 {loadingRecommendations ? (
-                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm text-slate-300">Dang tai goi y san...</div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm text-slate-300">Đang tải gợi ý sân...</div>
                 ) : recommendationError ? (
                   <div className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-4 text-sm text-red-200">{recommendationError}</div>
                 ) : recommendedFields.length === 0 ? (
-                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm text-slate-300">Chua co san de goi y luc nay.</div>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm text-slate-300">Chưa có sân để gợi ý lúc này.</div>
                 ) : (
                   recommendedFields.slice(0, 2).map((field) => (
                     <div key={field.id} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="font-semibold text-white">{field.name}</p>
-                          <p className="mt-1 text-sm text-slate-300">{field.field_type?.name || 'Loai san'}  {Number(field.avg_rating || 0).toFixed(1)}/5</p>
+                          <p className="mt-1 text-sm text-slate-300">{field.field_type?.name || 'Loại sân'}  {Number(field.avg_rating || 0).toFixed(1)}/5</p>
                         </div>
-                        <span className="rounded-full bg-teal-400/15 px-3 py-1 text-xs font-semibold text-teal-200">Top de xuat</span>
+                        <span className="rounded-full bg-teal-400/15 px-3 py-1 text-xs font-semibold text-teal-200">Top đề xuất</span>
                       </div>
                       <p className="mt-3 text-sm text-slate-300">{field.recommendation_reason}</p>
                       <div className="mt-4 flex items-center justify-between gap-3">
-                        <span className="text-lg font-bold text-white">{formatMoney(field.price_per_hour)}</span>
+                          <span className="text-lg font-bold text-white">{formatMoney(field.price_per_hour)}</span>
                         <Link
                           to={isAuthenticated ? `/pitches/${field.id}` : '/login'}
                           className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-teal-500"
                         >
-                          Dat san ngay
+                          Đặt sân ngay
                         </Link>
                       </div>
                     </div>
@@ -123,17 +123,17 @@ const Home = () => {
         <div className="rounded-[28px] border border-teal-100 bg-gradient-to-r from-teal-50 via-white to-slate-50 p-6 sm:p-8 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Banner goi y san</p>
-              <h2 className="mt-3 text-3xl font-black text-gray-950">Goi y san thong minh cho lich dat tiep theo</h2>
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Banner gợi ý sân</p>
+              <h2 className="mt-3 text-3xl font-black text-gray-950">Gợi ý sân thông minh cho lịch đặt tiếp theo</h2>
               <p className="mt-3 text-gray-600 leading-7">
-                He thong uu tien cac san co rating tot, nhieu khung gio dang mo va muc gia hop ly. Neu ban da tung dat san, de xuat se uu tien loai san ban hay chon.
+                Hệ thống ưu tiên các sân có đánh giá tốt, nhiều khung giờ đang mở và mức giá hợp lý. Nếu bạn đã từng đặt sân, đề xuất sẽ ưu tiên loại sân bạn hay chọn.
               </p>
             </div>
             <Link
               to="/pitches"
               className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-5 py-3 text-white font-semibold hover:bg-slate-800"
             >
-              Xem toan bo danh sach san
+              Xem toàn bộ danh sách sân
             </Link>
           </div>
 
@@ -154,14 +154,14 @@ const Home = () => {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <h3 className="text-lg font-bold text-gray-950">{field.name}</h3>
-                        <p className="mt-1 text-sm text-gray-500">{field.field_type?.name || 'Loai san'}</p>
+                        <p className="mt-1 text-sm text-gray-500">{field.field_type?.name || 'Loại sân'}</p>
                       </div>
                       <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-primary">{Number(field.avg_rating || 0).toFixed(1)}/5</span>
                     </div>
                     <p className="mt-3 text-sm text-gray-500 min-h-[40px]">{field.recommendation_reason}</p>
                     <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
                       <span>{formatMoney(field.price_per_hour)}</span>
-                      <span>{field.total_reviews || 0} review</span>
+                      <span>{field.total_reviews || 0} đánh giá</span>
                     </div>
                     <Link
                       to={isAuthenticated ? `/pitches/${field.id}` : '/login'}
@@ -174,7 +174,7 @@ const Home = () => {
               ))
             ) : (
               <div className="col-span-full rounded-2xl border border-gray-100 bg-white px-6 py-8 text-center text-gray-500 shadow-sm">
-                Chua co goi y san phu hop luc nay.
+                Chưa có gợi ý sân phù hợp lúc này.
               </div>
             )}
           </div>

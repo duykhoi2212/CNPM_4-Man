@@ -64,7 +64,7 @@ const ManageReviews = () => {
         setReviews(reviewResponse.data.results || reviewResponse.data || []);
         setFields(fieldResponse.data.results || fieldResponse.data || []);
       } catch (requestError) {
-        setError(getReadableError(requestError.response?.data, 'Khong the tai danh sach danh gia.'));
+        setError(getReadableError(requestError.response?.data, 'Không thể tải danh sách đánh giá.'));
       } finally {
         setLoading(false);
       }
@@ -85,7 +85,7 @@ const ManageReviews = () => {
   };
 
   const handleDelete = async (reviewId) => {
-    const confirmed = window.confirm('Ban co chac muon xoa danh gia nay khong?');
+    const confirmed = window.confirm('Bạn có chắc muốn xóa đánh giá này không?');
     if (!confirmed) return;
 
     try {
@@ -96,7 +96,7 @@ const ManageReviews = () => {
       await loadReviews();
       setSuccessMessage('Da xoa danh gia thanh cong.');
     } catch (requestError) {
-      setError(getReadableError(requestError.response?.data, 'Khong the xoa danh gia.'));
+      setError(getReadableError(requestError.response?.data, 'Không thể xóa đánh giá.'));
     } finally {
       setActionLoadingId(null);
     }
@@ -107,10 +107,10 @@ const ManageReviews = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-start gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Quan ly review</h1>
-            <p className="text-gray-500 mt-2">Admin co the theo doi, loc va xoa cac danh gia khong phu hop ngay tren trang nay.</p>
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý đánh giá</h1>
+            <p className="text-gray-500 mt-2">Admin có thể theo dõi, lọc và xóa các đánh giá không phù hợp ngay trên trang này.</p>
           </div>
-          <Link to="/" className="text-primary hover:underline">Ve trang khach</Link>
+          <Link to="/" className="text-primary hover:underline">Về trang khách</Link>
         </div>
 
         <AdminNav />
@@ -118,7 +118,7 @@ const ManageReviews = () => {
         <div className="bg-white shadow-sm rounded-lg p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">San bong</span>
+              <span className="text-sm font-medium text-gray-700">Sân bóng</span>
               <select
                 name="field"
                 value={filters.field}
@@ -155,9 +155,9 @@ const ManageReviews = () => {
           <h2 className="text-xl font-bold text-gray-900 mb-6">Danh sach review</h2>
 
           {loading ? (
-            <div className="p-8 text-center text-primary font-semibold">Dang tai danh sach review...</div>
+            <div className="p-8 text-center text-primary font-semibold">Đang tải danh sách đánh giá...</div>
           ) : reviews.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">Khong co review nao phu hop voi bo loc hien tai.</div>
+            <div className="p-8 text-center text-gray-500">Không có đánh giá nào phù hợp với bộ lọc hiện tại.</div>
           ) : (
             <div className="space-y-4">
               {reviews.map((review) => (
@@ -192,7 +192,7 @@ const ManageReviews = () => {
                         disabled={actionLoadingId === review.id}
                         className="rounded-md bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60"
                       >
-                        {actionLoadingId === review.id ? 'Dang xoa...' : 'Xoa review'}
+                        {actionLoadingId === review.id ? 'Đang xóa...' : 'Xóa đánh giá'}
                       </button>
                     </div>
                   </div>

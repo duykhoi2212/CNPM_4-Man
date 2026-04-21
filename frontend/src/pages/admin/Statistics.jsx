@@ -31,7 +31,7 @@ const rangeOptions = [
   { value: 'custom', label: 'Tuy chon' },
 ];
 
-const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} d`;
+const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
 
 const formatChartMoney = (value) => {
   const numeric = Number(value || 0);
@@ -141,7 +141,7 @@ const RevenueChart = ({ series, groupBy }) => {
   }, [series, groupBy]);
 
   if (!series.length) {
-    return <p className="text-gray-500">Chua co du lieu doanh thu de hien thi.</p>;
+    return <p className="text-gray-500">Chưa có dữ liệu doanh thu để hiển thị.</p>;
   }
 
   const polylinePoints = chartData.points.map((point) => `${point.x},${point.y}`).join(' ');
@@ -318,7 +318,7 @@ const Statistics = () => {
         ]);
         setFields(fieldResponse.data.results || []);
       } catch (requestError) {
-        setError(getReadableError(requestError.response?.data, 'Khong the tai trang thong ke admin.'));
+        setError(getReadableError(requestError.response?.data, 'Không thể tải trang thống kê admin.'));
       } finally {
         setLoading(false);
       }
@@ -335,7 +335,7 @@ const Statistics = () => {
       setLoading(true);
       await loadStatistics(nextFilters);
     } catch (requestError) {
-      setError(getReadableError(requestError.response?.data, 'Khong the cap nhat bo loc thong ke.'));
+      setError(getReadableError(requestError.response?.data, 'Không thể cập nhật bộ lọc thống kê.'));
     } finally {
       setLoading(false);
     }
@@ -384,7 +384,7 @@ const Statistics = () => {
       link.remove();
       window.URL.revokeObjectURL(downloadUrl);
     } catch {
-      setError('Khong the xuat bao cao thong ke luc nay.');
+      setError('Không thể xuất báo cáo thống kê lúc này.');
     } finally {
       setExporting(false);
     }
@@ -392,24 +392,24 @@ const Statistics = () => {
 
   const summaryCards = overview ? [
     {
-      label: 'Doanh thu tien san',
+      label: 'Doanh thu tiền sân',
       value: formatMoney(overview.booking?.completed_field_revenue),
-      helper: `${overview.booking?.completed_bookings || 0} booking da hoan thanh`,
+      helper: `${overview.booking?.completed_bookings || 0} booking đã hoàn thành`,
     },
     {
-      label: 'Doanh thu dich vu',
+      label: 'Doanh thu dịch vụ',
       value: formatMoney(overview.booking?.completed_service_revenue),
-      helper: `${overview.booking?.completed_bookings || 0} booking co the kem dich vu`,
+      helper: `${overview.booking?.completed_bookings || 0} booking có dịch vụ kèm`,
     },
     {
-      label: 'Tong da thu checkout',
+      label: 'Tổng đã thu checkout',
       value: formatMoney(overview.payment?.completed_collected_total),
-      helper: `${overview.booking?.confirmed_bookings || 0} booking dang xac nhan`,
+      helper: `${overview.booking?.confirmed_bookings || 0} booking đang xác nhận`,
     },
     {
-      label: 'Ty le hoan thanh',
+      label: 'Tỷ lệ hoàn thành',
       value: `${overview.booking?.completion_rate_percent || 0}%`,
-      helper: `${overview.booking?.cancelled_bookings || 0} booking da huy`,
+      helper: `${overview.booking?.cancelled_bookings || 0} booking đã hủy`,
     },
   ] : [];
 
@@ -418,10 +418,10 @@ const Statistics = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Admin analytics</p>
-            <h1 className="mt-2 text-4xl font-black tracking-tight text-gray-950">Thong ke he thong</h1>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Phân tích quản trị</p>
+            <h1 className="mt-2 text-4xl font-black tracking-tight text-gray-950">Thống kê hệ thống</h1>
             <p className="mt-3 max-w-3xl text-gray-500">
-              Tong hop doanh thu, tien coc, nhom booking va cac san noi bat de ban co the theo doi van hanh he thong theo mot dashboard gon va ro rang hon.
+              Tổng hợp doanh thu, tiền cọc, nhóm booking và các sân nổi bật để bạn có thể theo dõi vận hành hệ thống theo một dashboard gọn và rõ ràng hơn.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 xl:justify-end">
@@ -431,12 +431,12 @@ const Statistics = () => {
               disabled={exporting}
               className="rounded-md bg-slate-950 px-5 py-3 font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {exporting ? 'Dang xuat bao cao...' : 'Xuat bao cao CSV'}
+              {exporting ? 'Đang xuất báo cáo...' : 'Xuất báo cáo CSV'}
             </button>
             <Link
               to="/"
-              title="Ve trang khach"
-              aria-label="Ve trang khach"
+              title="Về trang khách"
+              aria-label="Về trang khách"
               className="inline-flex h-12 w-12 items-center justify-center rounded-md border border-gray-200 text-gray-700 hover:bg-gray-50"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -448,7 +448,7 @@ const Statistics = () => {
         </div>
 
         {loading ? (
-          <div className="rounded-2xl bg-white p-8 text-center text-primary font-semibold shadow-sm">Dang tai trang thong ke...</div>
+          <div className="rounded-2xl bg-white p-8 text-center text-primary font-semibold shadow-sm">Đang tải trang thống kê...</div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -466,11 +466,11 @@ const Statistics = () => {
                 <div className="mb-5 space-y-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Revenue</p>
-                      <h2 className="text-2xl font-bold text-gray-950">Doanh thu hoan tat</h2>
+                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Doanh thu</p>
+                      <h2 className="text-2xl font-bold text-gray-950">Doanh thu hoàn tất</h2>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-500">Tong dang cho thanh toan</p>
+                      <p className="text-sm text-gray-500">Tổng đang chờ thanh toán</p>
                       <p className="text-lg font-bold text-gray-900">{formatMoney(overview?.payment?.pending_collected_total)}</p>
                     </div>
                   </div>
@@ -480,14 +480,14 @@ const Statistics = () => {
                     <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
                     <div className="mb-4 flex items-center justify-between gap-4">
                       <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Bo loc chi tiet</p>
-                        <h3 className="mt-1 text-lg font-bold text-gray-900">Dieu chinh bieu do</h3>
+                        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Bộ lọc chi tiết</p>
+                        <h3 className="mt-1 text-lg font-bold text-gray-900">Điều chỉnh biểu đồ</h3>
                       </div>
-                      <p className="text-sm text-gray-500">Bo loc nay ap dung truc tiep cho bieu do va cac so lieu ben duoi.</p>
+                      <p className="text-sm text-gray-500">Bộ lọc này áp dụng trực tiếp cho biểu đồ và các số liệu bên dưới.</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                       <label className="block">
-                        <span className="text-sm font-medium text-gray-700">Tu ngay</span>
+                        <span className="text-sm font-medium text-gray-700">Từ ngày</span>
                         <input
                           type="date"
                           name="date_from"
@@ -497,7 +497,7 @@ const Statistics = () => {
                         />
                       </label>
                       <label className="block">
-                        <span className="text-sm font-medium text-gray-700">Den ngay</span>
+                        <span className="text-sm font-medium text-gray-700">Đến ngày</span>
                         <input
                           type="date"
                           name="date_to"
@@ -507,14 +507,14 @@ const Statistics = () => {
                         />
                       </label>
                       <label className="block">
-                        <span className="text-sm font-medium text-gray-700">San bong</span>
+                        <span className="text-sm font-medium text-gray-700">Sân bóng</span>
                         <select
                           name="field_id"
                           value={filters.field_id}
                           onChange={handleFilterChange}
                           className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-primary"
                         >
-                          <option value="">Tat ca san</option>
+                          <option value="">Tất cả sân</option>
                           {fields.map((field) => (
                             <option key={field.id} value={field.id}>{field.name}</option>
                           ))}

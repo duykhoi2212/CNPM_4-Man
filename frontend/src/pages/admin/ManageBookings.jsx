@@ -29,10 +29,10 @@ const getReadableError = (responseData, fallbackMessage) => {
   return fallbackMessage;
 };
 
-const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} d`;
+const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
 
 const formatDateTime = (value) => {
-  if (!value) return 'Chua cap nhat';
+  if (!value) return 'Chưa cập nhật';
   return new Date(value).toLocaleString('vi-VN');
 };
 
@@ -75,7 +75,7 @@ const ManageBookings = () => {
         setBookings(bookingResponse.data.results || []);
         setFields(fieldResponse.data.results || []);
       } catch (requestError) {
-        setError(getReadableError(requestError.response?.data, 'Khong the tai danh sach booking.'));
+        setError(getReadableError(requestError.response?.data, 'Không thể tải danh sách booking.'));
       } finally {
         setLoading(false);
       }
@@ -102,7 +102,7 @@ const ManageBookings = () => {
       setError('');
       await loadBookingDetail(bookingId);
     } catch (requestError) {
-      setError(getReadableError(requestError.response?.data, 'Khong the tai chi tiet booking.'));
+      setError(getReadableError(requestError.response?.data, 'Không thể tải chi tiết booking.'));
     } finally {
       setDetailLoading(false);
     }
@@ -110,8 +110,8 @@ const ManageBookings = () => {
 
   const handleAction = async (bookingId, action) => {
     const actionConfig = {
-      complete: { url: `/bookings/${bookingId}/complete/`, message: 'Da cap nhat booking hoan thanh.' },
-      cancel: { url: `/bookings/${bookingId}/cancel/`, message: 'Da huy booking thanh cong.' },
+      complete: { url: `/bookings/${bookingId}/complete/`, message: 'Đã cập nhật booking hoàn thành.' },
+      cancel: { url: `/bookings/${bookingId}/cancel/`, message: 'Đã hủy booking thành công.' },
     };
 
     const selectedAction = actionConfig[action];
@@ -128,7 +128,7 @@ const ManageBookings = () => {
       }
       setSuccessMessage(selectedAction.message);
     } catch (requestError) {
-      setError(getReadableError(requestError.response?.data, 'Khong the cap nhat booking.'));
+      setError(getReadableError(requestError.response?.data, 'Không thể cập nhật booking.'));
     } finally {
       setActionLoadingId(null);
     }
@@ -139,10 +139,10 @@ const ManageBookings = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-start gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Quan ly booking</h1>
-            <p className="text-gray-500 mt-2">Admin co the theo doi booking, xem chi tiet thanh toan va cap nhat trang thai tai mot noi.</p>
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý booking</h1>
+            <p className="text-gray-500 mt-2">Admin có thể theo dõi booking, xem chi tiết thanh toán và cập nhật trạng thái tại một nơi.</p>
           </div>
-          <Link to="/" className="text-primary hover:underline">Ve trang khach</Link>
+          <Link to="/" className="text-primary hover:underline">Về trang khách</Link>
         </div>
 
         <AdminNav />
@@ -150,30 +150,30 @@ const ManageBookings = () => {
         <div className="bg-white shadow-sm rounded-lg p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Trang thai</span>
+              <span className="text-sm font-medium text-gray-700">Trạng thái</span>
               <select
                 name="status"
                 value={filters.status}
                 onChange={handleFilterChange}
                 className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
               >
-                <option value="">Tat ca</option>
-                <option value="pending_payment">Cho thanh toan coc</option>
-                <option value="confirmed">Da xac nhan</option>
-                <option value="completed">Da hoan thanh</option>
-                <option value="cancelled">Da huy</option>
+                <option value="">Tất cả</option>
+                <option value="pending_payment">Chờ thanh toán cọc</option>
+                <option value="confirmed">Đã xác nhận</option>
+                <option value="completed">Đã hoàn thành</option>
+                <option value="cancelled">Đã hủy</option>
               </select>
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">San bong</span>
+              <span className="text-sm font-medium text-gray-700">Sân bóng</span>
               <select
                 name="field"
                 value={filters.field}
                 onChange={handleFilterChange}
                 className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
               >
-                <option value="">Tat ca san</option>
+                <option value="">Tất cả sân</option>
                 {fields.map((field) => (
                   <option key={field.id} value={field.id}>{field.name}</option>
                 ))}
@@ -181,7 +181,7 @@ const ManageBookings = () => {
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Ngay dat san</span>
+              <span className="text-sm font-medium text-gray-700">Ngày đặt sân</span>
               <input
                 type="date"
                 name="date"
@@ -198,12 +198,12 @@ const ManageBookings = () => {
 
         <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] gap-8 items-start">
           <div className="bg-white shadow-sm rounded-lg p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Danh sach booking</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Danh sách booking</h2>
 
             {loading ? (
-              <div className="p-8 text-center text-primary font-semibold">Dang tai danh sach booking...</div>
+              <div className="p-8 text-center text-primary font-semibold">Đang tải danh sách booking...</div>
             ) : bookings.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">Khong co booking nao phu hop voi bo loc hien tai.</div>
+              <div className="p-8 text-center text-gray-500">Không có booking nào phù hợp với bộ lọc hiện tại.</div>
             ) : (
               <div className="space-y-4">
                 {bookings.map((booking) => (
@@ -224,32 +224,32 @@ const ManageBookings = () => {
                             </span>
                           ) : (
                             <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold bg-gray-100 text-gray-600">
-                              Chua tao thanh toan
+                              Chưa tạo thanh toán
                             </span>
                           )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
                           <div>
-                            <p className="font-semibold text-gray-900">Khach hang</p>
+                            <p className="font-semibold text-gray-900">Khách hàng</p>
                             <p>{booking.customer_name}</p>
                             <p className="text-gray-500">{booking.customer_phone}</p>
-                            <p className="text-gray-500 break-all">{booking.customer_email || 'Chua cung cap email'}</p>
+                            <p className="text-gray-500 break-all">{booking.customer_email || 'Chưa cung cấp email'}</p>
                           </div>
                           <div>
-                            <p className="font-semibold text-gray-900">Thong tin dat san</p>
-                            <p>Ngay su dung: {booking.booking_date}</p>
-                            <p>Tien san: {formatMoney(booking.field_amount)}</p>
-                            <p>Tien dich vu: {formatMoney(booking.service_amount)}</p>
-                            <p>Tong tien: {formatMoney(booking.total_amount)}</p>
-                            <p>Tien coc: {formatMoney(booking.deposit_amount)}</p>
-                            <p>Con lai: {formatMoney(booking.remaining_amount)}</p>
+                            <p className="font-semibold text-gray-900">Thông tin đặt sân</p>
+                            <p>Ngày sử dụng: {booking.booking_date}</p>
+                            <p>Tiền sân: {formatMoney(booking.field_amount)}</p>
+                            <p>Tiền dịch vụ: {formatMoney(booking.service_amount)}</p>
+                            <p>Tổng tiền: {formatMoney(booking.total_amount)}</p>
+                            <p>Tiền cọc: {formatMoney(booking.deposit_amount)}</p>
+                            <p>Còn lại: {formatMoney(booking.remaining_amount)}</p>
                           </div>
                         </div>
 
                         {booking.service_items?.length > 0 && (
                           <div className="rounded-lg border border-teal-100 bg-teal-50/50 px-4 py-3 text-sm text-teal-900">
-                            <p className="font-semibold">Dich vu kem: {booking.service_items.length} loai</p>
+                            <p className="font-semibold">Dịch vụ kèm: {booking.service_items.length} loại</p>
                             <p className="mt-1 text-teal-700">
                               {booking.service_items.map((item) => `${item.service_name_snapshot} x${item.quantity}`).join(', ')}
                             </p>
@@ -263,7 +263,7 @@ const ManageBookings = () => {
                           onClick={() => handleViewDetail(booking.id)}
                           className="rounded-md bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-100"
                         >
-                          Xem chi tiet
+                            Xem chi tiết
                         </button>
                         {booking.status === 'confirmed' && (
                           <button
@@ -272,7 +272,7 @@ const ManageBookings = () => {
                             onClick={() => handleAction(booking.id, 'complete')}
                             className="rounded-md bg-green-50 px-4 py-3 text-sm font-medium text-green-700 hover:bg-green-100 disabled:opacity-60"
                           >
-                            Hoan thanh
+                            Hoàn thành
                           </button>
                         )}
                         {['pending_payment', 'confirmed'].includes(booking.status) && (
@@ -282,7 +282,7 @@ const ManageBookings = () => {
                             onClick={() => handleAction(booking.id, 'cancel')}
                             className="rounded-md bg-red-50 px-4 py-3 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-60"
                           >
-                            Huy
+                            Hủy
                           </button>
                         )}
                       </div>
@@ -295,7 +295,7 @@ const ManageBookings = () => {
 
           <aside className="bg-white shadow-sm rounded-lg p-6 xl:sticky xl:top-8">
             <div className="flex items-center justify-between gap-4 mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Chi tiet booking</h2>
+              <h2 className="text-xl font-bold text-gray-900">Chi tiết booking</h2>
               {selectedBooking && (
                 <span className={`px-3 py-1 text-xs font-semibold rounded-full ${statusStyles[selectedBooking.status] || 'bg-gray-100 text-gray-800'}`}>
                   {selectedBooking.status_display}
@@ -304,10 +304,10 @@ const ManageBookings = () => {
             </div>
 
             {detailLoading ? (
-              <div className="py-16 text-center text-primary font-semibold">Dang tai chi tiet booking...</div>
+              <div className="py-16 text-center text-primary font-semibold">Đang tải chi tiết booking...</div>
             ) : !selectedBooking ? (
               <div className="py-16 text-center text-gray-500">
-                Chon mot booking ben trai de xem chi tiet thanh toan, khung gio va ghi chu cua khach.
+                Chọn một booking bên trái để xem chi tiết thanh toán, khung giờ và ghi chú của khách.
               </div>
             ) : (
               <div className="space-y-6">
@@ -317,21 +317,21 @@ const ManageBookings = () => {
                       <p className="text-sm text-gray-500">Booking #{selectedBooking.id}</p>
                       <h3 className="text-lg font-bold text-gray-900">{selectedBooking.field?.name}</h3>
                     </div>
-                    <p className="text-sm text-gray-500 text-right">Dat luc {formatDateTime(selectedBooking.created_at)}</p>
+                    <p className="text-sm text-gray-500 text-right">Đặt lúc {formatDateTime(selectedBooking.created_at)}</p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-700">
-                    <p><span className="font-semibold text-gray-900">Ngay su dung:</span> {selectedBooking.booking_date}</p>
-                    <p><span className="font-semibold text-gray-900">Loai san:</span> {selectedBooking.field?.field_type?.name || 'Khong ro'}</p>
-                    <p><span className="font-semibold text-gray-900">Khach hang:</span> {selectedBooking.customer_name}</p>
-                    <p><span className="font-semibold text-gray-900">So dien thoai:</span> {selectedBooking.customer_phone}</p>
-                    <p className="sm:col-span-2 break-all"><span className="font-semibold text-gray-900">Email:</span> {selectedBooking.customer_email || 'Chua cung cap'}</p>
-                    <p className="sm:col-span-2"><span className="font-semibold text-gray-900">Cap nhat lan cuoi:</span> {formatDateTime(selectedBooking.updated_at)}</p>
+                    <p><span className="font-semibold text-gray-900">Ngày sử dụng:</span> {selectedBooking.booking_date}</p>
+                    <p><span className="font-semibold text-gray-900">Loại sân:</span> {selectedBooking.field?.field_type?.name || 'Không rõ'}</p>
+                    <p><span className="font-semibold text-gray-900">Khách hàng:</span> {selectedBooking.customer_name}</p>
+                    <p><span className="font-semibold text-gray-900">Số điện thoại:</span> {selectedBooking.customer_phone}</p>
+                    <p className="sm:col-span-2 break-all"><span className="font-semibold text-gray-900">Email:</span> {selectedBooking.customer_email || 'Chưa cung cấp'}</p>
+                    <p className="sm:col-span-2"><span className="font-semibold text-gray-900">Cập nhật lần cuối:</span> {formatDateTime(selectedBooking.updated_at)}</p>
                   </div>
                 </div>
 
                 <div className="rounded-xl border border-gray-100 p-4 space-y-3">
-                  <h4 className="font-semibold text-gray-900">Khung gio da dat</h4>
+                  <h4 className="font-semibold text-gray-900">Khung giờ đã đặt</h4>
                   {selectedBooking.booking_timeslots?.length ? (
                     <div className="space-y-2">
                       {selectedBooking.booking_timeslots.map((bookingTimeslot) => (
@@ -341,7 +341,7 @@ const ManageBookings = () => {
                               {bookingTimeslot.timeslot?.start_time} - {bookingTimeslot.timeslot?.end_time}
                             </p>
                             <p className="text-gray-500">
-                              {bookingTimeslot.timeslot?.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}
+                              {bookingTimeslot.timeslot?.is_peak_hour ? 'Giờ cao điểm' : 'Giờ thường'}
                             </p>
                           </div>
                           <div className="font-semibold text-gray-900 whitespace-nowrap">{formatMoney(bookingTimeslot.timeslot?.price)}</div>
@@ -349,63 +349,63 @@ const ManageBookings = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500">Booking nay chua co khung gio.</p>
+                    <p className="text-sm text-gray-500">Booking này chưa có khung giờ.</p>
                   )}
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
                   <div className="rounded-xl border border-gray-100 p-4 space-y-3">
-                    <h4 className="font-semibold text-gray-900">Dich vu kem</h4>
+                    <h4 className="font-semibold text-gray-900">Dịch vụ kèm</h4>
                     {selectedBooking.service_items?.length ? (
                       <div className="space-y-2">
                         {selectedBooking.service_items.map((item) => (
                           <div key={item.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 text-sm gap-3">
                             <div>
                               <p className="font-semibold text-gray-900">{item.service_name_snapshot}</p>
-                              <p className="text-gray-500">{formatMoney(item.unit_price_snapshot)} / {item.unit_label_snapshot} · So luong: {item.quantity}</p>
+                              <p className="text-gray-500">{formatMoney(item.unit_price_snapshot)} / {item.unit_label_snapshot} · Số lượng: {item.quantity}</p>
                             </div>
                             <div className="font-semibold text-gray-900 whitespace-nowrap">{formatMoney(item.line_total)}</div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500">Booking nay khong co dich vu kem.</p>
+                      <p className="text-sm text-gray-500">Booking này không có dịch vụ kèm.</p>
                     )}
                   </div>
 
                   <div className="rounded-xl border border-gray-100 p-4 space-y-2">
-                    <h4 className="font-semibold text-gray-900">Thanh toan coc</h4>
+                    <h4 className="font-semibold text-gray-900">Thanh toán cọc</h4>
                     {selectedBooking.payment ? (
                       <div className="space-y-2 text-sm text-gray-700">
-                        <p><span className="font-semibold text-gray-900">Trang thai:</span> {selectedBooking.payment.status_display}</p>
-                        <p><span className="font-semibold text-gray-900">Phuong thuc:</span> {selectedBooking.payment.payment_method_display}</p>
-                        <p><span className="font-semibold text-gray-900">So tien:</span> {formatMoney(selectedBooking.payment.amount)}</p>
-                        <p><span className="font-semibold text-gray-900">Trong do tien coc:</span> {formatMoney(selectedBooking.payment.deposit_component)}</p>
-                        <p><span className="font-semibold text-gray-900">Trong do dich vu:</span> {formatMoney(selectedBooking.payment.service_component)}</p>
-                        <p className="break-all"><span className="font-semibold text-gray-900">Ma giao dich:</span> {selectedBooking.payment.transaction_id || 'Chua co'}</p>
-                        <p><span className="font-semibold text-gray-900">Da thanh toan luc:</span> {formatDateTime(selectedBooking.payment.paid_at)}</p>
+                        <p><span className="font-semibold text-gray-900">Trạng thái:</span> {selectedBooking.payment.status_display}</p>
+                        <p><span className="font-semibold text-gray-900">Phương thức:</span> {selectedBooking.payment.payment_method_display}</p>
+                        <p><span className="font-semibold text-gray-900">Số tiền:</span> {formatMoney(selectedBooking.payment.amount)}</p>
+                        <p><span className="font-semibold text-gray-900">Trong đó tiền cọc:</span> {formatMoney(selectedBooking.payment.deposit_component)}</p>
+                        <p><span className="font-semibold text-gray-900">Trong đó dịch vụ:</span> {formatMoney(selectedBooking.payment.service_component)}</p>
+                        <p className="break-all"><span className="font-semibold text-gray-900">Mã giao dịch:</span> {selectedBooking.payment.transaction_id || 'Chưa có'}</p>
+                        <p><span className="font-semibold text-gray-900">Đã thanh toán lúc:</span> {formatDateTime(selectedBooking.payment.paid_at)}</p>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500">Booking nay chua co giao dich coc.</p>
+                      <p className="text-sm text-gray-500">Booking này chưa có giao dịch cọc.</p>
                     )}
                   </div>
 
                   <div className="rounded-xl border border-gray-100 p-4 space-y-2">
-                    <h4 className="font-semibold text-gray-900">Tong ket tai chinh</h4>
+                    <h4 className="font-semibold text-gray-900">Tổng kết tài chính</h4>
                     <div className="space-y-2 text-sm text-gray-700">
-                      <p><span className="font-semibold text-gray-900">Tien san:</span> {formatMoney(selectedBooking.field_amount)}</p>
-                      <p><span className="font-semibold text-gray-900">Tien dich vu:</span> {formatMoney(selectedBooking.service_amount)}</p>
-                      <p><span className="font-semibold text-gray-900">Tong tien:</span> {formatMoney(selectedBooking.total_amount)}</p>
-                      <p><span className="font-semibold text-gray-900">Tien coc:</span> {formatMoney(selectedBooking.deposit_amount)}</p>
-                      <p><span className="font-semibold text-gray-900">Con lai:</span> {formatMoney(selectedBooking.remaining_amount)}</p>
+                      <p><span className="font-semibold text-gray-900">Tiền sân:</span> {formatMoney(selectedBooking.field_amount)}</p>
+                      <p><span className="font-semibold text-gray-900">Tiền dịch vụ:</span> {formatMoney(selectedBooking.service_amount)}</p>
+                      <p><span className="font-semibold text-gray-900">Tổng tiền:</span> {formatMoney(selectedBooking.total_amount)}</p>
+                      <p><span className="font-semibold text-gray-900">Tiền cọc:</span> {formatMoney(selectedBooking.deposit_amount)}</p>
+                      <p><span className="font-semibold text-gray-900">Còn lại:</span> {formatMoney(selectedBooking.remaining_amount)}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="rounded-xl border border-gray-100 p-4">
-                  <h4 className="font-semibold text-gray-900 mb-2">Ghi chu cua khach</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">Ghi chú của khách</h4>
                   <p className="text-sm text-gray-700 whitespace-pre-line">
-                    {selectedBooking.notes?.trim() ? selectedBooking.notes : 'Khach hang khong de lai ghi chu nao.'}
+                    {selectedBooking.notes?.trim() ? selectedBooking.notes : 'Khách hàng không để lại ghi chú nào.'}
                   </p>
                 </div>
               </div>

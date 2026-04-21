@@ -50,14 +50,14 @@ const ChangePassword = () => {
       });
       window.dispatchEvent(new Event('auth-changed'));
 
-      setSuccessMessage('Doi mat khau thanh cong. He thong da cap nhat phien dang nhap moi cho ban.');
+      setSuccessMessage('Đổi mật khẩu thành công. Hệ thống đã cập nhật phiên đăng nhập mới cho bạn.');
       setFormData({ old_password: '', new_password: '', new_password2: '' });
 
       setTimeout(() => {
         navigate('/profile');
       }, 1200);
     } catch (requestError) {
-      setError(getReadableError(requestError.response?.data, 'Khong the doi mat khau.'));
+      setError(getReadableError(requestError.response?.data, 'Không thể đổi mật khẩu.'));
     } finally {
       setSubmitting(false);
     }
@@ -70,7 +70,7 @@ const ChangePassword = () => {
           <div>
             <h2 className="text-3xl font-bold text-gray-900">Doi mat khau</h2>
             <p className="mt-2 text-gray-500">
-              Cap nhat mat khau moi de bao ve tai khoan cua ban. Sau khi doi thanh cong, he thong se giu ban dang nhap voi token moi.
+              Cập nhật mật khẩu mới để bảo vệ tài khoản của bạn. Sau khi đổi thành công, hệ thống sẽ giữ bạn đăng nhập với token mới.
             </p>
           </div>
           <Link to="/profile" className="text-primary font-semibold hover:underline">
@@ -116,7 +116,7 @@ const ChangePassword = () => {
           </label>
 
           <div className="rounded-xl bg-gray-50 px-4 py-4 text-sm text-gray-600">
-            Goi y: mat khau nen co it nhat 8 ky tu, bao gom chu hoa, chu thuong, so va ky tu dac biet de tang do an toan.
+            Gợi ý: mật khẩu nên có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt để tăng độ an toàn.
           </div>
 
           {error && <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
@@ -127,7 +127,7 @@ const ChangePassword = () => {
             disabled={submitting}
             className="rounded-md bg-primary px-6 py-3 font-semibold text-white hover:bg-teal-600 disabled:opacity-60"
           >
-            {submitting ? 'Dang doi mat khau...' : 'Cap nhat mat khau'}
+            {submitting ? 'Đang đổi mật khẩu...' : 'Cập nhật mật khẩu'}
           </button>
         </form>
       </div>

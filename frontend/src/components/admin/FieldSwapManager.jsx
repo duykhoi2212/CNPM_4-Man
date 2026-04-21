@@ -27,7 +27,7 @@ const FieldSwapManager = ({ refreshKey }) => {
       });
       setSwaps(response.data.results || response.data || []);
     } catch (requestError) {
-      setError(requestError.response?.data?.error || 'Khong the tai danh sach doi san.');
+      setError(requestError.response?.data?.error || 'Không thể tải danh sách đổi sân.');
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ const FieldSwapManager = ({ refreshKey }) => {
       await axiosInstance.post(`/fields/swaps/${swapId}/confirm/`);
       await loadSwaps();
     } catch (requestError) {
-      setError(requestError.response?.data?.error || 'Khong the xac nhan doi san.');
+      setError(requestError.response?.data?.error || 'Không thể xác nhận đổi sân.');
     } finally {
       setBusyId(null);
     }
@@ -53,34 +53,34 @@ const FieldSwapManager = ({ refreshKey }) => {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
       <div>
-        <h3 className="text-lg font-bold text-gray-900">FieldSwapManager</h3>
-        <p className="text-sm text-gray-500 mt-1">Theo doi lich su doi san va ket qua xu ly su co.</p>
+        <h3 className="text-lg font-bold text-gray-900">Quản lý đổi sân</h3>
+        <p className="text-sm text-gray-500 mt-1">Theo dõi lịch sử đổi sân và kết quả xử lý sự cố.</p>
       </div>
 
       <label className="block max-w-xs">
-        <span className="text-sm font-medium text-gray-700">Loc theo trang thai</span>
+        <span className="text-sm font-medium text-gray-700">Lọc theo trạng thái</span>
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
           className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary"
         >
-          <option value="">Tat ca</option>
-          <option value="pending">Cho xac nhan</option>
-          <option value="searching">Dang tim san</option>
-          <option value="proposed">Da de xuat</option>
-          <option value="confirmed">Da xac nhan</option>
-          <option value="completed">Da hoan thanh</option>
-          <option value="cancelled">Da huy</option>
-          <option value="failed">That bai</option>
+          <option value="">Tất cả</option>
+          <option value="pending">Chờ xác nhận</option>
+          <option value="searching">Đang tìm sân</option>
+          <option value="proposed">Đã đề xuất</option>
+          <option value="confirmed">Đã xác nhận</option>
+          <option value="completed">Đã hoàn thành</option>
+          <option value="cancelled">Đã hủy</option>
+          <option value="failed">Thất bại</option>
         </select>
       </label>
 
       {error && <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
 
       {loading ? (
-        <div className="py-5 text-sm text-primary font-medium">Dang tai swaps...</div>
+        <div className="py-5 text-sm text-primary font-medium">Đang tải danh sách đổi sân...</div>
       ) : swaps.length === 0 ? (
-        <div className="py-5 text-sm text-gray-500">Chua co yeu cau doi san nao.</div>
+        <div className="py-5 text-sm text-gray-500">Chưa có yêu cầu đổi sân nào.</div>
       ) : (
         <div className="space-y-3">
           {swaps.map((swap) => (
@@ -88,9 +88,9 @@ const FieldSwapManager = ({ refreshKey }) => {
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="font-semibold text-gray-900">
-                    #{swap.id} - {swap.original_field_name} {'->'} {swap.new_field_name || 'Chua chon'}
+                    #{swap.id} - {swap.original_field_name} {'->'} {swap.new_field_name || 'Chưa chọn'}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Incident: #{swap.incident} - Booking: #{swap.original_booking}</p>
+                  <p className="text-xs text-gray-500 mt-1">Sự cố: #{swap.incident} - Booking: #{swap.original_booking}</p>
                 </div>
                 <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[swap.status] || statusStyles.pending}`}>
                   {swap.status_display || swap.status}
@@ -109,7 +109,7 @@ const FieldSwapManager = ({ refreshKey }) => {
                   disabled={busyId === swap.id}
                   className="mt-3 rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-teal-600 disabled:opacity-60"
                 >
-                  {busyId === swap.id ? 'Dang xac nhan...' : 'Xac nhan doi san'}
+                  {busyId === swap.id ? 'Đang xác nhận...' : 'Xác nhận đổi sân'}
                 </button>
               )}
             </div>

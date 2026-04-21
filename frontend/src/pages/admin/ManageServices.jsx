@@ -24,7 +24,7 @@ const getReadableError = (responseData, fallbackMessage) => {
   return fallbackMessage;
 };
 
-const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} d`;
+const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
 
 const ManageServices = () => {
   const [services, setServices] = useState([]);
@@ -50,7 +50,7 @@ const ManageServices = () => {
         setError('');
         await loadServices();
       } catch (requestError) {
-        setError(getReadableError(requestError.response?.data, 'Khong the tai danh sach dich vu.'));
+        setError(getReadableError(requestError.response?.data, 'Không thể tải danh sách dịch vụ.'));
       } finally {
         setLoading(false);
       }
@@ -111,16 +111,16 @@ const ManageServices = () => {
 
       if (editingId) {
         await axiosInstance.put(`/bookings/services/products/admin/${editingId}/`, payload);
-        setSuccessMessage('Da cap nhat dich vu thanh cong.');
+        setSuccessMessage('Đã cập nhật dịch vụ thành công.');
       } else {
         await axiosInstance.post('/bookings/services/products/admin/', payload);
-        setSuccessMessage('Da tao dich vu moi thanh cong.');
+        setSuccessMessage('Đã tạo dịch vụ mới thành công.');
       }
 
       await loadServices();
       resetForm();
     } catch (requestError) {
-      setError(getReadableError(requestError.response?.data, 'Khong the luu dich vu.'));
+      setError(getReadableError(requestError.response?.data, 'Không thể lưu dịch vụ.'));
     } finally {
       setSubmitting(false);
     }
@@ -142,7 +142,7 @@ const ManageServices = () => {
   };
 
   const handleDelete = async (service) => {
-    const shouldDelete = window.confirm(`Ban co chac muon xoa dich vu \"${service.name}\" khong?`);
+    const shouldDelete = window.confirm(`Bạn có chắc muốn xóa dịch vụ \"${service.name}\" không?`);
     if (!shouldDelete) return;
 
     try {
@@ -152,9 +152,9 @@ const ManageServices = () => {
       await axiosInstance.delete(`/bookings/services/products/admin/${service.id}/`);
       await loadServices();
       if (editingId === service.id) resetForm();
-      setSuccessMessage('Da xoa dich vu thanh cong.');
+      setSuccessMessage('Đã xóa dịch vụ thành công.');
     } catch (requestError) {
-      setError(getReadableError(requestError.response?.data, 'Khong the xoa dich vu.'));
+      setError(getReadableError(requestError.response?.data, 'Không thể xóa dịch vụ.'));
     } finally {
       setActionLoadingId(null);
     }
@@ -165,22 +165,22 @@ const ManageServices = () => {
       <div className="mx-auto max-w-7xl space-y-8">
         <div className="flex items-start justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Quan ly dich vu kem</h1>
-            <p className="mt-2 text-gray-500">Tao va cap nhat gia dich vu de hien thi trong trang checkout.</p>
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý dịch vụ kèm</h1>
+            <p className="mt-2 text-gray-500">Tạo và cập nhật giá dịch vụ để hiển thị trong trang thanh toán.</p>
           </div>
-          <Link to="/" className="text-primary hover:underline">Ve trang khach</Link>
+          <Link to="/" className="text-primary hover:underline">Về trang khách</Link>
         </div>
 
         <AdminNav />
 
         <section className="rounded-xl bg-white p-6 shadow-sm">
           <h2 className="mb-5 text-xl font-bold text-gray-900">
-            {editingId ? `Chinh sua dich vu #${editingId}` : 'Them dich vu moi'}
+            {editingId ? `Chỉnh sửa dịch vụ #${editingId}` : 'Thêm dịch vụ mới'}
           </h2>
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Ten dich vu</span>
+              <span className="text-sm font-medium text-gray-700">Tên dịch vụ</span>
               <input
                 name="name"
                 value={formData.name}
@@ -191,7 +191,7 @@ const ManageServices = () => {
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Ma dich vu</span>
+              <span className="text-sm font-medium text-gray-700">Mã dịch vụ</span>
               <input
                 name="code"
                 value={formData.code}
@@ -202,7 +202,7 @@ const ManageServices = () => {
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Don vi tinh</span>
+              <span className="text-sm font-medium text-gray-700">Đơn vị tính</span>
               <input
                 name="unit_label"
                 value={formData.unit_label}
@@ -213,7 +213,7 @@ const ManageServices = () => {
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Don gia (VND)</span>
+              <span className="text-sm font-medium text-gray-700">Đơn giá (VND)</span>
               <input
                 type="number"
                 name="unit_price"
@@ -227,7 +227,7 @@ const ManageServices = () => {
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Thu tu hien thi</span>
+              <span className="text-sm font-medium text-gray-700">Thứ tự hiển thị</span>
               <input
                 type="number"
                 name="sort_order"
@@ -245,7 +245,7 @@ const ManageServices = () => {
                 checked={formData.is_active}
                 onChange={handleChange}
               />
-              Dang kinh doanh
+              Đang kinh doanh
             </label>
 
             <div className="md:col-span-2 xl:col-span-3 flex flex-wrap gap-3">
@@ -254,7 +254,7 @@ const ManageServices = () => {
                 disabled={submitting}
                 className="rounded-lg bg-primary px-5 py-3 font-semibold text-white hover:bg-teal-600 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {submitting ? 'Dang luu...' : (editingId ? 'Luu cap nhat' : 'Them dich vu')}
+                {submitting ? 'Đang lưu...' : (editingId ? 'Lưu cập nhật' : 'Thêm dịch vụ')}
               </button>
               {editingId && (
                 <button
@@ -262,7 +262,7 @@ const ManageServices = () => {
                   onClick={resetForm}
                   className="rounded-lg border border-gray-300 px-5 py-3 font-semibold text-gray-700 hover:bg-gray-100"
                 >
-                  Huy chinh sua
+                  Hủy chỉnh sửa
                 </button>
               )}
             </div>
@@ -274,12 +274,12 @@ const ManageServices = () => {
 
         <section className="rounded-xl bg-white p-6 shadow-sm space-y-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <h2 className="text-xl font-bold text-gray-900">Danh sach dich vu</h2>
+            <h2 className="text-xl font-bold text-gray-900">Danh sách dịch vụ</h2>
             <div className="flex flex-col gap-3 md:flex-row">
               <input
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Tim theo ten hoac ma dich vu"
+                placeholder="Tìm theo tên hoặc mã dịch vụ"
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-primary md:w-72"
               />
               <select
@@ -287,29 +287,29 @@ const ManageServices = () => {
                 onChange={(event) => setFilterStatus(event.target.value)}
                 className="rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-primary"
               >
-                <option value="all">Tat ca trang thai</option>
-                <option value="active">Dang kinh doanh</option>
-                <option value="inactive">Tam ngung</option>
+                <option value="all">Tất cả trạng thái</option>
+                <option value="active">Đang kinh doanh</option>
+                <option value="inactive">Tạm ngừng</option>
               </select>
             </div>
           </div>
 
           {loading ? (
-            <div className="py-8 text-center font-semibold text-primary">Dang tai danh sach dich vu...</div>
+            <div className="py-8 text-center font-semibold text-primary">Đang tải danh sách dịch vụ...</div>
           ) : filteredServices.length === 0 ? (
-            <div className="py-8 text-center text-gray-500">Khong co dich vu nao phu hop.</div>
+            <div className="py-8 text-center text-gray-500">Không có dịch vụ nào phù hợp.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Ten dich vu</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Ma</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Don gia</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Don vi</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Thu tu</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Trang thai</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Hanh dong</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tên dịch vụ</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Mã</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Đơn giá</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Đơn vị</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Thứ tự</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Trạng thái</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Hành động</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
@@ -322,7 +322,7 @@ const ManageServices = () => {
                       <td className="px-4 py-4 text-gray-600">{service.sort_order}</td>
                       <td className="px-4 py-4">
                         <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${service.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700'}`}>
-                          {service.is_active ? 'Dang kinh doanh' : 'Tam ngung'}
+                          {service.is_active ? 'Đang kinh doanh' : 'Tạm ngừng'}
                         </span>
                       </td>
                       <td className="px-4 py-4">
@@ -332,7 +332,7 @@ const ManageServices = () => {
                             onClick={() => handleEdit(service)}
                             className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700 hover:bg-blue-100"
                           >
-                            Sua
+                            Sửa
                           </button>
                           <button
                             type="button"
@@ -340,7 +340,7 @@ const ManageServices = () => {
                             onClick={() => handleDelete(service)}
                             className="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            {actionLoadingId === service.id ? 'Dang xoa...' : 'Xoa'}
+                            {actionLoadingId === service.id ? 'Đang xóa...' : 'Xóa'}
                           </button>
                         </div>
                       </td>

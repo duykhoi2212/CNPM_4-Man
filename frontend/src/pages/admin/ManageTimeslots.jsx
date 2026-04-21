@@ -22,7 +22,7 @@ const ManageTimeslots = () => {
         setFields(managedFields);
         setSelectedFieldId((prev) => prev || String(managedFields[0]?.id || ''));
       } catch (requestError) {
-        setError(requestError.response?.data?.error || 'Khong the tai danh sach san.');
+        setError(requestError.response?.data?.error || 'Không thể tải danh sách sân.');
       } finally {
         setLoading(false);
       }
@@ -37,29 +37,29 @@ const ManageTimeslots = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-start gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Lich hoat dong & khung gio tu dong</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Lịch hoạt động & khung giờ tự động</h1>
             <p className="text-gray-500 mt-2">
-              Cau hinh lich theo tuan, dong cua dac biet va tu dong sinh khung gio. Khong can nhap khung gio thu cong nua.
+              Cấu hình lịch theo tuần, đóng cửa đặc biệt và tự động sinh khung giờ. Không cần nhập khung giờ thủ công nữa.
             </p>
           </div>
-          <Link to="/" className="text-primary hover:underline">Ve trang khach</Link>
+          <Link to="/" className="text-primary hover:underline">Về trang khách</Link>
         </div>
 
         <AdminNav />
 
         <div className="bg-white shadow-sm rounded-lg p-6 space-y-6">
           <div className="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-sm text-blue-800">
-            Trang nay da duoc chuyen thanh quan ly lich theo tuan. Sau khi click "Tu dong sinh khung gio", he thong se tao danh sach slot.
+            Trang này đã được chuyển thành quản lý lịch theo tuần. Sau khi bấm "Tự động sinh khung giờ", hệ thống sẽ tạo danh sách slot.
           </div>
 
           {loading ? (
-            <div className="p-8 text-center text-primary font-semibold">Dang tai danh sach san...</div>
+            <div className="p-8 text-center text-primary font-semibold">Đang tải danh sách sân...</div>
           ) : error ? (
             <div className="p-8 text-center text-red-500">{error}</div>
           ) : (
             <>
               <label className="block md:w-96">
-                <span className="text-sm font-medium text-gray-700">Chon san can cau hinh</span>
+                <span className="text-sm font-medium text-gray-700">Chọn sân cần cấu hình</span>
               <select
                   value={selectedFieldId}
                   onChange={(event) => setSelectedFieldId(event.target.value)}
@@ -75,7 +75,7 @@ const ManageTimeslots = () => {
 
               {!selectedField ? (
                 <div className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                  Chua chon san de quan ly.
+                  Chưa chọn sân để quản lý.
                 </div>
               ) : (
                 <div className="space-y-8">

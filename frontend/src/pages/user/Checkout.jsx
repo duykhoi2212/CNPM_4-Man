@@ -43,7 +43,7 @@ const Checkout = () => {
           customer_email: profileResponse.data.email || '',
         }));
       } catch {
-        setError('Khong the tai thong tin nguoi dung. Vui long dang nhap lai.');
+        setError('Không thể tải thông tin người dùng. Vui lòng đăng nhập lại.');
       }
     };
 
@@ -132,10 +132,10 @@ const Checkout = () => {
           setError(responseData.error);
         } else {
           const firstMessage = Object.values(responseData).flat()[0];
-          setError(firstMessage || 'Khong the hoan tat dat san. Vui long thu lai.');
+          setError(firstMessage || 'Không thể hoàn tất đặt sân. Vui lòng thử lại.');
         }
       } else {
-        setError('Khong the hoan tat dat san. Vui long thu lai.');
+        setError('Không thể hoàn tất đặt sân. Vui lòng thử lại.');
       }
     } finally {
       setLoading(false);
@@ -155,26 +155,26 @@ const Checkout = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
-      <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Xac nhan dat san va thanh toan</h2>
+      <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Xác nhận đặt sân và thanh toán</h2>
 
       <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 space-y-8">
         <div className="border-b pb-6">
-          <h3 className="text-xl font-semibold mb-4">Thong tin don dat</h3>
+          <h3 className="text-xl font-semibold mb-4">Thông tin đơn đặt</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-            <p><span className="font-medium">San:</span> {pitch.name}</p>
-            <p><span className="font-medium">Ngay dat:</span> {bookingDate}</p>
-            <p><span className="font-medium">Khung gio:</span> {selectedSlots.map((slot) => `${slot.start_time} - ${slot.end_time}`).join(', ')}</p>
-            <p><span className="font-medium">Tien san:</span> {formatMoney(totalAmount)}</p>
-            <p><span className="font-medium">Tien dich vu kem:</span> {formatMoney(serviceAmount)}</p>
-            <p><span className="font-medium">Tong gia tri don:</span> {formatMoney(bookingGrandTotal)}</p>
+            <p><span className="font-medium">Sân:</span> {pitch.name}</p>
+            <p><span className="font-medium">Ngày đặt:</span> {bookingDate}</p>
+            <p><span className="font-medium">Khung giờ:</span> {selectedSlots.map((slot) => `${slot.start_time} - ${slot.end_time}`).join(', ')}</p>
+            <p><span className="font-medium">Tiền sân:</span> {formatMoney(totalAmount)}</p>
+            <p><span className="font-medium">Tiền dịch vụ kèm:</span> {formatMoney(serviceAmount)}</p>
+            <p><span className="font-medium">Tổng giá trị đơn:</span> {formatMoney(bookingGrandTotal)}</p>
           </div>
         </div>
 
         {!matchRequestId && (
           <div className="border-b pb-6">
-            <h3 className="text-xl font-semibold mb-4">Dich vu kem</h3>
+            <h3 className="text-xl font-semibold mb-4">Dịch vụ kèm</h3>
             {serviceProducts.length === 0 ? (
-              <p className="text-sm text-gray-500">Hien tai san chua mo ban dich vu kem.</p>
+              <p className="text-sm text-gray-500">Hiện tại sân chưa mở bán dịch vụ kèm.</p>
             ) : (
               <div className="space-y-3">
                 {serviceProducts.map((product) => {
@@ -213,18 +213,18 @@ const Checkout = () => {
         )}
 
         <div>
-          <h3 className="text-xl font-semibold mb-4 text-primary">Tien coc can thanh toan</h3>
+          <h3 className="text-xl font-semibold mb-4 text-primary">Tiền cọc cần thanh toán</h3>
           <p className="text-3xl font-bold text-gray-900 mb-2">{formatMoney(payableNowAmount)}</p>
-          <p className="text-sm text-gray-500">Bao gom tien coc san {formatMoney(depositAmount)} va tien dich vu kem {formatMoney(serviceAmount)}.</p>
+          <p className="text-sm text-gray-500">Bao gồm tiền cọc sân {formatMoney(depositAmount)} và tiền dịch vụ kèm {formatMoney(serviceAmount)}.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="block text-sm font-medium text-gray-700">
-            Ten khach hang
+            Tên khách hàng
             <input name="customer_name" value={formData.customer_name} onChange={handleChange} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md outline-none focus:border-primary" />
           </label>
           <label className="block text-sm font-medium text-gray-700">
-            So dien thoai
+            Số điện thoại
             <input name="customer_phone" value={formData.customer_phone} onChange={handleChange} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md outline-none focus:border-primary" />
           </label>
           <label className="block text-sm font-medium text-gray-700">
@@ -232,7 +232,7 @@ const Checkout = () => {
             <input name="customer_email" value={formData.customer_email} onChange={handleChange} className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md outline-none focus:border-primary" />
           </label>
           <label className="block text-sm font-medium text-gray-700">
-            Phuong thuc thanh toan
+            Phương thức thanh toán
             <input
               value="VNPay"
               disabled
@@ -242,13 +242,13 @@ const Checkout = () => {
         </div>
 
         <label className="block text-sm font-medium text-gray-700">
-          Ghi chu
+          Ghi chú
           <textarea name="notes" value={formData.notes} onChange={handleChange} rows="3" className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md outline-none focus:border-primary" />
         </label>
 
         {profile && (
           <p className="text-sm text-gray-500">
-            Dang dat san voi tai khoan: <span className="font-semibold">{profile.username}</span>
+            Đang đặt sân với tài khoản: <span className="font-semibold">{profile.username}</span>
           </p>
         )}
 
@@ -265,10 +265,10 @@ const Checkout = () => {
             disabled={loading}
             className="flex-1 bg-primary text-white text-center py-3 rounded-md font-bold hover:bg-teal-600 transition disabled:opacity-60"
           >
-            {loading ? 'Dang xu ly...' : 'Thanh toan coc qua VNPay'}
+            {loading ? 'Đang xử lý...' : 'Thanh toán cọc qua VNPay'}
           </button>
           <Link to={`/pitches/${pitch.id}`} className="flex-1 bg-gray-100 text-gray-700 text-center py-3 rounded-md font-bold hover:bg-gray-200 transition">
-            Quay lai
+            Quay lại
           </Link>
         </div>
       </div>

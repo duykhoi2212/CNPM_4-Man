@@ -71,7 +71,7 @@ const PitchDetail = () => {
 
         setAvailability([]);
         setSelectedSlots([]);
-        setError(requestError.response?.data?.error || 'Khong the tai lich trong cua san.');
+        setError(requestError.response?.data?.error || 'Không thể tải lịch trống của sân.');
       } finally {
         if (isMounted && showLoading) {
           setLoadingSlots(false);
@@ -103,7 +103,7 @@ const PitchDetail = () => {
         const response = await axiosInstance.get(`/fields/${id}/`);
         setPitch(response.data);
       } catch (requestError) {
-        setError(requestError.response?.data?.error || 'Khong the tai chi tiet san.');
+        setError(requestError.response?.data?.error || 'Không thể tải chi tiết sân.');
       } finally {
         setLoading(false);
       }
@@ -169,7 +169,7 @@ const PitchDetail = () => {
     }
 
     if (!selectedSlotDetails.length) {
-      setError('Vui long chon it nhat mot khung gio.');
+      setError('Vui lòng chọn ít nhất một khung giờ.');
       return;
     }
 
@@ -191,7 +191,7 @@ const PitchDetail = () => {
     }
 
     if (!selectedSlotDetails.length) {
-      setError('Vui long chon it nhat mot khung gio.');
+      setError('Vui lòng chọn ít nhất một khung giờ.');
       return;
     }
 
@@ -207,7 +207,7 @@ const PitchDetail = () => {
 
       navigate('/teams?tab=tim-giao-luu', {
         state: {
-          successMessage: response.data?.message || 'Da tao yeu cau giao luu thanh cong',
+          successMessage: response.data?.message || 'Đã tạo yêu cầu giao lưu thành công',
         },
       });
     } catch (requestError) {
@@ -217,10 +217,10 @@ const PitchDetail = () => {
           setError(responseData.error);
         } else {
           const firstMessage = Object.values(responseData).flat()[0];
-          setError(firstMessage || 'Khong the tao yeu cau giao luu. Vui long thu lai.');
+          setError(firstMessage || 'Không thể tạo yêu cầu giao lưu. Vui lòng thử lại.');
         }
       } else {
-        setError('Khong the tao yeu cau giao luu. Vui long thu lai.');
+        setError('Không thể tạo yêu cầu giao lưu. Vui lòng thử lại.');
       }
     } finally {
       setLoadingSlots(false);
@@ -228,7 +228,7 @@ const PitchDetail = () => {
   };
 
   if (loading) {
-    return <div className="max-w-7xl mx-auto px-4 py-12 text-center text-primary font-bold">Dang tai chi tiet san...</div>;
+    return <div className="max-w-7xl mx-auto px-4 py-12 text-center text-primary font-bold">Đang tải chi tiết sân...</div>;
   }
 
   if (error && !pitch) {
@@ -280,56 +280,56 @@ const PitchDetail = () => {
         <section className="rounded-2xl bg-white p-8 shadow-xl space-y-6">
           <div>
             <div className="mb-2 inline-flex rounded-full bg-teal-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">
-              {pitch.field_type?.name || 'Thong tin san'}
+              {pitch.field_type?.name || 'Thông tin sân'}
             </div>
             <h1 className="text-3xl font-extrabold text-gray-900">{pitch.name}</h1>
             <p className="mt-3 text-base leading-relaxed text-gray-600">
-              {pitch.description || 'San hien dang hoat dong va san sang cho dat lich.'}
+              {pitch.description || 'Sân hiện đang hoạt động và sẵn sàng cho đặt lịch.'}
             </p>
           </div>
 
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-              <dt className="text-sm font-medium text-gray-500">Gia gio thuong</dt>
-              <dd className="mt-2 text-xl font-bold text-gray-900">{Number(pitch.price_per_hour).toLocaleString('vi-VN')} d / gio</dd>
+              <dt className="text-sm font-medium text-gray-500">Giá giờ thường</dt>
+              <dd className="mt-2 text-xl font-bold text-gray-900">{Number(pitch.price_per_hour).toLocaleString('vi-VN')} đ / giờ</dd>
             </div>
             <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-              <dt className="text-sm font-medium text-gray-500">Gia gio cao diem</dt>
-              <dd className="mt-2 text-xl font-bold text-gray-900">{Number(pitch.peak_hour_price).toLocaleString('vi-VN')} d / gio</dd>
+              <dt className="text-sm font-medium text-gray-500">Giá giờ cao điểm</dt>
+              <dd className="mt-2 text-xl font-bold text-gray-900">{Number(pitch.peak_hour_price).toLocaleString('vi-VN')} đ / giờ</dd>
             </div>
             <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 sm:col-span-2">
-              <dt className="text-sm font-medium text-gray-500">Dia chi</dt>
+              <dt className="text-sm font-medium text-gray-500">Địa chỉ</dt>
               <dd className="mt-2 text-base font-semibold text-gray-900">{pitch.location}</dd>
             </div>
             <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 sm:col-span-2">
-              <dt className="text-sm font-medium text-gray-500">Danh gia hien tai</dt>
+              <dt className="text-sm font-medium text-gray-500">Đánh giá hiện tại</dt>
               <dd className="mt-2 flex items-center justify-between gap-4">
                 <span className="text-xl font-bold text-yellow-500">{pitch.avg_rating} / 5</span>
-                <span className="text-sm text-gray-500">{pitch.total_reviews} review</span>
+                <span className="text-sm text-gray-500">{pitch.total_reviews} đánh giá</span>
               </dd>
             </div>
           </dl>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Lich hoat dong theo tuan</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Lịch hoạt động theo tuần</h3>
             {pitch.schedules?.length ? (
               <div className="grid grid-cols-1 gap-2">
                 {pitch.schedules.map((schedule) => (
                   <div key={schedule.day_of_week} className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2">
                     <span className="text-sm font-medium text-gray-700">{schedule.day_name}</span>
                     <span className={`text-sm font-semibold ${schedule.is_open ? 'text-green-700' : 'text-red-700'}`}>
-                      {schedule.is_open ? `${String(schedule.open_time).slice(0, 5)} - ${String(schedule.close_time).slice(0, 5)}` : 'Dong cua'}
+                      {schedule.is_open ? `${String(schedule.open_time).slice(0, 5)} - ${String(schedule.close_time).slice(0, 5)}` : 'Đóng cửa'}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">Chua co cau hinh lich hoat dong.</p>
+              <p className="text-sm text-gray-500">Chưa có cấu hình lịch hoạt động.</p>
             )}
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Ngay dong cua sap toi</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Ngày đóng cửa sắp tới</h3>
             {pitch.active_closures?.length ? (
               <div className="space-y-2">
                 {pitch.active_closures.map((closure) => (
@@ -342,13 +342,13 @@ const PitchDetail = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">Khong co lich dong cua dac biet.</p>
+              <p className="text-sm text-gray-500">Không có lịch đóng cửa đặc biệt.</p>
             )}
           </div>
 
           {isAdminViewer && (
             <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-700">
-              Ban dang xem chi tiet san bang tai khoan admin. Nut dat san duoc an de tranh nham lan voi khu quan ly.
+              Bạn đang xem chi tiết sân bằng tài khoản admin. Nút đặt sân được ẩn để tránh nhầm lẫn với khu quản lý.
             </div>
           )}
         </section>
@@ -357,8 +357,8 @@ const PitchDetail = () => {
       <section className="rounded-2xl bg-white p-8 shadow-xl space-y-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Chon lich dat san</h2>
-            <p className="mt-2 text-sm text-gray-500">Danh sach khung gio duoc hien thi theo dang listview de de scan khi san co nhieu lich trong cung mot ngay.</p>
+            <h2 className="text-2xl font-bold text-gray-900">Chọn lịch đặt sân</h2>
+            <p className="mt-2 text-sm text-gray-500">Danh sách khung giờ được hiển thị dạng danh sách để dễ xem khi sân có nhiều lịch trong cùng một ngày.</p>
           </div>
 
           <label className="block min-w-[260px] text-sm font-medium text-gray-700">
@@ -386,14 +386,14 @@ const PitchDetail = () => {
           </div>
 
           {loadingSlots ? (
-            <div className="px-5 py-6 text-sm font-medium text-primary">Dang kiem tra lich trong...</div>
+            <div className="px-5 py-6 text-sm font-medium text-primary">Đang kiểm tra lịch trống...</div>
           ) : availability.length ? (
             <div className="space-y-4 p-4">
               <div>
                 <h4 className="mb-2 text-sm font-semibold text-green-700">Khung gio co the chon ({availableSlots.length})</h4>
                 {availableSlots.length === 0 ? (
                   <div className="rounded-lg border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
-                    Khong co khung gio trong de dat o ngay nay.
+                    Không có khung giờ trống để đặt ở ngày này.
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100 rounded-lg border border-green-100">
@@ -413,11 +413,11 @@ const PitchDetail = () => {
                             <div>
                               <p className="text-sm font-semibold text-gray-900">{slot.start_time} - {slot.end_time}</p>
                               <p className="mt-1 text-xs text-gray-500 md:hidden">
-                                {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}  {Number(slot.price).toLocaleString('vi-VN')} d
+                                {slot.is_peak_hour ? 'Giờ cao điểm' : 'Giờ thường'}  {Number(slot.price).toLocaleString('vi-VN')} đ
                               </p>
                             </div>
                             <div className="hidden md:block text-sm text-gray-600">
-                              {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}
+                              {slot.is_peak_hour ? 'Giờ cao điểm' : 'Giờ thường'}
                             </div>
                             <div className="hidden md:block text-sm font-semibold text-gray-900">
                               {Number(slot.price).toLocaleString('vi-VN')} d
@@ -439,18 +439,18 @@ const PitchDetail = () => {
               </div>
 
               <div>
-                <h4 className="mb-2 text-sm font-semibold text-red-700">Khung gio khong the chon ({unavailableSlots.length})</h4>
+                <h4 className="mb-2 text-sm font-semibold text-red-700">Khung giờ không thể chọn ({unavailableSlots.length})</h4>
                 {unavailableSlots.length === 0 ? (
                   <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    Tat ca khung gio deu dang kha dung.
+                    Tất cả khung giờ đều đang khả dụng.
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100 rounded-lg border border-red-100">
                     {unavailableSlots.map((slot) => {
                       const reservationStatus = slot.reservation_status || 'da_dat';
                       const statusNote = reservationStatus === 'dang_giu_cho'
-                        ? 'Khung gio dang duoc giu cho trong 1 phut de thanh toan coc.'
-                        : 'Khung gio nay da duoc dat.';
+                        ? 'Khung giờ đang được giữ chỗ trong 1 phút để thanh toán cọc.'
+                        : 'Khung giờ này đã được đặt.';
                       return (
                         <div key={slot.timeslot_id} className="w-full bg-white px-5 py-4 opacity-80">
                           <div className="grid gap-3 md:grid-cols-[1.1fr_0.9fr_0.8fr_0.9fr] md:items-center">
@@ -458,7 +458,7 @@ const PitchDetail = () => {
                               <p className="text-sm font-semibold text-gray-900">{slot.start_time} - {slot.end_time}</p>
                             </div>
                             <div className="hidden md:block text-sm text-gray-600">
-                              {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}
+                              {slot.is_peak_hour ? 'Giờ cao điểm' : 'Giờ thường'}
                             </div>
                             <div className="hidden md:block text-sm font-semibold text-gray-900">
                               {Number(slot.price).toLocaleString('vi-VN')} d
@@ -478,29 +478,29 @@ const PitchDetail = () => {
               </div>
             </div>
           ) : (
-            <div className="px-5 py-6 text-sm text-gray-500">Khong co khung gio trong cho ngay da chon.</div>
+            <div className="px-5 py-6 text-sm text-gray-500">Không có khung giờ trống cho ngày đã chọn.</div>
           )}
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="rounded-xl bg-gray-50 p-5 text-sm text-gray-700">
-            <p className="font-semibold text-gray-900 mb-3">Tam tinh</p>
+            <p className="font-semibold text-gray-900 mb-3">Tạm tính</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-3">
-                <span>So khung gio da chon</span>
+                <span>Số khung giờ đã chọn</span>
                 <span className="font-semibold text-gray-900">{selectedSlotDetails.length}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span>Tong tien</span>
-                <span className="font-semibold text-gray-900">{totalAmount.toLocaleString('vi-VN')} d</span>
+                <span>Tổng tiền</span>
+                <span className="font-semibold text-gray-900">{totalAmount.toLocaleString('vi-VN')} đ</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span>Tien coc</span>
-                <span className="font-semibold text-primary">{depositAmount.toLocaleString('vi-VN')} d</span>
+                <span>Tiền cọc</span>
+                <span className="font-semibold text-primary">{depositAmount.toLocaleString('vi-VN')} đ</span>
               </div>
             </div>
             {!isAdminViewer && selectedSlotDetails.length === 0 && (
-              <p className="mt-3 text-xs text-gray-500">Chon it nhat mot khung gio de tiep tuc dat san.</p>
+              <p className="mt-3 text-xs text-gray-500">Chọn ít nhất một khung giờ để tiếp tục đặt sân.</p>
             )}
           </div>
 
@@ -517,7 +517,7 @@ const PitchDetail = () => {
                       : 'bg-slate-900 hover:bg-slate-800 hover:shadow-xl'
                   }`}
                 >
-                  Tim doi giao luu
+                  Tìm đội giao lưu
                 </button>
                 <button
                   type="button"
@@ -529,7 +529,7 @@ const PitchDetail = () => {
                       : 'bg-primary hover:bg-teal-600 hover:shadow-xl'
                   }`}
                 >
-                  Dat san ngay
+                  Đặt sân ngay
                 </button>
               </>
             )}
@@ -537,7 +537,7 @@ const PitchDetail = () => {
               to="/pitches"
               className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-6 py-4 font-semibold text-gray-700 hover:bg-gray-50"
             >
-              Quay lai
+              Quay lại
             </Link>
           </div>
         </div>
@@ -552,19 +552,19 @@ const PitchDetail = () => {
       <section className="bg-white rounded-2xl shadow-xl p-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900">Danh gia tu nguoi choi</h3>
-            <p className="text-sm text-gray-500 mt-1">Tong cong {pitch.total_reviews} danh gia</p>
+            <h3 className="text-2xl font-bold text-gray-900">Đánh giá từ người chơi</h3>
+            <p className="text-sm text-gray-500 mt-1">Tổng cộng {pitch.total_reviews} đánh giá</p>
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold text-yellow-500">{pitch.avg_rating}</p>
-            <p className="text-sm text-gray-500">diem trung binh</p>
+            <p className="text-sm text-gray-500">Điểm trung bình</p>
           </div>
         </div>
 
         {loadingReviews ? (
-          <p className="text-primary text-sm">Dang tai danh gia...</p>
+          <p className="text-primary text-sm">Đang tải đánh giá...</p>
         ) : reviews.length === 0 ? (
-          <p className="text-gray-500">Chua co danh gia nao cho san nay.</p>
+          <p className="text-gray-500">Chưa có đánh giá nào cho sân này.</p>
         ) : (
           <div className="space-y-6">
             {reviews.map((review) => (

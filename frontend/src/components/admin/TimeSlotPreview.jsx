@@ -29,7 +29,7 @@ const TimeSlotPreview = ({ fieldId }) => {
         setSlots(response.data.timeslots || []);
       } catch (requestError) {
         setSlots([]);
-        setError(requestError.response?.data?.error || 'Khong the tai preview khung gio.');
+        setError(requestError.response?.data?.error || 'Không thể tải xem trước khung giờ.');
       } finally {
         setLoading(false);
       }
@@ -42,11 +42,11 @@ const TimeSlotPreview = ({ fieldId }) => {
     <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">Preview khung gio da sinh</h3>
-          <p className="mt-1 text-sm text-gray-500">Mau xanh: con trong, mau do/xam: da dat hoac khong kha dung.</p>
+          <h3 className="text-lg font-bold text-gray-900">Xem trước khung giờ đã sinh</h3>
+          <p className="mt-1 text-sm text-gray-500">Màu xanh: còn trống, màu đỏ/xám: đã đặt hoặc không khả dụng.</p>
         </div>
         <label className="block">
-          <span className="text-sm font-medium text-gray-700">Ngay kiem tra</span>
+          <span className="text-sm font-medium text-gray-700">Ngày kiểm tra</span>
           <input
             type="date"
             value={bookingDate}
@@ -60,9 +60,9 @@ const TimeSlotPreview = ({ fieldId }) => {
       {error && <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">{error}</div>}
 
       {loading ? (
-        <div className="py-6 text-sm font-medium text-primary">Dang tai khung gio...</div>
+        <div className="py-6 text-sm font-medium text-primary">Đang tải khung giờ...</div>
       ) : slots.length === 0 ? (
-        <div className="py-6 text-sm text-gray-500">Khong co du lieu khung gio cho ngay da chon.</div>
+        <div className="py-6 text-sm text-gray-500">Không có dữ liệu khung giờ cho ngày đã chọn.</div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {slots.map((slot) => {
@@ -78,14 +78,14 @@ const TimeSlotPreview = ({ fieldId }) => {
                   {slot.start_time} - {slot.end_time}
                 </p>
                 <p className="mt-1 text-xs text-gray-600">
-                  {slot.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'} - {Number(slot.price).toLocaleString('vi-VN')} d
+                  {slot.is_peak_hour ? 'Giờ cao điểm' : 'Giờ thường'} - {Number(slot.price).toLocaleString('vi-VN')} đ
                 </p>
                 <span
                   className={`mt-2 inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
                     isAvailable ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'
                   }`}
                 >
-                  {isAvailable ? 'Con trong' : 'Khong kha dung'}
+                  {isAvailable ? 'Còn trống' : 'Không khả dụng'}
                 </span>
               </div>
             );

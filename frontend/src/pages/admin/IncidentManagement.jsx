@@ -227,7 +227,7 @@ const IncidentManagement = () => {
                     required
                     className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-primary"
                   >
-                    <option value="">Chon san</option>
+                    <option value="">Chọn sân</option>
                     {fields.map((field) => (
                       <option key={field.id} value={field.id}>{field.name}</option>
                     ))}
@@ -235,14 +235,14 @@ const IncidentManagement = () => {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-medium text-gray-700">Booking lien quan</span>
+                  <span className="text-sm font-medium text-gray-700">Booking liên quan</span>
                   <select
                     value={formData.booking}
                     onChange={(event) => setFormData((prev) => ({ ...prev, booking: event.target.value }))}
                     required
                     className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-primary"
                   >
-                    <option value="">Chon booking</option>
+                    <option value="">Chọn booking</option>
                     {filteredBookings.map((booking) => (
                       <option key={booking.id} value={booking.id}>
                         #{booking.id} - {booking.field?.name} - {booking.customer_name}
@@ -250,13 +250,13 @@ const IncidentManagement = () => {
                     ))}
                   </select>
                   {formData.field && filteredBookings.length === 0 && (
-                    <p className="mt-1 text-xs text-amber-600">San nay chua co booking de lien ket su co.</p>
+                    <p className="mt-1 text-xs text-amber-600">Sân này chưa có booking để liên kết sự cố.</p>
                   )}
                 </label>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <label className="block">
-                    <span className="text-sm font-medium text-gray-700">Loai su co</span>
+                    <span className="text-sm font-medium text-gray-700">Loại sự cố</span>
                     <select
                       value={formData.issue_type}
                       onChange={(event) => setFormData((prev) => ({ ...prev, issue_type: event.target.value }))}
@@ -268,7 +268,7 @@ const IncidentManagement = () => {
                     </select>
                   </label>
                   <label className="block">
-                    <span className="text-sm font-medium text-gray-700">Muc do</span>
+                    <span className="text-sm font-medium text-gray-700">Mức độ</span>
                     <select
                       value={formData.severity}
                       onChange={(event) => setFormData((prev) => ({ ...prev, severity: event.target.value }))}
@@ -282,7 +282,7 @@ const IncidentManagement = () => {
                 </div>
 
                 <label className="block">
-                  <span className="text-sm font-medium text-gray-700">Mo ta</span>
+                  <span className="text-sm font-medium text-gray-700">Mô tả</span>
                   <textarea
                     rows="4"
                     value={formData.description}
@@ -297,7 +297,7 @@ const IncidentManagement = () => {
                   disabled={submitting}
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-teal-600 disabled:opacity-60"
                 >
-                  {submitting ? 'Dang tao...' : 'Tao bao cao su co'}
+                  {submitting ? 'Đang tạo...' : 'Tạo báo cáo sự cố'}
                 </button>
               </form>
             </div>
@@ -308,27 +308,27 @@ const IncidentManagement = () => {
           <div className="space-y-8">
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <h2 className="text-lg font-bold text-gray-900">Danh sach su co</h2>
+                <h2 className="text-lg font-bold text-gray-900">Danh sách sự cố</h2>
                 <label className="block w-full sm:w-60">
-                  <span className="text-sm font-medium text-gray-700">Loc theo trang thai</span>
+                  <span className="text-sm font-medium text-gray-700">Lọc theo trạng thái</span>
                   <select
                     value={incidentStatusFilter}
                     onChange={(event) => setIncidentStatusFilter(event.target.value)}
                     className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-primary"
                   >
-                    <option value="">Tat ca</option>
-                    <option value="pending">Cho xu ly</option>
-                    <option value="investigating">Dang dieu tra</option>
-                    <option value="resolving">Dang giai quyet</option>
-                    <option value="resolved">Da giai quyet</option>
-                    <option value="cancelled">Da huy</option>
+                    <option value="">Tất cả</option>
+                    <option value="pending">Chờ xử lý</option>
+                    <option value="investigating">Đang điều tra</option>
+                    <option value="resolving">Đang giải quyết</option>
+                    <option value="resolved">Đã giải quyết</option>
+                    <option value="cancelled">Đã hủy</option>
                   </select>
                 </label>
               </div>
               {loading ? (
-                <div className="py-4 text-sm text-primary font-medium">Dang tai incidents...</div>
+                <div className="py-4 text-sm text-primary font-medium">Đang tải sự cố...</div>
               ) : filteredIncidents.length === 0 ? (
-                <div className="py-4 text-sm text-gray-500">Chua co bao cao su co nao.</div>
+                <div className="py-4 text-sm text-gray-500">Chưa có báo cáo sự cố nào.</div>
               ) : (
                 <div className="space-y-3">
                   {filteredIncidents.map((incident) => (
@@ -362,7 +362,7 @@ const IncidentManagement = () => {
                             disabled={updatingIncidentId === incident.id}
                             className="rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-60"
                           >
-                            Dang dieu tra
+                            Đang điều tra
                           </button>
                         )}
                         {incident.status !== 'resolving' && (
@@ -372,7 +372,7 @@ const IncidentManagement = () => {
                             disabled={updatingIncidentId === incident.id}
                             className="rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-60"
                           >
-                            Dang giai quyet
+                            Đang giải quyết
                           </button>
                         )}
                         {incident.status !== 'resolved' && (
@@ -382,7 +382,7 @@ const IncidentManagement = () => {
                             disabled={updatingIncidentId === incident.id}
                             className="rounded-md bg-green-50 px-2 py-1 text-xs font-semibold text-green-700 hover:bg-green-100 disabled:opacity-60"
                           >
-                            Danh dau da giai quyet
+                            Đánh dấu đã giải quyết
                           </button>
                         )}
                       </div>
@@ -400,8 +400,8 @@ const IncidentManagement = () => {
 
             {selectedAlternative && (
               <div className="rounded-lg bg-green-50 border border-green-100 px-4 py-3 text-sm text-green-800">
-                Da xu ly doi san voi san: <strong>{selectedAlternative.field_name}</strong>
-                {creatingSwap ? ' (dang cap nhat booking...)' : ' (booking da duoc cap nhat)'}
+                Đã xử lý đổi sân với sân: <strong>{selectedAlternative.field_name}</strong>
+                {creatingSwap ? ' (đang cập nhật booking...)' : ' (booking đã được cập nhật)'}
               </div>
             )}
           </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axiosInstance from '../../api/axios';
 
-const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} d`;
+const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
 
 const AlternativeFieldFinder = ({ incidentId, onAlternativeSelected, actionLoadingFieldId }) => {
   const [loading, setLoading] = useState(false);
@@ -10,7 +10,7 @@ const AlternativeFieldFinder = ({ incidentId, onAlternativeSelected, actionLoadi
 
   const handleFindAlternatives = async () => {
     if (!incidentId) {
-      setError('Vui long chon mot su co de tim san thay the.');
+      setError('Vui lòng chọn một sự cố để tìm sân thay thế.');
       return;
     }
 
@@ -21,7 +21,7 @@ const AlternativeFieldFinder = ({ incidentId, onAlternativeSelected, actionLoadi
       setAlternatives(response.data.alternatives || []);
     } catch (requestError) {
       setAlternatives([]);
-      setError(requestError.response?.data?.error || 'Khong the tim san thay the.');
+      setError(requestError.response?.data?.error || 'Không thể tìm sân thay thế.');
     } finally {
       setLoading(false);
     }
@@ -31,8 +31,8 @@ const AlternativeFieldFinder = ({ incidentId, onAlternativeSelected, actionLoadi
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">AlternativeFieldFinder</h3>
-          <p className="text-sm text-gray-500 mt-1">Tim san thay the gan nhat cho su co dang chon.</p>
+          <h3 className="text-lg font-bold text-gray-900">Tìm sân thay thế</h3>
+          <p className="text-sm text-gray-500 mt-1">Tìm sân thay thế gần nhất cho sự cố đang chọn.</p>
         </div>
         <button
           type="button"
@@ -40,7 +40,7 @@ const AlternativeFieldFinder = ({ incidentId, onAlternativeSelected, actionLoadi
           disabled={loading || !incidentId}
           className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
         >
-          {loading ? 'Dang tim...' : 'Tim san thay the'}
+          {loading ? 'Đang tìm...' : 'Tìm sân thay thế'}
         </button>
       </div>
 
@@ -62,17 +62,17 @@ const AlternativeFieldFinder = ({ incidentId, onAlternativeSelected, actionLoadi
                   <p className="font-semibold text-gray-900">{item.field_name}</p>
                   <p className="text-sm text-gray-600">{item.location}</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Cung dia chi - Slot trong: {item.available_slots}/{item.required_slots}
+                    Cùng địa chỉ - Khung trống: {item.available_slots}/{item.required_slots}
                   </p>
                   {item.requires_cancelling_bookings && (
                     <p className="mt-1 text-xs font-medium text-amber-700">
-                      Can huy booking xung dot: #{item.conflicting_booking_ids.join(', #')}
+                      Cần hủy booking xung đột: #{item.conflicting_booking_ids.join(', #')}
                     </p>
                   )}
                 </div>
                 <div className="text-sm text-gray-700">
-                  <p>Tong gia: <span className="font-semibold">{formatMoney(item.total_price)}</span></p>
-                  <p>Chenh lech: <span className="font-semibold">{formatMoney(item.price_difference)}</span></p>
+                  <p>Tổng giá: <span className="font-semibold">{formatMoney(item.total_price)}</span></p>
+                  <p>Chênh lệch: <span className="font-semibold">{formatMoney(item.price_difference)}</span></p>
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -83,7 +83,7 @@ const AlternativeFieldFinder = ({ incidentId, onAlternativeSelected, actionLoadi
                     onClick={() => onAlternativeSelected?.(item, { forceCancelConflicts: false })}
                     className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white hover:bg-teal-600 disabled:opacity-60"
                   >
-                    {actionLoadingFieldId === item.field_id ? 'Dang xu ly...' : 'Doi sang san nay'}
+                    {actionLoadingFieldId === item.field_id ? 'Đang xử lý...' : 'Đổi sang sân này'}
                   </button>
                 )}
                 {item.requires_cancelling_bookings && (
@@ -93,7 +93,7 @@ const AlternativeFieldFinder = ({ incidentId, onAlternativeSelected, actionLoadi
                     onClick={() => onAlternativeSelected?.(item, { forceCancelConflicts: true })}
                     className="rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60"
                   >
-                    {actionLoadingFieldId === item.field_id ? 'Dang xu ly...' : 'Huy booking xung dot va doi'}
+                    {actionLoadingFieldId === item.field_id ? 'Đang xử lý...' : 'Hủy booking xung đột và đổi'}
                   </button>
                 )}
               </div>

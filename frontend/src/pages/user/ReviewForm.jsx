@@ -48,7 +48,7 @@ const ReviewForm = () => {
           });
         }
       } catch (requestError) {
-        setError(buildErrorMessage(requestError.response?.data, 'Khong the tai thong tin booking de danh gia.'));
+        setError(buildErrorMessage(requestError.response?.data, 'Không thể tải thông tin booking để đánh giá.'));
       } finally {
         setLoading(false);
       }
@@ -134,7 +134,7 @@ const ReviewForm = () => {
         },
       });
     } catch (requestError) {
-      setError(buildErrorMessage(requestError.response?.data, 'Khong the gui danh gia. Vui long thu lai.'));
+      setError(buildErrorMessage(requestError.response?.data, 'Không thể gửi đánh giá. Vui lòng thử lại.'));
     } finally {
       setSubmitting(false);
     }
@@ -143,7 +143,7 @@ const ReviewForm = () => {
   const handleDeleteReview = async () => {
     if (!reviewDetail?.id) return;
 
-    const confirmed = window.confirm('Ban co chac muon xoa danh gia nay khong?');
+    const confirmed = window.confirm('Bạn có chắc muốn xóa đánh giá này không?');
     if (!confirmed) return;
 
     try {
@@ -154,7 +154,7 @@ const ReviewForm = () => {
         state: { successMessage: 'Danh gia cua ban da duoc xoa thanh cong.' },
       });
     } catch (requestError) {
-      setError(buildErrorMessage(requestError.response?.data, 'Khong the xoa danh gia. Vui long thu lai.'));
+      setError(buildErrorMessage(requestError.response?.data, 'Không thể xóa đánh giá. Vui lòng thử lại.'));
     } finally {
       setDeleting(false);
     }
@@ -168,12 +168,12 @@ const ReviewForm = () => {
       const response = await axiosInstance.delete(`/reviews/${reviewDetail.id}/images/${imageId}/`);
       setReviewDetail(response.data.review);
     } catch (requestError) {
-      setError(buildErrorMessage(requestError.response?.data, 'Khong the xoa anh danh gia.'));
+      setError(buildErrorMessage(requestError.response?.data, 'Không thể xóa ảnh đánh giá.'));
     }
   };
 
   if (loading) {
-    return <div className="max-w-4xl mx-auto px-4 py-12 text-center text-primary font-semibold">Dang tai thong tin booking...</div>;
+    return <div className="max-w-4xl mx-auto px-4 py-12 text-center text-primary font-semibold">Đang tải thông tin booking...</div>;
   }
 
   if (error && !booking) {
@@ -219,7 +219,7 @@ const ReviewForm = () => {
               value={formData.comment}
               onChange={handleCommentChange}
               rows="6"
-              placeholder="Chia se trai nghiem cua ban ve san bong, chat luong mat san, dich vu..."
+              placeholder="Chia sẻ trải nghiệm của bạn về sân bóng, chất lượng mặt sân, dịch vụ..."
               className="mt-1 block w-full rounded-md border border-gray-300 px-4 py-3 outline-none focus:border-primary"
             />
           </label>
@@ -227,7 +227,7 @@ const ReviewForm = () => {
           <div className="space-y-4">
             <div>
               <p className="text-sm font-medium text-gray-700">Anh danh gia</p>
-              <p className="mt-1 text-xs text-gray-500">Ban co the tai toi da {MAX_IMAGES} anh cho moi danh gia.</p>
+              <p className="mt-1 text-xs text-gray-500">Bạn có thể tải tối đa {MAX_IMAGES} ảnh cho mỗi đánh giá.</p>
             </div>
 
             {reviewDetail?.images?.length > 0 && (
@@ -266,7 +266,7 @@ const ReviewForm = () => {
 
             {selectedFiles.length > 0 && (
               <div className="rounded-md bg-blue-50 px-4 py-3 text-sm text-blue-700">
-                Dang chon {selectedFiles.length} anh moi de tai len sau khi luu danh gia.
+                Đang chọn {selectedFiles.length} ảnh mới để tải lên sau khi lưu đánh giá.
               </div>
             )}
           </div>
@@ -283,7 +283,7 @@ const ReviewForm = () => {
               disabled={submitting || uploadingImages}
               className="flex-1 rounded-md bg-primary px-4 py-3 font-bold text-white hover:bg-teal-600 disabled:opacity-60"
             >
-              {submitting || uploadingImages ? 'Dang xu ly...' : reviewDetail?.id ? 'Luu thay doi' : 'Gui danh gia'}
+              {submitting || uploadingImages ? 'Đang xử lý...' : reviewDetail?.id ? 'Lưu thay đổi' : 'Gửi đánh giá'}
             </button>
             {reviewDetail?.id && (
               <button
@@ -292,7 +292,7 @@ const ReviewForm = () => {
                 disabled={deleting}
                 className="flex-1 rounded-md bg-red-50 px-4 py-3 text-center font-bold text-red-700 hover:bg-red-100 disabled:opacity-60"
               >
-                {deleting ? 'Dang xoa...' : 'Xoa danh gia'}
+                {deleting ? 'Đang xóa...' : 'Xóa đánh giá'}
               </button>
             )}
             <Link
