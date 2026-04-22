@@ -5,7 +5,7 @@ class StatsQuerySerializer(serializers.Serializer):
     date_from = serializers.DateField(required=False)
     date_to = serializers.DateField(required=False)
     field_id = serializers.IntegerField(required=False, min_value=1)
-    group_by = serializers.ChoiceField(choices=['day', 'month'], required=False, default='day')
+    group_by = serializers.ChoiceField(choices=['day', 'month', 'year'], required=False, default='day')
     limit = serializers.IntegerField(required=False, min_value=1, max_value=20, default=5)
 
     def validate(self, attrs):

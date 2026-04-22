@@ -63,6 +63,8 @@ INSTALLED_APPS = [
     'apps.payments.apps.PaymentsConfig',
     'apps.reviews.apps.ReviewsConfig',
     'apps.statistics.apps.StatisticsConfig',
+    'apps.contacts.apps.ContactsConfig',
+    'apps.matches.apps.MatchesConfig',
 ]
 
 MIDDLEWARE = [
@@ -79,7 +81,7 @@ MIDDLEWARE = [
 # ==============================================================================
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://127.0.0.1:3000',
+    default='http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173',
     cast=Csv()
 )
 CORS_ALLOW_CREDENTIALS = True
@@ -154,8 +156,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
-CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Static files (CSS, JavaScript, Images)

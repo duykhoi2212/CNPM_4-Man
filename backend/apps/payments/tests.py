@@ -35,13 +35,13 @@ class PaymentApiTests(APITestCase):
             customer_email='pay@example.com',
             total_amount=Decimal('400000.00'),
             deposit_amount=Decimal('120000.00'),
-            status='pending',
+            status='pending_payment',
         )
 
     def test_create_payment_success(self):
         response = self.client.post(
             '/api/payments/',
-            {'booking_id': self.booking.id, 'payment_method': 'momo'},
+            {'booking_id': self.booking.id, 'payment_method': 'vnpay'},
             format='json'
         )
 
@@ -54,7 +54,7 @@ class PaymentApiTests(APITestCase):
     def test_confirm_payment_updates_booking_status(self):
         payment = Payment.objects.create(
             booking=self.booking,
-            payment_method='momo',
+            payment_method='vnpay',
             amount=Decimal('120000.00'),
             status='pending',
         )

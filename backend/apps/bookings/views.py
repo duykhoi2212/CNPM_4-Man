@@ -2,7 +2,6 @@
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from django.db.models import Q
 
 from .models import Booking
 from .serializers import (
@@ -10,155 +9,132 @@ from .serializers import (
     BookingDetailSerializer,
     BookingCreateSerializer,
     BookingCancelSerializer,
-    BookingConfirmSerializer
+    BookingConfirmSerializer,
+    ServiceProductListSerializer,
+    ServiceProductAdminSerializer,
 )
+from .models import ServiceProduct
+from apps.matches.services import cancel_match_requests_blocked_by_bookings
+from apps.fields.access import get_managed_fields_queryset
 
 
 class IsOwnerOrAdmin(permissions.BasePermission):
-    """
-    Custom permission:
-    - Owner có thể xem booking của mình
-    - Admin có thể xem tất cả bookings
-    """
     def has_object_permission(self, request, view, obj):
-        return obj.user == request.user or request.user.is_staff
+        if obj.user == request.user:
+            return True
+        if not request.user.is_staff:
+            return False
+        if request.user.is_superuser:
+            return True
+        return obj.field.owner_id == request.user.id
 
 
 class BookingListView(generics.ListAPIView):
-    """
-    GET /api/bookings/
-    
-    List bookings:
-    - User thường: chỉ thấy bookings của mình
-    - Admin: thấy tất cả bookings
-    
-    Query params:
-    - status: pending/confirmed/completed/cancelled
-    - date: YYYY-MM-DD
-    - field: field_id
-    """
     serializer_class = BookingListSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get_queryset(self):
         user = self.request.user
-        
-        # Admin thấy tất cả, user thường chỉ thấy của mình
+
         if user.is_staff:
             queryset = Booking.objects.all()
+            if not user.is_superuser:
+                queryset = queryset.filter(field__in=get_managed_fields_queryset(user))
         else:
             queryset = Booking.objects.filter(user=user)
-        
-        queryset = queryset.select_related('user', 'field', 'field__field_type').order_by('-created_at')
-        
-        # Filter by status
+
+        queryset = queryset.select_related('user', 'field', 'field__field_type', 'payment').prefetch_related(
+            'booking_timeslots__timeslot',
+            'review',
+            'service_items',
+        ).order_by('-created_at')
+
         status_filter = self.request.query_params.get('status')
         if status_filter:
             queryset = queryset.filter(status=status_filter)
-        
-        # Filter by date
+
         date_filter = self.request.query_params.get('date')
         if date_filter:
             queryset = queryset.filter(booking_date=date_filter)
-        
-        # Filter by field
+
         field_filter = self.request.query_params.get('field')
         if field_filter:
             queryset = queryset.filter(field_id=field_filter)
-        
+
         return queryset
 
 
 class BookingDetailView(generics.RetrieveAPIView):
-    """
-    GET /api/bookings/:id/
-    
-    Xem chi tiết booking
-    - Owner hoặc Admin
-    """
-    queryset = Booking.objects.select_related('user', 'field').prefetch_related('booking_timeslots__timeslot')
+    queryset = Booking.objects.select_related('user', 'field', 'field__field_type', 'payment').prefetch_related('booking_timeslots__timeslot', 'service_items')
     serializer_class = BookingDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
 
+class ServiceProductListView(generics.ListAPIView):
+    serializer_class = ServiceProductListSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        queryset = ServiceProduct.objects.all().order_by('sort_order', 'name')
+        active_only = self.request.query_params.get('active_only', 'true').lower() != 'false'
+        if active_only:
+            queryset = queryset.filter(is_active=True)
+        return queryset
+
+
+class ServiceProductAdminListCreateView(generics.ListCreateAPIView):
+    serializer_class = ServiceProductAdminSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def get_queryset(self):
+        return ServiceProduct.objects.all().order_by('sort_order', 'name', 'id')
+
+
+class ServiceProductAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ServiceProductAdminSerializer
+    permission_classes = [permissions.IsAdminUser]
+    queryset = ServiceProduct.objects.all()
+
+
 class BookingCreateView(generics.CreateAPIView):
-    """
-    POST /api/bookings/
-    
-    Tạo booking mới
-    
-    Body: {
-        "field": 1,
-        "booking_date": "2026-02-26",
-        "timeslot_ids": [1, 2, 3],
-        "customer_name": "Nguyễn Văn A",
-        "customer_phone": "0123456789",
-        "customer_email": "email@example.com",
-        "notes": "Ghi chú thêm..."
-    }
-    
-    Response: {
-        "id": 1,
-        "field": {...},
-        "booking_date": "2026-02-26",
-        "total_amount": 900000,
-        "deposit_amount": 270000,
-        "status": "pending",
-        "booking_timeslots": [...]
-    }
-    """
     serializer_class = BookingCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         booking = serializer.save()
-        
-        # Return detailed booking info
+        cancel_match_requests_blocked_by_bookings()
+
         detail_serializer = BookingDetailSerializer(booking, context={'request': request})
-        
+
         return Response({
-            'message': 'Booking created successfully',
+            'message': 'Tao booking thanh cong, vui long thanh toan tien coc',
             'booking': detail_serializer.data
         }, status=status.HTTP_201_CREATED)
 
 
 @api_view(['PUT'])
-@permission_classes([permissions.IsAuthenticated, IsOwnerOrAdmin])
+@permission_classes([permissions.IsAuthenticated])
 def booking_cancel_view(request, pk):
-    """
-    PUT /api/bookings/:id/cancel/
-    
-    Hủy booking (chỉ Owner hoặc Admin)
-    
-    Body: {
-        "reason": "Lý do hủy..." (optional)
-    }
-    """
     try:
         booking = Booking.objects.get(pk=pk)
     except Booking.DoesNotExist:
-        return Response(
-            {'error': 'Booking not found'},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    
-    # Check permission
+        return Response({'error': 'Khong tim thay booking'}, status=status.HTTP_404_NOT_FOUND)
+
     if booking.user != request.user and not request.user.is_staff:
-        return Response(
-            {'error': 'You do not have permission to cancel this booking'},
-            status=status.HTTP_403_FORBIDDEN
-        )
-    
+        return Response({'error': 'Ban khong co quyen huy booking nay'}, status=status.HTTP_403_FORBIDDEN)
+    if request.user.is_staff and not request.user.is_superuser and booking.user != request.user and booking.field.owner_id != request.user.id:
+        return Response({'error': 'Ban khong co quyen huy booking nay'}, status=status.HTTP_403_FORBIDDEN)
+
     serializer = BookingCancelSerializer(instance=booking, data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
-    
+
     detail_serializer = BookingDetailSerializer(booking, context={'request': request})
-    
+
     return Response({
-        'message': 'Booking cancelled successfully',
+        'message': 'Da huy booking thanh cong',
         'booking': detail_serializer.data
     }, status=status.HTTP_200_OK)
 
@@ -166,61 +142,39 @@ def booking_cancel_view(request, pk):
 @api_view(['PUT'])
 @permission_classes([permissions.IsAdminUser])
 def booking_confirm_view(request, pk):
-    """
-    PUT /api/bookings/:id/confirm/
-    
-    Admin xác nhận booking
-    (Hoặc tự động sau khi payment completed)
-    """
     try:
         booking = Booking.objects.get(pk=pk)
     except Booking.DoesNotExist:
-        return Response(
-            {'error': 'Booking not found'},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    
+        return Response({'error': 'Khong tim thay booking'}, status=status.HTTP_404_NOT_FOUND)
+
+    if not request.user.is_superuser and booking.field.owner_id != request.user.id:
+        return Response({'error': 'Ban khong co quyen quan ly booking nay'}, status=status.HTTP_403_FORBIDDEN)
+
     serializer = BookingConfirmSerializer(instance=booking, data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
-    
-    detail_serializer = BookingDetailSerializer(booking, context={'request': request})
-    
-    return Response({
-        'message': 'Booking confirmed successfully',
-        'booking': detail_serializer.data
-    }, status=status.HTTP_200_OK)
+    return Response({'booking_id': booking.id}, status=status.HTTP_200_OK)
 
 
 @api_view(['PUT'])
 @permission_classes([permissions.IsAdminUser])
 def booking_complete_view(request, pk):
-    """
-    PUT /api/bookings/:id/complete/
-    
-    Admin đánh dấu booking hoàn thành
-    (Sau khi khách đã đá xong)
-    """
     try:
         booking = Booking.objects.get(pk=pk)
     except Booking.DoesNotExist:
-        return Response(
-            {'error': 'Booking not found'},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    
+        return Response({'error': 'Khong tim thay booking'}, status=status.HTTP_404_NOT_FOUND)
+
+    if not request.user.is_superuser and booking.field.owner_id != request.user.id:
+        return Response({'error': 'Ban khong co quyen quan ly booking nay'}, status=status.HTTP_403_FORBIDDEN)
+
     if booking.status != 'confirmed':
-        return Response(
-            {'error': 'Only confirmed bookings can be marked as completed'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
+        return Response({'error': 'Chi booking da xac nhan moi co the hoan thanh'}, status=status.HTTP_400_BAD_REQUEST)
+
     booking.status = 'completed'
     booking.save(update_fields=['status', 'updated_at'])
-    
+
     detail_serializer = BookingDetailSerializer(booking, context={'request': request})
-    
+
     return Response({
-        'message': 'Booking marked as completed',
+        'message': 'Da cap nhat booking hoan thanh',
         'booking': detail_serializer.data
     }, status=status.HTTP_200_OK)

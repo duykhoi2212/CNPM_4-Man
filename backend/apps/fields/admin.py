@@ -17,8 +17,8 @@ class TimeSlotInline(admin.TabularInline):
 
 @admin.register(Field)
 class FieldAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'field_type', 'price_per_hour', 'is_active']
-    list_filter = ['field_type', 'is_active']
+    list_display = ['id', 'name', 'field_type', 'owner', 'price_per_hour', 'is_active']
+    list_filter = ['field_type', 'is_active', 'owner']
     search_fields = ['name', 'location']
     inlines = [FieldImageInline, TimeSlotInline]
 

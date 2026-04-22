@@ -4,51 +4,47 @@ from apps.bookings.models import Booking
 
 class Payment(models.Model):
     METHOD_CHOICES = [
-        ('atm', 'ATM'),
-        ('momo', 'MoMo'),
-        ('zalopay', 'ZaloPay'),
-        ('bank_transfer', 'Chuyển khoản ngân hàng'),
-        ('cash', 'Tiền mặt'),
+        ('vnpay', 'VNPay'),
     ]
 
     STATUS_CHOICES = [
-        ('pending', 'Chờ thanh toán'),
-        ('completed', 'Đã thanh toán'),
-        ('failed', 'Thất bại'),
-        ('refunded', 'Đã hoàn tiền'),
+        ('pending', 'Cho thanh toan'),
+        ('completed', 'Da thanh toan'),
+        ('failed', 'That bai'),
+        ('refunded', 'Da hoan tien'),
     ]
 
     booking = models.OneToOneField(
         Booking,
         on_delete=models.CASCADE,
         related_name='payment',
-        verbose_name='Đơn đặt sân'
+        verbose_name='Don dat san'
     )
     payment_method = models.CharField(
         max_length=20,
         choices=METHOD_CHOICES,
-        verbose_name='Phương thức thanh toán'
+        verbose_name='Phuong thuc thanh toan'
     )
-    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Số tiền')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='So tien')
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default='pending',
-        verbose_name='Trạng thái'
+        verbose_name='Trang thai'
     )
     transaction_id = models.CharField(
         max_length=100,
         null=True,
         blank=True,
-        verbose_name='Mã giao dịch'
+        verbose_name='Ma giao dich'
     )
-    paid_at = models.DateTimeField(null=True, blank=True, verbose_name='Thời gian thanh toán')
+    paid_at = models.DateTimeField(null=True, blank=True, verbose_name='Thoi gian thanh toan')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'payments'
-        verbose_name = 'Thanh toán'
-        verbose_name_plural = 'Thanh toán'
+        verbose_name = 'Thanh toan'
+        verbose_name_plural = 'Thanh toan'
         ordering = ['-created_at']
 
     def __str__(self):

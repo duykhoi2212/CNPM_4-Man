@@ -1,43 +1,86 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axiosInstance from '../../api/axios';
+import { setAuthSession } from '../../utils/auth';
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await axiosInstance.post('/auth/login/', formData);
+      setAuthSession({
+        token: response.data.token,
+        user: response.data.user,
+      });
+      window.dispatchEvent(new Event('auth-changed'));
+      navigate(response.data.user.is_staff ? '/admin/pitches' : '/pitches');
+    } catch (requestError) {
+      setError(requestError.response?.data?.error || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem-136px)] bg-gray-100 px-4 py-12">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
         <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">Đăng nhập</h2>
-        
-        <form className="space-y-6">
+
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input 
-              type="email" 
+            <label className="block text-sm font-medium text-gray-700">Tên đăng nhập</label>
+            <input
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              type="text"
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary outline-none transition"
-              placeholder="Nhập email của bạn"
+              placeholder="Nhập tên đăng nhập của bạn"
+              required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700">Mật khẩu</label>
-            <input 
-              type="password" 
+            <input
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              type="password"
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary outline-none transition"
               placeholder="••••••••"
+              required
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <label className="flex items-center">
-              <input type="checkbox" className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" />
-              <span className="ml-2 block text-sm text-gray-900">Nhớ mật khẩu</span>
-            </label>
-            <a href="#" className="text-sm font-medium text-primary hover:text-teal-600">Quên mật khẩu?</a>
-          </div>
+          {error && (
+            <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
+              {error}
+            </div>
+          )}
 
-          <button 
-            type="submit" 
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-60"
           >
-            Đăng nhập
+            {loading ? 'Đang xử lý...' : 'Đăng nhập'}
           </button>
         </form>
 
