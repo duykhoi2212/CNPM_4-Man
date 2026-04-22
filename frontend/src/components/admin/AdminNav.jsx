@@ -3,12 +3,14 @@ import { NavLink, useLocation } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 
 const adminLinks = [
-  { to: '/admin/pitches', label: 'San bong' },
-  { to: '/admin/timeslots', label: 'Khung gio' },
-  { to: '/admin/bookings', label: 'Booking', countKey: 'bookings' },
-  { to: '/admin/reviews', label: 'Review', countKey: 'reviews' },
-  { to: '/admin/users', label: 'User' },
-  { to: '/admin/contacts', label: 'Lien he', countKey: 'contacts' },
+  { to: '/admin/pitches', label: 'Sân bóng' },
+  { to: '/admin/services', label: 'Dịch vụ kèm' },
+  { to: '/admin/timeslots', label: 'Lịch hoạt động' },
+  { to: '/admin/incidents', label: 'Sự cố & đổi sân' },
+  { to: '/admin/bookings', label: 'Đặt sân', countKey: 'bookings' },
+  { to: '/admin/reviews', label: 'Đánh giá', countKey: 'reviews' },
+  { to: '/admin/users', label: 'Người dùng' },
+  { to: '/admin/contacts', label: 'Liên hệ', countKey: 'contacts' },
 ];
 
 const routeToSection = {

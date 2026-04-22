@@ -44,7 +44,7 @@ const Profile = () => {
           currentTeamImageUrl: response.data.profile?.team_image_url || '',
         });
       } catch (requestError) {
-        setError(requestError.response?.data?.error || 'Khong the tai thong tin tai khoan.');
+        setError(requestError.response?.data?.error || 'Không thể tải thông tin tài khoản.');
       } finally {
         setLoading(false);
       }
@@ -138,9 +138,9 @@ const Profile = () => {
         setError(responseData.error);
       } else if (responseData && typeof responseData === 'object') {
         const firstMessage = Object.values(responseData).flat()[0];
-        setError(firstMessage || 'Khong the cap nhat tai khoan.');
+        setError(firstMessage || 'Không thể cập nhật tài khoản.');
       } else {
-        setError('Khong the cap nhat tai khoan.');
+        setError('Không thể cập nhật tài khoản.');
       }
     } finally {
       setSaving(false);
@@ -148,7 +148,7 @@ const Profile = () => {
   };
 
   if (loading) {
-    return <div className="max-w-5xl mx-auto px-4 py-12 text-center text-primary font-semibold">Dang tai thong tin tai khoan...</div>;
+    return <div className="max-w-5xl mx-auto px-4 py-12 text-center text-primary font-semibold">Đang tải thông tin tài khoản...</div>;
   }
 
   return (
@@ -157,14 +157,14 @@ const Profile = () => {
         <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-3xl font-bold text-gray-900">Thong tin tai khoan</h2>
-            <p className="mt-2 text-gray-500">Ban co the cap nhat thong tin ca nhan, avatar va quan ly bao mat tai day.</p>
+            <p className="mt-2 text-gray-500">Bạn có thể cập nhật thông tin cá nhân, avatar và quản lý bảo mật tại đây.</p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <Link to="/change-password" className="rounded-md border border-primary px-4 py-2 font-semibold text-primary hover:bg-teal-50">
               Doi mat khau
             </Link>
             <Link to={storedUser?.is_staff ? '/admin/pitches' : '/pitches'} className="text-primary font-semibold hover:underline">
-              {storedUser?.is_staff ? 'Ve khu quan ly' : 'Ve danh sach san'}
+              {storedUser?.is_staff ? 'Về khu quản lý' : 'Về danh sách sân'}
             </Link>
           </div>
         </div>
@@ -206,7 +206,7 @@ const Profile = () => {
                   />
                 ) : (
                   <div className="flex h-48 items-center justify-center bg-slate-100 text-center text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">
-                    Chua co anh doi
+                    Chưa có ảnh đại diện
                   </div>
                 )}
               </div>
@@ -311,7 +311,7 @@ const Profile = () => {
             disabled={saving}
             className="rounded-md bg-primary px-6 py-3 font-semibold text-white hover:bg-teal-600 disabled:opacity-60"
           >
-            {saving ? 'Dang cap nhat...' : 'Luu thong tin'}
+            {saving ? 'Đang cập nhật...' : 'Lưu thông tin'}
           </button>
         </form>
       </div>

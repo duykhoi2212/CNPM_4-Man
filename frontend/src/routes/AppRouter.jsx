@@ -20,11 +20,13 @@ import ChangePassword from '../pages/user/ChangePassword';
 import Dashboard from '../pages/admin/Dashboard';
 import Statistics from '../pages/admin/Statistics';
 import ManagePitches from '../pages/admin/ManagePitches';
+import ManageServices from '../pages/admin/ManageServices';
 import ManageTimeslots from '../pages/admin/ManageTimeslots';
 import ManageBookings from '../pages/admin/ManageBookings';
 import ManageReviews from '../pages/admin/ManageReviews';
 import ManageUsers from '../pages/admin/ManageUsers';
 import ManageContacts from '../pages/admin/ManageContacts';
+import IncidentManagement from '../pages/admin/IncidentManagement';
 
 const AppRouter = () => {
   return (
@@ -48,13 +50,15 @@ const AppRouter = () => {
       <Route path="/admin/dashboard" element={<Dashboard />} />
       <Route path="/admin/statistics" element={<Statistics />} />
       <Route path="/admin/pitches" element={<ManagePitches />} />
+      <Route path="/admin/services" element={<ManageServices />} />
       <Route path="/admin/timeslots" element={<ManageTimeslots />} />
+      <Route path="/admin/incidents" element={<IncidentManagement />} />
       <Route path="/admin/bookings" element={<ManageBookings />} />
       <Route path="/admin/reviews" element={<ManageReviews />} />
       <Route path="/admin/users" element={<ManageUsers />} />
       <Route path="/admin/contacts" element={<ManageContacts />} />
 
-      <Route path="*" element={<h2 className="p-16 text-center text-red-500 font-bold text-3xl">404 - Khong tim thay trang</h2>} />
+      <Route path="*" element={<h2 className="p-16 text-center text-red-500 font-bold text-3xl">404 - Không tìm thấy trang</h2>} />
     </Routes>
   );
 };

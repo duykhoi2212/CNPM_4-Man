@@ -6,10 +6,9 @@ const MainLayout = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      
-      {/* Phần nội dung chính sẽ tự động thay đổi theo URL */}
+
       <main className="flex-grow bg-gray-50">
-        <Outlet /> 
+        <Outlet />
       </main>
 
       <Footer />

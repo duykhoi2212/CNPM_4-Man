@@ -16,10 +16,10 @@ const paymentStatusStyles = {
   refunded: 'bg-gray-200 text-gray-700',
 };
 
-const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} d`;
+const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
 
 const formatDateTime = (value) => {
-  if (!value) return 'Chua cap nhat';
+  if (!value) return 'Chưa cập nhật';
   return new Date(value).toLocaleString('vi-VN');
 };
 
@@ -49,7 +49,7 @@ const BookingDetail = () => {
         const response = await axiosInstance.get(`/bookings/${bookingId}/`);
         setBooking(response.data);
       } catch (requestError) {
-        setError(getReadableError(requestError.response?.data, 'Khong the tai chi tiet lich dat.'));
+        setError(getReadableError(requestError.response?.data, 'Không thể tải chi tiết lịch đặt.'));
       } finally {
         setLoading(false);
       }
@@ -59,20 +59,20 @@ const BookingDetail = () => {
   }, [bookingId]);
 
   if (loading) {
-    return <div className="max-w-6xl mx-auto px-4 py-12 text-center text-primary font-semibold">Dang tai chi tiet lich dat...</div>;
+    return <div className="max-w-6xl mx-auto px-4 py-12 text-center text-primary font-semibold">Đang tải chi tiết lịch đặt...</div>;
   }
 
   if (error || !booking) {
-    return <div className="max-w-6xl mx-auto px-4 py-12 text-center text-red-500">{error || 'Khong tim thay booking.'}</div>;
+    return <div className="max-w-6xl mx-auto px-4 py-12 text-center text-red-500">{error || 'Không tìm thấy booking.'}</div>;
   }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Booking detail</p>
-          <h1 className="mt-3 text-3xl font-extrabold text-gray-900">Chi tiet lich dat #{booking.id}</h1>
-          <p className="mt-2 text-gray-500">Xem lai thong tin san, khung gio, giao dich coc va ghi chu cua booking.</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Chi tiết booking</p>
+          <h1 className="mt-3 text-3xl font-extrabold text-gray-900">Chi tiết lịch đặt #{booking.id}</h1>
+          <p className="mt-2 text-gray-500">Xem lại thông tin sân, khung giờ, giao dịch cọc và ghi chú của booking.</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <span className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold ${statusStyles[booking.status] || 'bg-gray-100 text-gray-800'}`}>
@@ -82,7 +82,7 @@ const BookingDetail = () => {
             to="/user/history"
             className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
           >
-            Quay lai lich su
+            Quay lại lịch sử
           </Link>
         </div>
       </div>
@@ -92,9 +92,9 @@ const BookingDetail = () => {
           <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="text-sm text-gray-500">San bong</p>
+                <p className="text-sm text-gray-500">Sân bóng</p>
                 <h2 className="mt-1 text-2xl font-bold text-gray-900">{booking.field?.name}</h2>
-                <p className="mt-2 text-sm text-gray-500">Loai san: {booking.field?.field_type?.name || 'Khong ro'}</p>
+                <p className="mt-2 text-sm text-gray-500">Loại sân: {booking.field?.field_type?.name || 'Không rõ'}</p>
               </div>
               {booking.payment ? (
                 <span className={`inline-flex items-center rounded-full px-3 py-2 text-xs font-semibold ${paymentStatusStyles[booking.payment.status] || 'bg-gray-100 text-gray-800'}`}>
@@ -102,7 +102,7 @@ const BookingDetail = () => {
                 </span>
               ) : (
                 <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-600">
-                  Chua tao thanh toan
+                  Chưa tạo thanh toán
                 </span>
               )}
             </div>
@@ -110,19 +110,19 @@ const BookingDetail = () => {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-gray-100 p-5">
-              <p className="text-sm text-gray-500">Ngay su dung</p>
+              <p className="text-sm text-gray-500">Ngày sử dụng</p>
               <p className="mt-2 text-lg font-bold text-gray-900">{booking.booking_date}</p>
             </div>
             <div className="rounded-xl border border-gray-100 p-5">
-              <p className="text-sm text-gray-500">Dat luc</p>
+              <p className="text-sm text-gray-500">Đặt lúc</p>
               <p className="mt-2 text-lg font-bold text-gray-900">{formatDateTime(booking.created_at)}</p>
             </div>
           </div>
 
           <div className="rounded-xl border border-gray-100 p-5 space-y-4">
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Khung gio da dat</h3>
-              <p className="mt-1 text-sm text-gray-500">Danh sach cac khung gio ban da chon cho booking nay.</p>
+              <h3 className="text-lg font-bold text-gray-900">Khung giờ đã đặt</h3>
+              <p className="mt-1 text-sm text-gray-500">Danh sách các khung giờ bạn đã chọn cho booking này.</p>
             </div>
             {booking.booking_timeslots?.length ? (
               <div className="space-y-3">
@@ -133,7 +133,7 @@ const BookingDetail = () => {
                         {bookingTimeslot.timeslot?.start_time} - {bookingTimeslot.timeslot?.end_time}
                       </p>
                       <p className="mt-1 text-sm text-gray-500">
-                        {bookingTimeslot.timeslot?.is_peak_hour ? 'Gio cao diem' : 'Gio thuong'}
+                        {bookingTimeslot.timeslot?.is_peak_hour ? 'Giờ cao điểm' : 'Giờ thường'}
                       </p>
                     </div>
                     <span className="whitespace-nowrap text-sm font-semibold text-gray-900">
@@ -143,59 +143,59 @@ const BookingDetail = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">Booking nay chua co khung gio.</p>
+              <p className="text-sm text-gray-500">Booking này chưa có khung giờ.</p>
             )}
           </div>
 
           <div className="rounded-xl border border-gray-100 p-5">
-            <h3 className="text-lg font-bold text-gray-900">Ghi chu</h3>
+            <h3 className="text-lg font-bold text-gray-900">Ghi chú</h3>
             <p className="mt-3 whitespace-pre-line text-sm leading-7 text-gray-700">
-              {booking.notes?.trim() ? booking.notes : 'Ban chua de lai ghi chu nao cho booking nay.'}
+              {booking.notes?.trim() ? booking.notes : 'Bạn chưa để lại ghi chú nào cho booking này.'}
             </p>
           </div>
         </section>
 
         <aside className="space-y-6">
           <section className="rounded-2xl bg-white p-6 shadow-sm space-y-4">
-            <h3 className="text-lg font-bold text-gray-900">Thong tin lien he</h3>
+            <h3 className="text-lg font-bold text-gray-900">Thông tin liên hệ</h3>
             <div className="space-y-3 text-sm text-gray-700">
-              <p><span className="font-semibold text-gray-900">Khach hang:</span> {booking.customer_name}</p>
-              <p><span className="font-semibold text-gray-900">So dien thoai:</span> {booking.customer_phone}</p>
-              <p className="break-all"><span className="font-semibold text-gray-900">Email:</span> {booking.customer_email || 'Chua cung cap'}</p>
-              <p><span className="font-semibold text-gray-900">Cap nhat lan cuoi:</span> {formatDateTime(booking.updated_at)}</p>
+              <p><span className="font-semibold text-gray-900">Khách hàng:</span> {booking.customer_name}</p>
+              <p><span className="font-semibold text-gray-900">Số điện thoại:</span> {booking.customer_phone}</p>
+              <p className="break-all"><span className="font-semibold text-gray-900">Email:</span> {booking.customer_email || 'Chưa cung cấp'}</p>
+              <p><span className="font-semibold text-gray-900">Cập nhật lần cuối:</span> {formatDateTime(booking.updated_at)}</p>
             </div>
           </section>
 
           <section className="rounded-2xl bg-white p-6 shadow-sm space-y-4">
-            <h3 className="text-lg font-bold text-gray-900">Tong ket tai chinh</h3>
+            <h3 className="text-lg font-bold text-gray-900">Tổng kết tài chính</h3>
             <div className="space-y-3 text-sm text-gray-700">
               <div className="flex items-center justify-between gap-3">
-                <span>Tong tien</span>
+                <span>Tổng tiền</span>
                 <span className="font-semibold text-gray-900">{formatMoney(booking.total_amount)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span>Tien coc</span>
+                <span>Tiền cọc</span>
                 <span className="font-semibold text-primary">{formatMoney(booking.deposit_amount)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span>Con lai</span>
+                <span>Còn lại</span>
                 <span className="font-semibold text-gray-900">{formatMoney(booking.remaining_amount)}</span>
               </div>
             </div>
           </section>
 
           <section className="rounded-2xl bg-white p-6 shadow-sm space-y-4">
-            <h3 className="text-lg font-bold text-gray-900">Giao dich coc</h3>
+            <h3 className="text-lg font-bold text-gray-900">Giao dịch cọc</h3>
             {booking.payment ? (
               <div className="space-y-3 text-sm text-gray-700">
-                <p><span className="font-semibold text-gray-900">Trang thai:</span> {booking.payment.status_display}</p>
-                <p><span className="font-semibold text-gray-900">Phuong thuc:</span> {booking.payment.payment_method_display}</p>
-                <p><span className="font-semibold text-gray-900">So tien:</span> {formatMoney(booking.payment.amount)}</p>
-                <p className="break-all"><span className="font-semibold text-gray-900">Ma giao dich:</span> {booking.payment.transaction_id || 'Chua co'}</p>
-                <p><span className="font-semibold text-gray-900">Da thanh toan luc:</span> {formatDateTime(booking.payment.paid_at)}</p>
+                <p><span className="font-semibold text-gray-900">Trạng thái:</span> {booking.payment.status_display}</p>
+                <p><span className="font-semibold text-gray-900">Phương thức:</span> {booking.payment.payment_method_display}</p>
+                <p><span className="font-semibold text-gray-900">Số tiền:</span> {formatMoney(booking.payment.amount)}</p>
+                <p className="break-all"><span className="font-semibold text-gray-900">Mã giao dịch:</span> {booking.payment.transaction_id || 'Chưa có'}</p>
+                <p><span className="font-semibold text-gray-900">Đã thanh toán lúc:</span> {formatDateTime(booking.payment.paid_at)}</p>
               </div>
             ) : (
-              <p className="text-sm text-gray-500">Booking nay chua co giao dich coc nao.</p>
+              <p className="text-sm text-gray-500">Booking này chưa có giao dịch cọc nào.</p>
             )}
           </section>
         </aside>

@@ -7,7 +7,7 @@ from django.db import IntegrityError
 from django.db.models import Q, Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from decimal import Decimal
 from math import asin, cos, radians, sin, sqrt
 from django.utils import timezone
@@ -23,6 +23,21 @@ from .serializers import (
     TimeSlotAdminSerializer,
     TimeSlotAvailabilitySerializer,
     RecommendedFieldSerializer
+)
+
+# Import schedule and incident views
+from .schedule_views import (
+    FieldScheduleListCreateView,
+    FieldScheduleUpdateDeleteView,
+    generate_time_slots_from_schedule,
+    FieldClosureListCreateView,
+    FieldClosureUpdateDeleteView,
+    IncidentReportListCreateView,
+    IncidentReportDetailView,
+    FieldSwapListCreateView,
+    FieldSwapDetailView,
+    find_alternative_fields,
+    confirm_field_swap,
 )
 
 
@@ -63,7 +78,7 @@ class FieldListView(generics.ListAPIView):
     ordering = ['-avg_rating']  # Default ordering
     
     def get_queryset(self):
-        queryset = Field.objects.select_related('field_type')
+        queryset = Field.objects.select_related('field_type').prefetch_related('schedules', 'closures')
         admin_scope = self.request.query_params.get('admin_scope')
 
         if admin_scope == 'managed' and self.request.user.is_authenticated and self.request.user.is_staff:
@@ -104,7 +119,7 @@ class FieldDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        queryset = Field.objects.select_related('field_type').prefetch_related('images', 'time_slots')
+        queryset = Field.objects.select_related('field_type').prefetch_related('images', 'time_slots', 'schedules', 'closures')
         admin_scope = self.request.query_params.get('admin_scope')
         if admin_scope == 'managed' and self.request.user.is_authenticated and self.request.user.is_staff:
             return get_managed_fields_queryset(self.request.user, queryset=queryset)
@@ -540,8 +555,82 @@ def field_availability_view(request, pk):
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    # Get all timeslots for this field
-    timeslots = field.time_slots.filter(is_active=True).order_by('start_time')
+    # Build timeslots from weekly schedule for selected date
+    from .schedule_models import FieldSchedule, FieldClosure
+
+    is_closed_by_exception = FieldClosure.objects.filter(
+        field=field,
+        start_date__lte=check_date,
+        end_date__gte=check_date
+    ).exists()
+
+    if is_closed_by_exception:
+        return Response({
+            'field_id': field.id,
+            'field_name': field.name,
+            'date': check_date,
+            'timeslots': []
+        }, status=status.HTTP_200_OK)
+
+    day_of_week = check_date.weekday()
+    schedule = FieldSchedule.objects.filter(
+        field=field,
+        day_of_week=day_of_week
+    ).first()
+
+    if not schedule or not schedule.is_open:
+        return Response({
+            'field_id': field.id,
+            'field_name': field.name,
+            'date': check_date,
+            'timeslots': []
+        }, status=status.HTTP_200_OK)
+
+    # Auto split slot by schedule to ensure frontend always has selectable slots
+    start_dt = datetime.combine(check_date, schedule.open_time)
+    end_dt = datetime.combine(check_date, schedule.close_time)
+    step = timedelta(minutes=schedule.slot_duration or 60)
+    generated_ranges = []
+    current = start_dt
+
+    while current + step <= end_dt:
+        slot_end = current + step
+        generated_ranges.append((current.time(), slot_end.time()))
+        current = slot_end
+
+    synced_slot_ids = []
+    for start_time, end_time in generated_ranges:
+        is_peak = start_time.hour >= 18 and start_time.hour < 21
+        price = field.peak_hour_price if is_peak else field.price_per_hour
+        slot, _ = TimeSlot.objects.get_or_create(
+            field=field,
+            start_time=start_time,
+            end_time=end_time,
+            defaults={
+                'price': price,
+                'is_peak_hour': is_peak,
+                'is_active': True,
+            }
+        )
+        updated_fields = []
+        if slot.price != price:
+            slot.price = price
+            updated_fields.append('price')
+        if slot.is_peak_hour != is_peak:
+            slot.is_peak_hour = is_peak
+            updated_fields.append('is_peak_hour')
+        if not slot.is_active:
+            slot.is_active = True
+            updated_fields.append('is_active')
+        if updated_fields:
+            slot.save(update_fields=updated_fields)
+        synced_slot_ids.append(slot.id)
+
+    timeslots = TimeSlot.objects.filter(
+        field=field,
+        is_active=True,
+        id__in=synced_slot_ids
+    ).order_by('start_time')
     
     # Check which timeslots are already booked
     from apps.bookings.models import Booking, BookingTimeSlot

@@ -26,7 +26,7 @@ const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')}
 
 const formatBookingDate = (value) => {
   if (!value) {
-    return 'Chua xac dinh';
+    return 'Chưa xác định';
   }
 
   const date = new Date(`${value}T00:00:00`);
@@ -56,7 +56,7 @@ const getReviewInfo = (booking) => {
 
   if (booking.can_review_now) {
     return {
-      text: 'Da den thoi diem danh gia. Ban co the viet danh gia ngay bay gio.',
+      text: 'Đã đến thời điểm đánh giá. Bạn có thể viết đánh giá ngay bây giờ.',
       className: 'bg-blue-50 text-blue-700',
     };
   }
@@ -89,7 +89,7 @@ const History = () => {
         const response = await axiosInstance.get('/bookings/');
         setBookings(response.data.results || []);
       } catch (requestError) {
-        setError(requestError.response?.data?.error || 'Khong the tai lich su dat san.');
+        setError(requestError.response?.data?.error || 'Không thể tải lịch sử đặt sân.');
       } finally {
         setLoadingBookings(false);
       }
@@ -108,7 +108,7 @@ const History = () => {
         );
         setMatchHistory(formedMatches);
       } catch (requestError) {
-        setError(requestError.response?.data?.error || 'Khong the tai lich su giao luu.');
+        setError(requestError.response?.data?.error || 'Không thể tải lịch sử giao lưu.');
       } finally {
         setLoadingMatches(false);
       }
@@ -179,9 +179,9 @@ const History = () => {
 
       {activeTab === 'booking' ? (
         loadingBookings ? (
-          <div className="text-center text-primary font-semibold">Dang tai lich su dat san...</div>
+          <div className="text-center text-primary font-semibold">Đang tải lịch sử đặt sân...</div>
         ) : bookings.length === 0 ? (
-          <div className="rounded-lg bg-white p-8 text-center text-gray-500 shadow">Ban chua co booking nao.</div>
+          <div className="rounded-lg bg-white p-8 text-center text-gray-500 shadow">Bạn chưa có booking nào.</div>
         ) : (
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             <ul className="divide-y divide-gray-200">
@@ -281,10 +281,10 @@ const History = () => {
           </div>
 
           {loadingMatches ? (
-            <div className="text-center text-primary font-semibold">Dang tai lich su giao luu...</div>
+            <div className="text-center text-primary font-semibold">Đang tải lịch sử giao lưu...</div>
           ) : filteredMatchHistory.length === 0 ? (
             <div className="rounded-lg bg-white p-8 text-center text-gray-500 shadow">
-              {matchDateFilter ? 'Khong co tran giao luu nao trong ngay ban da chon.' : 'Ban chua co tran giao luu nao duoc ket noi.'}
+              {matchDateFilter ? 'Không có trận giao lưu nào trong ngày bạn đã chọn.' : 'Bạn chưa có trận giao lưu nào được kết nối.'}
             </div>
           ) : (
             <div className="grid gap-5">
@@ -332,7 +332,7 @@ const History = () => {
                         <p><span className="font-semibold text-slate-950">San:</span> {matchItem.field?.name}</p>
                         <p><span className="font-semibold text-slate-950">Ngay:</span> {formatBookingDate(matchItem.booking_date)}</p>
                         <p><span className="font-semibold text-slate-950">Khung gio:</span> {matchItem.timeslots?.map((slot) => `${slot.start_time} - ${slot.end_time}`).join(' • ')}</p>
-                        <p><span className="font-semibold text-slate-950">Ghi chu:</span> {matchItem.notes || 'Khong co ghi chu'}</p>
+                        <p><span className="font-semibold text-slate-950">Ghi chú:</span> {matchItem.notes || 'Không có ghi chú'}</p>
                       </div>
                     </div>
 

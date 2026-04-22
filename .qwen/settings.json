@@ -1,6 +1,7 @@
 {
   "permissions": {
     "allow": [
+<<<<<<< HEAD
       "Bash(python *)",
       "Bash(rmdir *)",
       "Bash(npx *)",
@@ -17,6 +18,20 @@
       "Bash(git reset *)",
       "Bash(git commit *)",
       "Bash(git push *)"
+=======
+      "Bash(type *)",
+      "Bash(findstr *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(tasklist)",
+      "Bash(timeout *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(python *)",
+      "Bash(venv\\scripts\\python.exe *)",
+      "Bash(del *)"
+>>>>>>> origin/dev
     ]
   },
   "$version": 3

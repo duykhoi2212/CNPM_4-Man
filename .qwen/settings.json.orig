@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
+<<<<<<< HEAD
       "Bash(python *)"
+=======
+      "Bash(type *)"
+>>>>>>> origin/dev
     ]
   }
 }

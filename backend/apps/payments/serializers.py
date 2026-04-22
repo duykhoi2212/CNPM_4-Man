@@ -13,13 +13,16 @@ class PaymentSerializer(serializers.ModelSerializer):
     booking = BookingListSerializer(read_only=True)
     payment_method_display = serializers.CharField(source='get_payment_method_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    deposit_component = serializers.DecimalField(source='booking.deposit_amount', max_digits=10, decimal_places=2, read_only=True)
+    service_component = serializers.DecimalField(source='booking.service_amount', max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = Payment
         fields = [
             'id', 'booking', 'payment_method', 'payment_method_display',
             'amount', 'status', 'status_display',
-            'transaction_id', 'paid_at', 'created_at'
+            'transaction_id', 'paid_at', 'created_at',
+            'deposit_component', 'service_component',
         ]
         read_only_fields = ['transaction_id', 'paid_at', 'created_at']
 
@@ -58,7 +61,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
 
         payment = Payment.objects.create(
             booking=booking,
-            amount=booking.deposit_amount,
+            amount=booking.payable_now_amount,
             status='pending',
             **validated_data
         )

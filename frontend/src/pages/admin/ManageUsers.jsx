@@ -5,15 +5,15 @@ import AdminNav from '../../components/admin/AdminNav';
 import { getStoredUser } from '../../utils/auth';
 
 const roleOptions = [
-  { value: '', label: 'Tat ca vai tro' },
+  { value: '', label: 'Tất cả vai trò' },
   { value: 'admin', label: 'Admin' },
-  { value: 'user', label: 'User' },
+  { value: 'user', label: 'Người dùng' },
 ];
 
 const statusOptions = [
-  { value: '', label: 'Tat ca trang thai' },
-  { value: 'active', label: 'Dang hoat dong' },
-  { value: 'inactive', label: 'Da khoa' },
+  { value: '', label: 'Tất cả trạng thái' },
+  { value: 'active', label: 'Đang hoạt động' },
+  { value: 'inactive', label: 'Đã khóa' },
 ];
 
 const getReadableError = (responseData, fallbackMessage) => {
@@ -54,7 +54,7 @@ const ManageUsers = () => {
         setError('');
         await loadUsers({ q: '', role: '', status: '' });
       } catch (requestError) {
-        setError(getReadableError(requestError.response?.data, 'Khong the tai danh sach tai khoan.'));
+        setError(getReadableError(requestError.response?.data, 'Không thể tải danh sách tài khoản.'));
       } finally {
         setLoading(false);
       }
@@ -83,9 +83,9 @@ const ManageUsers = () => {
         [fieldName]: !user[fieldName],
       });
       await loadUsers();
-      setSuccessMessage('Da cap nhat tai khoan thanh cong.');
+      setSuccessMessage('Đã cập nhật tài khoản thành công.');
     } catch (requestError) {
-      setError(getReadableError(requestError.response?.data, 'Khong the cap nhat tai khoan.'));
+      setError(getReadableError(requestError.response?.data, 'Không thể cập nhật tài khoản.'));
     } finally {
       setActionLoadingId(null);
     }
@@ -96,10 +96,10 @@ const ManageUsers = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-start gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Quan ly user</h1>
-            <p className="text-gray-500 mt-2">Admin co the theo doi, loc va quan ly quyen hoac trang thai cua tai khoan tai day.</p>
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý người dùng</h1>
+            <p className="text-gray-500 mt-2">Admin có thể theo dõi, lọc và quản lý quyền hoặc trạng thái của tài khoản tại đây.</p>
           </div>
-          <Link to="/" className="text-primary hover:underline">Ve trang khach</Link>
+          <Link to="/" className="text-primary hover:underline">Về trang khách</Link>
         </div>
 
         <AdminNav />
@@ -107,19 +107,19 @@ const ManageUsers = () => {
         <div className="bg-white shadow-sm rounded-lg p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <label className="block md:col-span-1">
-              <span className="text-sm font-medium text-gray-700">Tim kiem</span>
+              <span className="text-sm font-medium text-gray-700">Tìm kiếm</span>
               <input
                 type="text"
                 name="q"
                 value={filters.q}
                 onChange={handleFilterChange}
-                placeholder="Username, email, so dien thoai..."
+                placeholder="Tên đăng nhập, email, số điện thoại..."
                 className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Vai tro</span>
+              <span className="text-sm font-medium text-gray-700">Vai trò</span>
               <select
                 name="role"
                 value={filters.role}
@@ -133,7 +133,7 @@ const ManageUsers = () => {
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Trang thai</span>
+              <span className="text-sm font-medium text-gray-700">Trạng thái</span>
               <select
                 name="status"
                 value={filters.status}
@@ -152,23 +152,23 @@ const ManageUsers = () => {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Danh sach tai khoan</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Danh sách tài khoản</h2>
 
           {loading ? (
-            <div className="p-8 text-center text-primary font-semibold">Dang tai danh sach tai khoan...</div>
+            <div className="p-8 text-center text-primary font-semibold">Đang tải danh sách tài khoản...</div>
           ) : users.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">Khong co tai khoan nao phu hop voi bo loc hien tai.</div>
+            <div className="p-8 text-center text-gray-500">Không có tài khoản nào phù hợp với bộ lọc hiện tại.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Tai khoan</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Lien he</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Doi bong</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Vai tro</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Trang thai</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500">Thao tac</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Tài khoản</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Liên hệ</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Đội bóng</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Vai trò</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Trạng thái</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
@@ -193,9 +193,9 @@ const ManageUsers = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
-                          <p>{user.email || 'Chua cap nhat email'}</p>
-                          <p>{user.phone || 'Chua cap nhat so dien thoai'}</p>
-                          <p className="text-xs text-gray-400">{user.address || 'Chua cap nhat dia chi'}</p>
+                          <p>{user.email || 'Chưa cập nhật email'}</p>
+                          <p>{user.phone || 'Chưa cập nhật số điện thoại'}</p>
+                          <p className="text-xs text-gray-400">{user.address || 'Chưa cập nhật địa chỉ'}</p>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
                           <div className="flex items-center gap-3">
@@ -207,19 +207,19 @@ const ManageUsers = () => {
                               )}
                             </span>
                             <div>
-                              <p className="font-semibold text-gray-900">{user.team_name || 'Chua tham gia doi bong'}</p>
-                              <p className="text-xs text-gray-400">Thong tin nay se duoc dung cho bang xep hang doi bong tieu bieu.</p>
+                              <p className="font-semibold text-gray-900">{user.team_name || 'Chưa tham gia đội bóng'}</p>
+                              <p className="text-xs text-gray-400">Thông tin này sẽ được dùng cho bảng xếp hạng đội bóng tiêu biểu.</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${user.is_staff ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                            {user.is_staff ? 'Admin' : 'User'}
+                            {user.is_staff ? 'Admin' : 'Người dùng'}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                            {user.is_active ? 'Dang hoat dong' : 'Da khoa'}
+                            {user.is_active ? 'Đang hoạt động' : 'Đã khóa'}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -230,7 +230,7 @@ const ManageUsers = () => {
                               onClick={() => handleToggle(user, 'is_active')}
                               className="rounded-md bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-60"
                             >
-                              {user.is_active ? 'Khoa tai khoan' : 'Mo khoa'}
+                              {user.is_active ? 'Khóa tài khoản' : 'Mở khóa'}
                             </button>
                             <button
                               type="button"
@@ -238,10 +238,10 @@ const ManageUsers = () => {
                               onClick={() => handleToggle(user, 'is_staff')}
                               className="rounded-md bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-60"
                             >
-                              {user.is_staff ? 'Bo quyen admin' : 'Cap quyen admin'}
+                              {user.is_staff ? 'Bỏ quyền admin' : 'Cấp quyền admin'}
                             </button>
                           </div>
-                          {isSelf && <p className="mt-2 text-xs text-gray-400">Khong the tu sua quyen hoac khoa chinh minh</p>}
+                          {isSelf && <p className="mt-2 text-xs text-gray-400">Không thể tự sửa quyền hoặc khóa chính mình</p>}
                         </td>
                       </tr>
                     );

@@ -123,9 +123,14 @@ def admin_export_report_view(request):
     writer.writerow([])
 
     writer.writerow(['Tong quan'])
+    writer.writerow(['Doanh thu tien san', overview['booking']['completed_field_revenue']])
+    writer.writerow(['Doanh thu dich vu kem', overview['booking']['completed_service_revenue']])
     writer.writerow(['Doanh thu hoan tat', overview['booking']['total_revenue']])
     writer.writerow(['Tien coc da thu', overview['payment']['completed_deposit']])
+    writer.writerow(['Tien dich vu da thu', overview['payment']['completed_service']])
+    writer.writerow(['Tong da thu qua checkout', overview['payment']['completed_collected_total']])
     writer.writerow(['Tien coc dang cho thanh toan', overview['payment']['pending_deposit']])
+    writer.writerow(['Tien dich vu dang cho thanh toan', overview['payment']['pending_service']])
     writer.writerow(['Tien coc that bai', overview['payment']['failed_deposit']])
     writer.writerow(['Tong booking', overview['booking']['total_bookings']])
     writer.writerow(['Booking cho coc', overview['booking']['pending_bookings']])
@@ -143,11 +148,13 @@ def admin_export_report_view(request):
     writer.writerow([])
 
     writer.writerow(['Top san'])
-    writer.writerow(['San', 'Luot dat', 'Doanh thu hoan tat', 'So luot huy'])
+    writer.writerow(['San', 'Luot dat', 'Doanh thu tien san', 'Doanh thu dich vu', 'Doanh thu hoan tat', 'So luot huy'])
     for field in top_fields['top_fields']:
         writer.writerow([
             field['field__name'],
             field['bookings_count'],
+            field.get('completed_field_revenue', 0),
+            field.get('completed_service_revenue', 0),
             field['completed_revenue'],
             field['cancelled_count'],
         ])
@@ -162,6 +169,8 @@ def admin_export_report_view(request):
         'Da hoan thanh',
         'Da huy',
         'Doanh thu hoan tat',
+        'Doanh thu tien san',
+        'Doanh thu dich vu',
         'Tien coc da thu',
         'Ty le hoan thanh',
     ])
@@ -174,13 +183,15 @@ def admin_export_report_view(request):
             field['completed_bookings'],
             field['cancelled_bookings'],
             field['completed_revenue'],
+            field.get('completed_field_revenue', 0),
+            field.get('completed_service_revenue', 0),
             field['completed_deposit'],
             field['completion_rate_percent'],
         ])
     writer.writerow([])
 
     writer.writerow(['Booking gan day'])
-    writer.writerow(['Booking ID', 'San', 'Khach hang', 'Ngay dat', 'Trang thai', 'Tong tien', 'Tien coc'])
+    writer.writerow(['Booking ID', 'San', 'Khach hang', 'Ngay dat', 'Trang thai', 'Tien san', 'Tien dich vu', 'Tong tien', 'Tien coc'])
     for booking in overview['recent_bookings']:
         writer.writerow([
             booking['id'],
@@ -188,6 +199,8 @@ def admin_export_report_view(request):
             booking['customer_name'],
             booking['booking_date'],
             booking['status'],
+            booking.get('field_amount', 0),
+            booking.get('service_amount', 0),
             booking['total_amount'],
             booking['deposit_amount'],
         ])

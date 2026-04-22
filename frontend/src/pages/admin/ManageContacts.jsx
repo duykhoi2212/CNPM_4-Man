@@ -4,9 +4,9 @@ import axiosInstance from '../../api/axios';
 import AdminNav from '../../components/admin/AdminNav';
 
 const statusOptions = [
-  { value: '', label: 'Tat ca trang thai' },
-  { value: 'pending', label: 'Chua xu ly' },
-  { value: 'resolved', label: 'Da xu ly' },
+  { value: '', label: 'Tất cả trạng thái' },
+  { value: 'pending', label: 'Chưa xử lý' },
+  { value: 'resolved', label: 'Đã xử lý' },
 ];
 
 const getReadableError = (responseData, fallbackMessage) => {
@@ -45,7 +45,7 @@ const ManageContacts = () => {
         setError('');
         await loadContacts({ q: '', status: '' });
       } catch (requestError) {
-        setError(getReadableError(requestError.response?.data, 'Khong the tai danh sach lien he.'));
+        setError(getReadableError(requestError.response?.data, 'Không thể tải danh sách liên hệ.'));
       } finally {
         setLoading(false);
       }
@@ -74,9 +74,9 @@ const ManageContacts = () => {
         is_resolved: !contact.is_resolved,
       });
       await loadContacts(filters);
-      setSuccessMessage('Da cap nhat trang thai lien he thanh cong.');
+      setSuccessMessage('Đã cập nhật trạng thái liên hệ thành công.');
     } catch (requestError) {
-      setError(getReadableError(requestError.response?.data, 'Khong the cap nhat lien he.'));
+      setError(getReadableError(requestError.response?.data, 'Không thể cập nhật liên hệ.'));
     } finally {
       setActionLoadingId(null);
     }
@@ -87,10 +87,10 @@ const ManageContacts = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-start gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Quan ly lien he</h1>
-            <p className="text-gray-500 mt-2">Tong hop cac yeu cau ho tro va gop y ma khach hang gui tu trang lien he.</p>
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý liên hệ</h1>
+            <p className="text-gray-500 mt-2">Tổng hợp các yêu cầu hỗ trợ và góp ý mà khách hàng gửi từ trang liên hệ.</p>
           </div>
-          <Link to="/contact" className="text-primary hover:underline">Xem trang lien he</Link>
+          <Link to="/contact" className="text-primary hover:underline">Xem trang liên hệ</Link>
         </div>
 
         <AdminNav />
@@ -98,18 +98,18 @@ const ManageContacts = () => {
         <div className="bg-white shadow-sm rounded-lg p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Tim kiem</span>
+              <span className="text-sm font-medium text-gray-700">Tìm kiếm</span>
               <input
                 type="text"
                 name="q"
                 value={filters.q}
                 onChange={handleFilterChange}
-                placeholder="Ten, email, chu de..."
+                placeholder="Tên, email, chủ đề..."
                 className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
               />
             </label>
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Trang thai</span>
+              <span className="text-sm font-medium text-gray-700">Trạng thái</span>
               <select
                 name="status"
                 value={filters.status}
@@ -129,9 +129,9 @@ const ManageContacts = () => {
 
         <div className="space-y-4">
           {loading ? (
-            <div className="rounded-lg bg-white p-8 text-center text-primary font-semibold shadow-sm">Dang tai danh sach lien he...</div>
+            <div className="rounded-lg bg-white p-8 text-center text-primary font-semibold shadow-sm">Đang tải danh sách liên hệ...</div>
           ) : contacts.length === 0 ? (
-            <div className="rounded-lg bg-white p-8 text-center text-gray-500 shadow-sm">Chua co yeu cau lien he nao phu hop.</div>
+            <div className="rounded-lg bg-white p-8 text-center text-gray-500 shadow-sm">Chưa có yêu cầu liên hệ nào phù hợp.</div>
           ) : (
             contacts.map((contact) => (
               <article key={contact.id} className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
@@ -144,13 +144,13 @@ const ManageContacts = () => {
                           {contact.status_label}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-gray-500">Gui luc {new Date(contact.created_at).toLocaleString('vi-VN')}</p>
+                      <p className="mt-1 text-sm text-gray-500">Gửi lúc {new Date(contact.created_at).toLocaleString('vi-VN')}</p>
                     </div>
 
                     <div className="text-sm text-gray-600 space-y-1">
-                      <p><span className="font-semibold text-gray-900">Nguoi gui:</span> {contact.name}</p>
+                      <p><span className="font-semibold text-gray-900">Người gửi:</span> {contact.name}</p>
                       <p><span className="font-semibold text-gray-900">Email:</span> {contact.email}</p>
-                      <p><span className="font-semibold text-gray-900">So dien thoai:</span> {contact.phone || 'Chua cung cap'}</p>
+                      <p><span className="font-semibold text-gray-900">Số điện thoại:</span> {contact.phone || 'Chưa cung cấp'}</p>
                     </div>
 
                     <p className="text-gray-700 leading-relaxed whitespace-pre-line">{contact.message}</p>
@@ -163,10 +163,10 @@ const ManageContacts = () => {
                     className="rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-teal-600 disabled:opacity-60"
                   >
                     {actionLoadingId === contact.id
-                      ? 'Dang cap nhat...'
+                      ? 'Đang cập nhật...'
                       : contact.is_resolved
-                        ? 'Danh dau chua xu ly'
-                        : 'Danh dau da xu ly'}
+                        ? 'Đánh dấu chưa xử lý'
+                        : 'Đánh dấu đã xử lý'}
                   </button>
                 </div>
               </article>
