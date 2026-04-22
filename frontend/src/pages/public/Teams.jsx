@@ -180,16 +180,36 @@ const Teams = () => {
     }
 
     try {
+      console.log('[Teams] handleAcceptRequest start', { requestId });
       setBusyRequestId(requestId);
       setError('');
       const response = await axiosInstance.post(`/matches/requests/${requestId}/accept/`, {});
+      console.log('[Teams] accept response', response);
       const updatedRequest = response.data?.match_request;
       if (updatedRequest) {
         setMatchRequests((prev) => prev.map((item) => (item.id === updatedRequest.id ? updatedRequest : item)));
       }
       await loadMatchRequests({ silent: true });
+      // Visible feedback for quick manual testing
+      try {
+        if (response.data && response.data.message) {
+          // eslint-disable-next-line no-alert
+          alert(response.data.message);
+        }
+      } catch (e) {
+        // ignore
+      }
     } catch (requestError) {
-      setError(requestError.response?.data?.error || 'Khong the chap nhan giao luu luc nay.');
+      console.error('[Teams] accept error', requestError);
+      const serverError = requestError?.response?.data?.error;
+      setError(serverError || 'Khong the chap nhan giao luu luc nay.');
+      // Visible error for quick manual testing
+      try {
+        // eslint-disable-next-line no-alert
+        alert(serverError || 'Khong the chap nhan giao luu luc nay.');
+      } catch (e) {
+        // ignore
+      }
     } finally {
       setBusyRequestId(null);
     }
