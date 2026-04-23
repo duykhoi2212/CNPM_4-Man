@@ -204,29 +204,6 @@ class FieldCreateUpdateSerializer(serializers.ModelSerializer):
             'is_active'
         ]
 
-<<<<<<< HEAD
-    # --- ĐOẠN CODE BẠN THÊM VÀO BẮT ĐẦU TỪ ĐÂY ---
-    # 1. Validation: Tên sân không được quá ngắn
-    def validate_name(self, value):
-        if len(value.strip()) < 5:
-            raise serializers.ValidationError("Tên sân bóng phải có ít nhất 5 ký tự.")
-        return value
-
-    # 2. Validation: Giá thuê không được là số âm
-    def validate_price_per_hour(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("Giá thuê sân mỗi giờ phải lớn hơn 0.")
-        return value
-
-    # 3. Validation: Phần trăm cọc phải hợp lý (từ 0 đến 100)
-    def validate_deposit_percent(self, value):
-        if value < 0 or value > 100:
-            raise serializers.ValidationError("Phần trăm đặt cọc phải nằm trong khoảng từ 0 đến 100.")
-        return value
-    # --- KẾT THÚC ĐOẠN CODE THÊM VÀO ---
-
-=======
->>>>>>> origin/dev
     def validate(self, attrs):
         if attrs.get('peak_hour_price') and attrs.get('price_per_hour'):
             if attrs['peak_hour_price'] < attrs['price_per_hour']:
@@ -235,8 +212,6 @@ class FieldCreateUpdateSerializer(serializers.ModelSerializer):
                 })
         return attrs
 
-<<<<<<< HEAD
-=======
     def validate_owner(self, value):
         if value and not value.is_staff:
             raise serializers.ValidationError('Chu san phai la tai khoan admin')
@@ -257,7 +232,6 @@ class FieldCreateUpdateSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
->>>>>>> origin/dev
 class TimeSlotAvailabilitySerializer(serializers.Serializer):
     timeslot_id = serializers.IntegerField()
     start_time = serializers.TimeField()
