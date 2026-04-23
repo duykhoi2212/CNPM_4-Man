@@ -362,7 +362,7 @@ const PitchDetail = () => {
           </div>
 
           <label className="block min-w-[260px] text-sm font-medium text-gray-700">
-            Chon ngay dat san
+            Chọn ngày đặt sân
             <input
               type="date"
               value={bookingDate}
@@ -379,10 +379,10 @@ const PitchDetail = () => {
 
         <div className="rounded-xl border border-gray-100 overflow-hidden">
           <div className="hidden grid-cols-[1.1fr_0.9fr_0.8fr_0.9fr] gap-4 bg-gray-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 md:grid">
-            <span>Khung gio</span>
-            <span>Loai</span>
-            <span>Gia</span>
-            <span>Trang thai</span>
+            <span>Khung giờ</span>
+            <span>Loại</span>
+            <span>Giá</span>
+            <span>Trạng thái</span>
           </div>
 
           {loadingSlots ? (
@@ -390,7 +390,7 @@ const PitchDetail = () => {
           ) : availability.length ? (
             <div className="space-y-4 p-4">
               <div>
-                <h4 className="mb-2 text-sm font-semibold text-green-700">Khung gio co the chon ({availableSlots.length})</h4>
+                <h4 className="mb-2 text-sm font-semibold text-green-700">Khung giờ có thể chọn ({availableSlots.length})</h4>
                 {availableSlots.length === 0 ? (
                   <div className="rounded-lg border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
                     Không có khung giờ trống để đặt ở ngày này.
@@ -426,7 +426,7 @@ const PitchDetail = () => {
                               <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                                 isSelected ? 'bg-primary text-white' : 'bg-green-100 text-green-700'
                               }`}>
-                                {isSelected ? 'Da chon' : 'Con trong'}
+                                {isSelected ? 'Đã chọn' : 'Còn trống'}
                               </span>
                               {isAdminViewer && <span className="text-xs text-gray-400">Xem-only</span>}
                             </div>
@@ -465,7 +465,7 @@ const PitchDetail = () => {
                             </div>
                             <div className="flex items-center justify-between gap-3 md:justify-start">
                               <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500">
-                                Da dat
+                                Đã đặt
                               </span>
                             </div>
                           </div>
