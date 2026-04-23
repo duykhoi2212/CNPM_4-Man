@@ -4,3 +4,10 @@ __pycache__/
 *.pyc
 db.sqlite3
 media/
+
+# Django migrations (uncomment if you want to ignore)
+# */migrations/
+
+# IDE
+.vscode/
+.idea/

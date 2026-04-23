@@ -1,13 +1,12 @@
-# Python
-__pycache__/
-*.pyc
+# Project-wide ignores
+# VS Code workspace settings
+.vscode/settings.json
+.vscode/launch.json
 
-# Virtual environment
-backend/venv/
+# OS generated files
+.DS_Store
+Thumbs.db
 
-# Django
-db.sqlite3
-.env
-
-# VS Code
-.vscode/
+# Temporary files
+*.tmp
+*.temp
