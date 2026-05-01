@@ -10,10 +10,10 @@ const statCardStyles = [
 ];
 
 const bookingStatusLabels = {
-  pending_payment: 'Cho thanh toan coc',
-  confirmed: 'Da xac nhan',
-  completed: 'Da hoan thanh',
-  cancelled: 'Da huy',
+  pending_payment: 'Cho thanh toan cọc',
+  confirmed: 'Đã xác nhận',
+  completed: 'Đã hoàn thành',
+  cancelled: 'Đã hủy',
 };
 
 const bookingStatusStyles = {
@@ -24,11 +24,11 @@ const bookingStatusStyles = {
 };
 
 const rangeOptions = [
-  { value: '30d', label: '30 ngay qua' },
-  { value: '90d', label: '90 ngay qua' },
-  { value: '1y', label: '1 nam qua' },
-  { value: 'all', label: 'Tat ca' },
-  { value: 'custom', label: 'Tuy chon' },
+  { value: '30d', label: '30 ngày qua' },
+  { value: '90d', label: '90 ngày qua' },
+  { value: '1y', label: '1 năm qua' },
+  { value: 'all', label: 'Tất cả' },
+  { value: 'custom', label: 'Tùy chọn' },
 ];
 
 const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
@@ -521,22 +521,22 @@ const Statistics = () => {
                         </select>
                       </label>
                       <label className="block">
-                        <span className="text-sm font-medium text-gray-700">Nhom doanh thu theo</span>
+                        <span className="text-sm font-medium text-gray-700">Nhóm doanh thu theo</span>
                         <select
                           name="group_by"
                           value={filters.group_by}
                           onChange={handleFilterChange}
                           className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-primary"
                         >
-                          <option value="day">Ngay</option>
-                          <option value="month">Thang</option>
-                          <option value="year">Nam</option>
+                          <option value="day">Ngày</option>
+                          <option value="month">Tháng</option>
+                          <option value="year">Năm</option>
                         </select>
                         </label>
                       </div>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-700 mb-3">Soat nhanh theo moc thoi gian</p>
+                      <p className="text-sm font-medium text-gray-700 mb-3">So sánh theo mốc thời gian</p>
                       <div className="flex flex-wrap gap-3">
                         {rangeOptions.map((option) => (
                           <button
@@ -557,36 +557,36 @@ const Statistics = () => {
               <section className="rounded-2xl bg-white p-6 shadow-sm">
                 <div className="mb-5">
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Overview</p>
-                  <h2 className="text-2xl font-bold text-gray-950">Tong hop nhanh</h2>
+                  <h2 className="text-2xl font-bold text-gray-950">Tổng hợp nhanh</h2>
                 </div>
                 <div className="space-y-4">
                   <div className="rounded-xl bg-slate-950 p-5 text-white">
-                    <p className="text-sm text-white/70">Tong review tu cac booking</p>
+                    <p className="text-sm text-white/70">Tổng đánh giá từ các booking</p>
                     <p className="mt-2 text-3xl font-black">{overview?.total_reviews_from_bookings || 0}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                      <p className="text-sm text-gray-500">Cho coc</p>
+                      <p className="text-sm text-gray-500">Cho cọc</p>
                       <p className="mt-2 text-2xl font-bold text-gray-900">{overview?.booking?.pending_bookings || 0}</p>
                     </div>
                     <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                      <p className="text-sm text-gray-500">Da xac nhan</p>
+                      <p className="text-sm text-gray-500">Đã xác nhận</p>
                       <p className="mt-2 text-2xl font-bold text-gray-900">{overview?.booking?.confirmed_bookings || 0}</p>
                     </div>
                     <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                      <p className="text-sm text-gray-500">Da hoan thanh</p>
+                      <p className="text-sm text-gray-500">Đã hoàn thành</p>
                       <p className="mt-2 text-2xl font-bold text-gray-900">{overview?.booking?.completed_bookings || 0}</p>
                     </div>
                     <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                      <p className="text-sm text-gray-500">Da huy</p>
+                      <p className="text-sm text-gray-500">Đã hủy</p>
                       <p className="mt-2 text-2xl font-bold text-gray-900">{overview?.booking?.cancelled_bookings || 0}</p>
                     </div>
                   </div>
                   <div className="rounded-xl border border-gray-100 p-4 text-sm text-gray-700">
-                    <p><span className="font-semibold text-gray-900">Gia tri booking trung binh:</span> {formatMoney(overview?.booking?.average_booking_value)}</p>
-                    <p className="mt-2"><span className="font-semibold text-gray-900">Tien coc da thu:</span> {formatMoney(overview?.payment?.completed_deposit)}</p>
-                    <p className="mt-2"><span className="font-semibold text-gray-900">Tien dich vu da thu:</span> {formatMoney(overview?.payment?.completed_service)}</p>
-                    <p className="mt-2"><span className="font-semibold text-gray-900">Tien coc that bai:</span> {formatMoney(overview?.payment?.failed_deposit)}</p>
+                    <p><span className="font-semibold text-gray-900">Giá trị booking trung bình:</span> {formatMoney(overview?.booking?.average_booking_value)}</p>
+                    <p className="mt-2"><span className="font-semibold text-gray-900">Tiền cọc đã thu:</span> {formatMoney(overview?.payment?.completed_deposit)}</p>
+                    <p className="mt-2"><span className="font-semibold text-gray-900">Tiền dịch vụ đã thu:</span> {formatMoney(overview?.payment?.completed_service)}</p>
+                    <p className="mt-2"><span className="font-semibold text-gray-900">Tiền cọc thất bại:</span> {formatMoney(overview?.payment?.failed_deposit)}</p>
                   </div>
                 </div>
               </section>
@@ -596,10 +596,10 @@ const Statistics = () => {
               <section className="rounded-2xl bg-white p-6 shadow-sm">
                 <div className="mb-5">
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Ranking</p>
-                  <h2 className="text-2xl font-bold text-gray-950">Top san noi bat</h2>
+                  <h2 className="text-2xl font-bold text-gray-950">Top sân nổi bật</h2>
                 </div>
                 {topFields.length === 0 ? (
-                  <p className="text-gray-500">Chua co san nao trong bang xep hang.</p>
+                  <p className="text-gray-500">Chưa có sân nào trong bảng xếp hạng.</p>
                 ) : (
                   <div className="space-y-4">
                     {topFields.map((field, index) => (
@@ -607,10 +607,10 @@ const Statistics = () => {
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Top {index + 1}</p>
                           <h3 className="mt-1 text-lg font-bold text-gray-900">{field.field__name}</h3>
-                          <p className="text-sm text-gray-500">{field.bookings_count || 0} luot dat · {field.cancelled_count || 0} huy</p>
+                          <p className="text-sm text-gray-500">{field.bookings_count || 0} lượt đặt · {field.cancelled_count || 0} lượt hủy</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-gray-500">Doanh thu hoan tat</p>
+                          <p className="text-sm text-gray-500">Doanh thu hoàn tất</p>
                           <p className="text-xl font-bold text-gray-900">{formatMoney(field.completed_revenue)}</p>
                           <p className="text-xs text-gray-500">San: {formatMoney(field.completed_field_revenue)} · DV: {formatMoney(field.completed_service_revenue)}</p>
                         </div>
@@ -623,7 +623,7 @@ const Statistics = () => {
               <section className="rounded-2xl bg-white p-6 shadow-sm">
                 <div className="mb-5">
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Recent</p>
-                  <h2 className="text-2xl font-bold text-gray-950">Booking gan day</h2>
+                  <h2 className="text-2xl font-bold text-gray-950">Booking gần đây</h2>
                 </div>
                 {overview?.recent_bookings?.length ? (
                   <div className="space-y-3">
@@ -650,7 +650,7 @@ const Statistics = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">Chua co booking gan day trong bo loc hien tai.</p>
+                  <p className="text-gray-500">Chưa có booking gần đây trong bộ lọc hiện tại.</p>
                 )}
               </section>
             </div>
@@ -658,7 +658,7 @@ const Statistics = () => {
             <section className="rounded-2xl bg-white p-6 shadow-sm">
               <div className="mb-5">
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Operations</p>
-                <h2 className="text-2xl font-bold text-gray-950">Hieu suat theo san</h2>
+                <h2 className="text-2xl font-bold text-gray-950">Hiệu suất theo sân</h2>
                 <p className="mt-2 text-sm text-gray-500">
                   Tong hop nhanh theo tung san trong bo loc hien tai de doi chieu doanh thu, tien coc va trang thai booking.
                 </p>
