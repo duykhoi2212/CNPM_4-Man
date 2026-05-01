@@ -6,17 +6,17 @@ import AlternativeFieldFinder from '../../components/admin/AlternativeFieldFinde
 import FieldSwapManager from '../../components/admin/FieldSwapManager';
 
 const ISSUE_TYPES = [
-  { value: 'field_damage', label: 'San hu hong' },
-  { value: 'weather', label: 'Thoi tiet xau' },
-  { value: 'emergency', label: 'Su co khan cap' },
-  { value: 'equipment', label: 'Thiet bi hu hong' },
-  { value: 'safety', label: 'Van de an toan' },
-  { value: 'other', label: 'Khac' },
+  { value: 'field_damage', label: 'Sân hư hỏng' },
+  { value: 'weather', label: 'Thời tiết xấu' },
+  { value: 'emergency', label: 'Sự cố khẩn cấp' },
+  { value: 'equipment', label: 'Thiết bị hư hỏng' },
+  { value: 'safety', label: 'Vấn đề an toàn' },
+  { value: 'other', label: 'Khác' },
 ];
 
 const SEVERITIES = [
-  { value: 'low', label: 'Thap' },
-  { value: 'medium', label: 'Trung binh' },
+  { value: 'low', label: 'Thấp' },
+  { value: 'medium', label: 'Trung bình' },
   { value: 'high', label: 'Cao' },
 ];
 
@@ -78,7 +78,7 @@ const IncidentManagement = () => {
       setSelectedIncidentId((prev) => prev || nextIncidents[0]?.id || null);
       setFormData((prev) => ({ ...prev, field: prev.field || String(nextFields[0]?.id || '') }));
     } catch (requestError) {
-      setError(requestError.response?.data?.error || 'Khong the tai du lieu su co.');
+      setError(requestError.response?.data?.error || 'Không thể tải dữ liệu sự cố.');
     } finally {
       setLoading(false);
     }
@@ -102,9 +102,9 @@ const IncidentManagement = () => {
       });
       setFormData((prev) => ({ ...emptyForm, field: prev.field }));
       await loadData();
-      setSuccessMessage('Da tao bao cao su co thanh cong.');
+      setSuccessMessage('Đã tạo báo cáo sự cố thành công.');
     } catch (requestError) {
-      setError(requestError.response?.data?.error || 'Khong the tao bao cao su co.');
+      setError(requestError.response?.data?.error || 'Không thể tạo báo cáo sự cố.');
     } finally {
       setSubmitting(false);
     }
@@ -112,7 +112,7 @@ const IncidentManagement = () => {
 
   const handleCreateSwapFromAlternative = async (alternative, options = {}) => {
     if (!selectedIncident) {
-      setError('Vui long chon mot su co truoc khi tao doi san.');
+      setError('Vui lòng chọn một sự cố để thực hiện đổi sân.');
       return;
     }
 
@@ -127,8 +127,8 @@ const IncidentManagement = () => {
         new_field: alternative.field_id,
         original_booking: selectedIncident.booking,
         swap_reason: options.forceCancelConflicts
-          ? `Doi san va huy booking xung dot cho su co #${selectedIncident.id}`
-          : `Doi truc tiep tu su co #${selectedIncident.id}`,
+          ? `Đổi sân và hủy booking xung đột cho sự cố #${selectedIncident.id}`
+          : `Đổi trực tiếp từ sự cố #${selectedIncident.id}`,
         price_difference: alternative.price_difference || 0,
         compensation_amount: 0,
         status: 'proposed',
@@ -143,7 +143,7 @@ const IncidentManagement = () => {
           (item) => item.incident === selectedIncident.id && item.new_field === alternative.field_id
         );
         if (!latestSwap?.id) {
-          throw new Error('Khong xac dinh duoc ban ghi doi san vua tao.');
+          throw new Error('Không xác định được bản ghi đổi sân vừa tạo.');
         }
         await axiosInstance.post(`/fields/swaps/${latestSwap.id}/confirm/`, {
           force_cancel_conflicts: Boolean(options.forceCancelConflicts),
@@ -159,11 +159,11 @@ const IncidentManagement = () => {
       await loadData();
       setSuccessMessage(
         options.forceCancelConflicts
-          ? 'Da huy booking xung dot va doi san thanh cong.'
-          : 'Da doi san thanh cong va cap nhat booking hien tai.'
+          ? 'Đã hủy booking xung đột và đổi sân thành công.'
+          : 'Đã đổi sân thành công và cập nhật booking hiện tại.'
       );
     } catch (requestError) {
-      setError(requestError.response?.data?.error || requestError.message || 'Khong the doi san.');
+      setError(requestError.response?.data?.error || requestError.message || 'Không thể đổi sân.');
     } finally {
       setCreatingSwap(false);
       setProcessingFieldId(null);
@@ -186,9 +186,9 @@ const IncidentManagement = () => {
         status: nextStatus,
       });
       await loadData();
-      setSuccessMessage(`Da cap nhat su co #${incident.id} sang trang thai ${nextStatus}.`);
+      setSuccessMessage(`Đã cập nhật sự cố #${incident.id} sang trạng thái ${nextStatus}.`);
     } catch (requestError) {
-      setError(requestError.response?.data?.error || 'Khong the cap nhat trang thai su co.');
+      setError(requestError.response?.data?.error || 'Không thể cập nhật trạng thái sự cố.');
     } finally {
       setUpdatingIncidentId(null);
     }
@@ -200,9 +200,9 @@ const IncidentManagement = () => {
         <div className="flex justify-between items-start gap-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">IncidentManagement</h1>
-            <p className="text-gray-500 mt-2">Bao cao su co, tim san thay the va xu ly doi san tai mot noi.</p>
+            <p className="text-gray-500 mt-2">Báo cáo sự cố, tìm sân thay thế và xử lý đổi sân tại một nơi.</p>
           </div>
-          <Link to="/" className="text-primary hover:underline">Ve trang khach</Link>
+          <Link to="/" className="text-primary hover:underline">Về trang khách</Link>
         </div>
 
         <AdminNav />
@@ -213,10 +213,10 @@ const IncidentManagement = () => {
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.2fr] gap-8 items-start">
           <div className="space-y-8">
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Form bao cao su co</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Form báo cáo sự cố</h2>
               <form onSubmit={handleSubmitIncident} className="space-y-4">
                 <label className="block">
-                  <span className="text-sm font-medium text-gray-700">San bong</span>
+                  <span className="text-sm font-medium text-gray-700">Sân bóng</span>
                   <select
                     value={formData.field}
                     onChange={(event) => setFormData((prev) => ({
