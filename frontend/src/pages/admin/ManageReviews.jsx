@@ -4,12 +4,12 @@ import axiosInstance from '../../api/axios';
 import AdminNav from '../../components/admin/AdminNav';
 
 const ratingOptions = [
-  { value: '', label: 'Tat ca so sao' },
-  { value: '5', label: 'Tu 5 sao' },
-  { value: '4', label: 'Tu 4 sao' },
-  { value: '3', label: 'Tu 3 sao' },
-  { value: '2', label: 'Tu 2 sao' },
-  { value: '1', label: 'Tu 1 sao' },
+  { value: '', label: 'Tất cả sao' },
+  { value: '5', label: 'Từ 5 sao' },
+  { value: '4', label: 'Từ 4 sao' },
+  { value: '3', label: 'Từ 3 sao' },
+  { value: '2', label: 'Từ 2 sao' },
+  { value: '1', label: 'Từ 1 sao' },
 ];
 
 const getReadableError = (responseData, fallbackMessage) => {
@@ -94,7 +94,7 @@ const ManageReviews = () => {
       setSuccessMessage('');
       await axiosInstance.delete(`/reviews/${reviewId}/delete/`);
       await loadReviews();
-      setSuccessMessage('Da xoa danh gia thanh cong.');
+      setSuccessMessage('Đánh giá đã được xóa thành công.');
     } catch (requestError) {
       setError(getReadableError(requestError.response?.data, 'Không thể xóa đánh giá.'));
     } finally {
@@ -133,7 +133,7 @@ const ManageReviews = () => {
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Muc danh gia</span>
+              <span className="text-sm font-medium text-gray-700">Mức đánh giá</span>
               <select
                 name="rating_min"
                 value={filters.rating_min}
@@ -152,7 +152,7 @@ const ManageReviews = () => {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Danh sach review</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Danh sách đánh giá</h2>
 
           {loading ? (
             <div className="p-8 text-center text-primary font-semibold">Đang tải danh sách đánh giá...</div>
@@ -170,7 +170,7 @@ const ManageReviews = () => {
                       </div>
                       {renderStars(review.rating)}
                       <p className="text-gray-700 leading-relaxed">{review.comment}</p>
-                      <p className="text-xs text-gray-500">Cap nhat lan cuoi: {new Date(review.updated_at).toLocaleString('vi-VN')}</p>
+                      <p className="text-xs text-gray-500">Cập nhật lần cuối: {new Date(review.updated_at).toLocaleString('vi-VN')}</p>
                     </div>
 
                     <div className="flex flex-col items-start gap-3 md:items-end md:text-right">
