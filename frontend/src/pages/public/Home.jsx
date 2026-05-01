@@ -167,7 +167,7 @@ const Home = () => {
                       to={isAuthenticated ? `/pitches/${field.id}` : '/login'}
                       className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white hover:bg-teal-600"
                     >
-                      Dat san ngay
+                      Đặt sân ngay
                     </Link>
                   </div>
                 </article>

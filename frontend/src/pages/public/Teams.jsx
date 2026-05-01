@@ -262,7 +262,7 @@ const Teams = () => {
                     to="/pitches"
                     className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-white font-semibold shadow-md hover:bg-teal-600 transition"
                   >
-                    Dat san ngay
+                    Đặt sân ngay
                   </Link>
                   <button
                     type="button"
