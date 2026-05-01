@@ -128,7 +128,7 @@ const ManagePitches = () => {
           setAdminUsers(ownerResponse.data.results || ownerResponse.data || []);
         }
       } catch (requestError) {
-        setError(requestError.response?.data?.error || 'Khong the tai du lieu quan ly san.');
+        setError(requestError.response?.data?.error || 'Không thể tải dữ liệu quản lý sân.');
       } finally {
         setLoading(false);
       }
@@ -194,7 +194,7 @@ const ManagePitches = () => {
       });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (requestError) {
-      setFormError(requestError.response?.data?.error || 'Khong the tai thong tin san de chinh sua.');
+      setFormError(requestError.response?.data?.error || 'Không thể tải thông tin sân để chỉnh sửa.');
     }
   };
 
@@ -210,7 +210,7 @@ const ManagePitches = () => {
   };
 
   const handleDelete = async (pitchId, pitchName) => {
-    const shouldDelete = window.confirm(`Ban co chac muon xoa san "${pitchName}" khong?`);
+    const shouldDelete = window.confirm(`Bạn có chắc muốn xóa sân "${pitchName}" không?`);
     if (!shouldDelete) {
       return;
     }
@@ -225,9 +225,9 @@ const ManagePitches = () => {
         resetForm();
       }
 
-      setSuccessMessage('Da xoa san thanh cong.');
+      setSuccessMessage('Đã xóa sân thành công.');
     } catch (requestError) {
-      setError(requestError.response?.data?.error || 'Khong the xoa san.');
+      setError(requestError.response?.data?.error || 'Không thể xóa sân.');
     }
   };
 
@@ -255,7 +255,7 @@ const ManagePitches = () => {
 
       if (isEditing) {
         await axiosInstance.patch(`/fields/${editingPitchId}/update/`, payload);
-        setSuccessMessage('Cap nhat san thanh cong.');
+        setSuccessMessage('Cập nhật sân thành công.');
       } else {
         const existingPitchIds = new Set(pitches.map((pitch) => pitch.id));
         await axiosInstance.post('/fields/create/', payload);
@@ -270,7 +270,7 @@ const ManagePitches = () => {
         const createdPitchId = createdPitch?.id;
 
         if (pendingCreateImages.length && !createdPitchId) {
-          throw new Error('Khong the xac dinh san vua tao de upload anh.');
+          throw new Error('Không thể xác định sân vừa tạo để upload ảnh.');
         }
 
         if (createdPitchId && pendingCreateImages.length) {
@@ -289,7 +289,7 @@ const ManagePitches = () => {
         }
 
         setSuccessMessage(
-          pendingCreateImages.length ? 'Them san moi va upload anh thanh cong.' : 'Them san moi thanh cong.'
+          pendingCreateImages.length ? 'Thêm sân mới và upload ảnh thành công.' : 'Thêm sân mới thành công.'
         );
       }
 
@@ -305,9 +305,9 @@ const ManagePitches = () => {
         setFormError(responseData);
       } else if (responseData && typeof responseData === 'object') {
         const firstMessage = Object.values(responseData).flat()[0];
-        setFormError(firstMessage || 'Khong the luu thong tin san.');
+        setFormError(firstMessage || 'Không thể lưu thông tin sân.');
       } else {
-        setFormError('Khong the luu thong tin san.');
+        setFormError('Không thể lưu thông tin sân.');
       }
     } finally {
       setSubmitting(false);
@@ -316,7 +316,7 @@ const ManagePitches = () => {
 
   const handleAddCreateImage = () => {
     if (!imageFile) {
-      setImageError('Vui long chon mot file anh.');
+      setImageError('Vui lòng chọn một file ảnh.');
       return;
     }
 
@@ -347,12 +347,12 @@ const ManagePitches = () => {
     event.preventDefault();
 
     if (!editingPitchId) {
-      setImageError('Hay chon mot san de chinh sua truoc khi them anh.');
+      setImageError('Hãy chọn một sân để chỉnh sửa trước khi thêm ảnh.');
       return;
     }
 
     if (!imageFile) {
-      setImageError('Vui long chon mot file anh.');
+      setImageError('Vui lòng chọn một file ảnh.');
       return;
     }
 
@@ -377,9 +377,9 @@ const ManagePitches = () => {
       setImageFile(null);
       setImageOrder('0');
       setImageIsPrimary(false);
-      setSuccessMessage('Them anh san thanh cong.');
+      setSuccessMessage('Thêm ảnh sân thành công.');
     } catch (requestError) {
-      setImageError(requestError.response?.data?.error || 'Khong the upload anh san.');
+      setImageError(requestError.response?.data?.error || 'Không thể upload ảnh sân.');
     } finally {
       setUploadingImage(false);
     }
@@ -392,14 +392,14 @@ const ManagePitches = () => {
       await axiosInstance.patch(`/fields/${editingPitchId}/images/${imageId}/set-primary/`);
       await refreshEditingPitchImages();
       await loadPitches();
-      setSuccessMessage('Da cap nhat anh chinh.');
+      setSuccessMessage('Đã cập nhật ảnh chính.');
     } catch (requestError) {
-      setImageError(requestError.response?.data?.error || 'Khong the cap nhat anh chinh.');
+      setImageError(requestError.response?.data?.error || 'Không thể cập nhật ảnh chính.');
     }
   };
 
   const handleDeleteImage = async (imageId) => {
-    const shouldDelete = window.confirm('Ban co chac muon xoa anh nay khong?');
+    const shouldDelete = window.confirm('Bạn có chắc muốn xóa ảnh này không?');
     if (!shouldDelete) {
       return;
     }
@@ -410,9 +410,9 @@ const ManagePitches = () => {
       await axiosInstance.delete(`/fields/${editingPitchId}/images/${imageId}/delete/`);
       await refreshEditingPitchImages();
       await loadPitches();
-      setSuccessMessage('Da xoa anh san.');
+      setSuccessMessage('Đã xóa ảnh sân.');
     } catch (requestError) {
-      setImageError(requestError.response?.data?.error || 'Khong the xoa anh san.');
+      setImageError(requestError.response?.data?.error || 'Không thể xóa ảnh sân.');
     }
   };
 
@@ -421,11 +421,11 @@ const ManagePitches = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex justify-between items-start gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Quan ly san bong</h1>
-            <p className="text-gray-500 mt-2">Thong tin san, hinh anh va sau nay la khung gio se duoc quan ly tap trung tai day.</p>
+            <h1 className="text-3xl font-bold text-gray-900">Quản lý sân bóng</h1>
+            <p className="text-gray-500 mt-2">Thông tin sân, hình ảnh và sau này là khung giờ sẽ được quản lý tập trung tại đây.</p>
           </div>
           <Link to="/" className="text-primary hover:underline">
-            Ve trang khach
+            Về trang khách
           </Link>
         </div>
 
@@ -434,7 +434,7 @@ const ManagePitches = () => {
         <div className="bg-white shadow-sm rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">
-              {isEditing ? 'Chinh sua san' : 'Them san moi'}
+              {isEditing ? 'Chỉnh sửa sân' : 'Thêm sân mới'}
             </h2>
             {isEditing && (
               <button
@@ -442,14 +442,14 @@ const ManagePitches = () => {
                 onClick={resetForm}
                 className="text-sm font-medium text-gray-600 hover:text-gray-900"
               >
-                Huy chinh sua
+                Hủy chỉnh sửa
               </button>
             )}
           </div>
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Loai san</span>
+              <span className="text-sm font-medium text-gray-700">Loại sân</span>
               <select
                 name="field_type"
                 value={formData.field_type}
@@ -457,7 +457,7 @@ const ManagePitches = () => {
                 required
                 className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
               >
-                <option value="">Chon loai san</option>
+                <option value="">Chọn loại sân</option>
                 {fieldTypes.map((type) => (
                   <option key={type.id} value={type.id}>
                     {type.name}
@@ -468,14 +468,14 @@ const ManagePitches = () => {
 
             {canAssignOwner && (
               <label className="block">
-                <span className="text-sm font-medium text-gray-700">Chu san</span>
+                <span className="text-sm font-medium text-gray-700">Chủ sân</span>
                 <select
                   name="owner"
                   value={formData.owner}
                   onChange={handleChange}
                   className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
                 >
-                  <option value="">Chon admin quan ly</option>
+                  <option value="">Chọn admin quản lý</option>
                   {adminUsers.map((user) => (
                     <option key={user.id} value={user.id}>
                       {user.username}
@@ -486,7 +486,7 @@ const ManagePitches = () => {
             )}
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Ten san</span>
+              <span className="text-sm font-medium text-gray-700">Tên sân</span>
               <input
                 type="text"
                 name="name"
@@ -498,7 +498,7 @@ const ManagePitches = () => {
             </label>
 
             <label className="block md:col-span-2">
-              <span className="text-sm font-medium text-gray-700">Mo ta</span>
+              <span className="text-sm font-medium text-gray-700">Mô tả</span>
               <textarea
                 name="description"
                 value={formData.description}
@@ -509,7 +509,7 @@ const ManagePitches = () => {
             </label>
 
             <label className="block md:col-span-2">
-              <span className="text-sm font-medium text-gray-700">Dia chi</span>
+              <span className="text-sm font-medium text-gray-700">Địa chỉ</span>
               <input
                 type="text"
                 name="location"
@@ -521,7 +521,7 @@ const ManagePitches = () => {
             </label>
 
             <label className="block md:col-span-2">
-              <span className="text-sm font-medium text-gray-700 mb-2 block">Vi tri tren ban do</span>
+              <span className="text-sm font-medium text-gray-700 mb-2 block">Vị trí trên bản đồ</span>
               <LocationPicker
                 value={{
                   latitude: formData.latitude,
@@ -544,7 +544,7 @@ const ManagePitches = () => {
             <input type="hidden" name="longitude" value={formData.longitude} />
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Gia gio thuong</span>
+              <span className="text-sm font-medium text-gray-700">Giá giờ thường</span>
               <input
                 type="number"
                 min="0"
@@ -557,7 +557,7 @@ const ManagePitches = () => {
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Gia gio cao diem</span>
+              <span className="text-sm font-medium text-gray-700">Giá giờ cao điểm</span>
               <input
                 type="number"
                 min="0"
@@ -570,7 +570,7 @@ const ManagePitches = () => {
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Phan tram tien coc</span>
+              <span className="text-sm font-medium text-gray-700">Phần trăm tiền cọc</span>
               <input
                 type="number"
                 min="0"
@@ -591,17 +591,17 @@ const ManagePitches = () => {
                 onChange={handleChange}
                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
               />
-              <span className="text-sm font-medium text-gray-700">Dang hoat dong</span>
+              <span className="text-sm font-medium text-gray-700">Đang hoạt động</span>
             </label>
 
             <div className="md:col-span-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
               <div className="flex flex-col gap-5">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Hinh anh san</h3>
+                  <h3 className="text-base font-bold text-slate-900">Hình ảnh sân</h3>
                   <p className="mt-2 text-sm leading-7 text-slate-500">
                     {isEditing
-                      ? 'Ban dang o che do chinh sua. Co the them anh moi ngay ben duoi va quan ly thu vien anh hien tai.'
-                      : 'Chon anh truoc khi tao san. He thong se tu dong upload ngay sau khi san duoc tao thanh cong.'}
+                      ? 'Bạn đang ở chế độ chỉnh sửa. Có thể thêm ảnh mới ngay bên dưới và quản lý thư viện ảnh hiện tại.'
+                      : 'Chọn ảnh trước khi tạo sân. Hệ thống sẽ tự động upload ngay sau khi sân được tạo thành công.'}
                   </p>
                 </div>
 
@@ -609,7 +609,7 @@ const ManagePitches = () => {
                   <>
                     <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1.4fr)_180px_220px] md:items-end">
                       <label className="block">
-                        <span className="text-sm font-medium text-gray-700">Chon anh</span>
+                        <span className="text-sm font-medium text-gray-700">Chọn ảnh</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -619,7 +619,7 @@ const ManagePitches = () => {
                       </label>
 
                       <label className="block">
-                        <span className="text-sm font-medium text-gray-700">Thu tu hien thi</span>
+                        <span className="text-sm font-medium text-gray-700">Thứ tự hiển thị</span>
                         <input
                           type="number"
                           min="0"
@@ -637,14 +637,14 @@ const ManagePitches = () => {
                             onChange={(event) => setImageIsPrimary(event.target.checked)}
                             className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                           />
-                          <span className="text-sm font-medium text-gray-700">Dat lam anh chinh</span>
+                          <span className="text-sm font-medium text-gray-700">Đặt làm ảnh chính</span>
                         </label>
                         <button
                           type="button"
                           onClick={handleAddCreateImage}
                           className="rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800"
                         >
-                          Them vao danh sach anh
+                          Thêm vào danh sách ảnh
                         </button>
                       </div>
                     </div>
@@ -656,10 +656,10 @@ const ManagePitches = () => {
                             <img src={image.previewUrl} alt={image.file.name} className="h-48 w-full object-cover" />
                             <div className="space-y-3 p-4">
                               <div className="flex items-center justify-between gap-3">
-                                <span className="text-sm text-slate-500">Thu tu: {image.order}</span>
+                                <span className="text-sm text-slate-500">Thứ tự: {image.order}</span>
                                 {image.is_primary && (
                                   <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">
-                                    Anh chinh
+                                    Ảnh chính
                                   </span>
                                 )}
                               </div>
@@ -669,7 +669,7 @@ const ManagePitches = () => {
                                 onClick={() => handleRemoveCreateImage(image.id)}
                                 className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
                               >
-                                Xoa khoi danh sach
+                                Xóa khỏi danh sách
                               </button>
                             </div>
                           </div>
@@ -699,14 +699,14 @@ const ManagePitches = () => {
                 disabled={submitting}
                 className="rounded-lg bg-primary px-5 py-3 font-semibold text-white hover:bg-teal-600 disabled:opacity-60"
               >
-                {submitting ? 'Dang luu...' : isEditing ? 'Cap nhat san' : 'Them san'}
+                {submitting ? 'Đang lưu...' : isEditing ? 'Cập nhật sân' : 'Thêm sân'}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
                 className="rounded-lg border border-gray-300 px-5 py-3 font-semibold text-gray-700 hover:bg-gray-50"
               >
-                Dat lai
+                Đặt lại
               </button>
             </div>
           </form>
@@ -718,7 +718,7 @@ const ManagePitches = () => {
               <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
                 <h2 className="text-xl font-bold text-gray-900">Quản lý ảnh sân</h2>
                 <p className="text-sm text-gray-500 mt-2">
-                  Chuc nang lich hoat dong va ngay dong cua da chuyen sang trang `Lich hoat dong` de toi uu quy trinh.
+                  Chức năng lịch hoạt động và ngày đóng của đã chuyển sang trang `Lịch hoạt động` để tối ưu quy trình.
                 </p>
               </div>
 
@@ -732,7 +732,7 @@ const ManagePitches = () => {
 
             <form onSubmit={handleImageUpload} className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
               <label className="block md:col-span-2">
-                <span className="text-sm font-medium text-gray-700">Chon anh</span>
+                <span className="text-sm font-medium text-gray-700">Chọn ảnh</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -742,7 +742,7 @@ const ManagePitches = () => {
               </label>
 
               <label className="block">
-                <span className="text-sm font-medium text-gray-700">Thu tu hien thi</span>
+                <span className="text-sm font-medium text-gray-700">Thứ tự hiển thị</span>
                 <input
                   type="number"
                   min="0"
@@ -759,7 +759,7 @@ const ManagePitches = () => {
                   onChange={(event) => setImageIsPrimary(event.target.checked)}
                   className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                 />
-                <span className="text-sm font-medium text-gray-700">Dat lam anh chinh</span>
+                <span className="text-sm font-medium text-gray-700">Đặt làm ảnh chính</span>
               </label>
 
               <div>
@@ -768,7 +768,7 @@ const ManagePitches = () => {
                   disabled={uploadingImage}
                   className="rounded-lg bg-primary px-5 py-3 font-semibold text-white hover:bg-teal-600 disabled:opacity-60"
                 >
-                  {uploadingImage ? 'Dang upload...' : 'Them anh'}
+                  {uploadingImage ? 'Đang upload...' : 'Thêm ảnh'}
                 </button>
               </div>
             </form>
@@ -780,7 +780,7 @@ const ManagePitches = () => {
             )}
 
             {pitchImages.length === 0 ? (
-              <p className="text-sm text-gray-500">San nay chua co anh nao.</p>
+              <p className="text-sm text-gray-500">Sân này chưa có ảnh nào.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {pitchImages.map((image) => (
@@ -788,10 +788,10 @@ const ManagePitches = () => {
                     <img src={image.image_url} alt={`pitch-${editingPitchId}-${image.id}`} className="w-full h-48 object-cover" />
                     <div className="p-4 space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-500">Thu tu: {image.order}</span>
+                        <span className="text-sm text-gray-500">Thứ tự: {image.order}</span>
                         {image.is_primary && (
                           <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-800">
-                            Anh chinh
+                            Ảnh chính
                           </span>
                         )}
                       </div>
@@ -802,14 +802,14 @@ const ManagePitches = () => {
                           onClick={() => handleSetPrimaryImage(image.id)}
                           className="rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100"
                         >
-                          Dat anh chinh
+                          Đặt ảnh chính
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteImage(image.id)}
                           className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
                         >
-                          Xoa anh
+                          Xóa ảnh
                         </button>
                       </div>
                     </div>
@@ -828,9 +828,9 @@ const ManagePitches = () => {
           <div className="p-4 border-b bg-gray-50">
             <div className="flex flex-col gap-4">
               <div className="flex justify-between items-center">
-                <h2 className="font-semibold text-gray-700">Danh sach san hien tai</h2>
+                <h2 className="font-semibold text-gray-700">Danh sách sân hiện tại</h2>
                 <span className="text-sm text-gray-500">
-                  {filteredPitches.length} / {pitches.length} san
+                  {filteredPitches.length} / {pitches.length} sân
                 </span>
               </div>
 
@@ -844,7 +844,7 @@ const ManagePitches = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Tim kiem theo ten san hoac dia chi..."
+                    placeholder="Tìm kiếm theo tên sân hoặc địa chỉ..."
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 outline-none focus:border-primary focus:ring-2 focus:ring-teal-100"
                   />
                 </div>
@@ -860,7 +860,7 @@ const ManagePitches = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
                   </svg>
-                  Bo loc
+                  Bỏ lọc
                 </button>
               </div>
 
@@ -869,13 +869,13 @@ const ManagePitches = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
                   {/* Filter by Field Type */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Loai san</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Loại sân</label>
                     <select
                       value={filterFieldType}
                       onChange={(e) => setFilterFieldType(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none focus:border-primary"
                     >
-                      <option value="">Tat ca</option>
+                      <option value="">Tất cả</option>
                       {fieldTypes.map((type) => (
                         <option key={type.id} value={type.id}>
                           {type.name}
@@ -892,8 +892,8 @@ const ManagePitches = () => {
                       onChange={(e) => setFilterOwner(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none focus:border-primary"
                     >
-                      <option value="">Tat ca</option>
-                      <option value="null">Chua gan</option>
+                      <option value="">Tất cả</option>
+                      <option value="null">Chưa gắn</option>
                       {adminUsers.map((user) => (
                         <option key={user.id} value={user.id}>
                           {user.username}
@@ -910,9 +910,9 @@ const ManagePitches = () => {
                       onChange={(e) => setFilterStatus(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg border border-gray-300 outline-none focus:border-primary"
                     >
-                      <option value="">Tat ca</option>
-                      <option value="active">Hoat dong</option>
-                      <option value="inactive">Tam dung</option>
+                      <option value="">Tất cả</option>
+                      <option value="active">Hoạt động</option>
+                      <option value="inactive">Tạm dừng</option>
                     </select>
                   </div>
 
@@ -935,7 +935,7 @@ const ManagePitches = () => {
 
           {/* Table Content */}
           {loading ? (
-            <div className="p-8 text-center text-primary font-semibold">Dang tai danh sach san...</div>
+            <div className="p-8 text-center text-primary font-semibold">Đang tải danh sách sân...</div>
           ) : error ? (
             <div className="p-8 text-center text-red-500">{error}</div>
           ) : filteredPitches.length === 0 ? (
@@ -945,15 +945,15 @@ const ManagePitches = () => {
               </svg>
               <p className="text-gray-500 text-lg">
                 {hasActiveFilters
-                  ? 'Khong tim thay san nao phu hop bo loc cua ban.'
-                  : 'Chua co san nao trong he thong.'}
+                  ? 'Không tìm thấy sân nào phù hợp với bộ lọc của bạn.'
+                  : 'Chưa có sân nào trong hệ thống.'}
               </p>
               {hasActiveFilters && (
                 <button
                   onClick={resetFilters}
                   className="mt-4 text-primary hover:text-teal-700 font-medium"
                 >
-                  Xoa bo loc va thu lai
+                  Xóa bỏ lọc và thử lại
                 </button>
               )}
             </div>
@@ -962,13 +962,13 @@ const ManagePitches = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ten san</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loai</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chu san</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gia / gio</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tien coc</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trang thai</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Thao tac</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên sân</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loại</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chủ sân</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giá / giờ</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tiền cọc</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -976,7 +976,7 @@ const ManagePitches = () => {
                     <tr key={pitch.id}>
                       <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{pitch.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-500">{pitch.field_type?.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">{pitch.owner_username || 'Chua gan'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">{pitch.owner_username || 'Chưa gắn'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                         {Number(pitch.price_per_hour).toLocaleString('vi-VN')} d
                       </td>
@@ -987,7 +987,7 @@ const ManagePitches = () => {
                             pitch.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}
                         >
-                          {pitch.is_active ? 'Hoat dong' : 'Tam dung'}
+                          {pitch.is_active ? 'Hoạt động' : 'Tạm dừng'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -997,14 +997,14 @@ const ManagePitches = () => {
                             onClick={() => handleEdit(pitch.id)}
                             className="rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100"
                           >
-                            Sua
+                            Sửa
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDelete(pitch.id, pitch.name)}
                             className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
                           >
-                            Xoa
+                            Xoá
                           </button>
                         </div>
                       </td>
