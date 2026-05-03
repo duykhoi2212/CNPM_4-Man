@@ -74,7 +74,7 @@ const ReviewForm = () => {
     }
 
     if (files.length > imageSlotsLeft) {
-      setError(`Ban chi co the tai them toi da ${imageSlotsLeft} anh.`);
+      setError(`Bạn chỉ có thể tải lên tối đa ${imageSlotsLeft} ảnh.`);
       event.target.value = '';
       return;
     }
@@ -129,8 +129,8 @@ const ReviewForm = () => {
       navigate('/user/history', {
         state: {
           successMessage: reviewDetail?.id
-            ? 'Danh gia cua ban da duoc cap nhat thanh cong.'
-            : 'Danh gia cua ban da duoc gui thanh cong.',
+            ? 'Đánh giá của bạn đã được cập nhật thành công.'
+            : 'Đánh giá của bạn đã được gửi thành công.',
         },
       });
     } catch (requestError) {
@@ -151,7 +151,7 @@ const ReviewForm = () => {
       setError('');
       await axiosInstance.delete(`/reviews/${reviewDetail.id}/delete/`);
       navigate('/user/history', {
-        state: { successMessage: 'Danh gia cua ban da duoc xoa thanh cong.' },
+        state: { successMessage: 'Đánh giá của bạn đã được xóa thành công.' },
       });
     } catch (requestError) {
       setError(buildErrorMessage(requestError.response?.data, 'Không thể xóa đánh giá. Vui lòng thử lại.'));
@@ -193,7 +193,7 @@ const ReviewForm = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-3">So sao</p>
+            <p className="text-sm font-medium text-gray-700 mb-3">Số sao</p>
             <div className="flex flex-wrap gap-2">
               {[1, 2, 3, 4, 5].map((value) => {
                 const active = value <= formData.rating;
@@ -213,7 +213,7 @@ const ReviewForm = () => {
           </div>
 
           <label className="block text-sm font-medium text-gray-700">
-            Noi dung danh gia
+            Nội dung đánh giá
             <textarea
               name="comment"
               value={formData.comment}
@@ -226,7 +226,7 @@ const ReviewForm = () => {
 
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-medium text-gray-700">Anh danh gia</p>
+              <p className="text-sm font-medium text-gray-700">Ảnh đánh giá</p>
               <p className="mt-1 text-xs text-gray-500">Bạn có thể tải tối đa {MAX_IMAGES} ảnh cho mỗi đánh giá.</p>
             </div>
 
@@ -240,7 +240,7 @@ const ReviewForm = () => {
                       onClick={() => handleDeleteImage(image.id)}
                       className="mt-2 w-full rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
                     >
-                      Xoa anh
+                      Xóa ảnh
                     </button>
                   </div>
                 ))}
@@ -249,7 +249,7 @@ const ReviewForm = () => {
 
             {imageSlotsLeft > 0 ? (
               <label className="block text-sm font-medium text-gray-700">
-                Tai anh moi
+                Tải ảnh mới
                 <input
                   type="file"
                   multiple
@@ -260,7 +260,7 @@ const ReviewForm = () => {
               </label>
             ) : (
               <div className="rounded-md bg-yellow-50 px-4 py-3 text-sm text-yellow-700">
-                Ban da tai du 5 anh cho danh gia nay.
+                Bạn đã tải đủ 5 ảnh cho đánh giá này.
               </div>
             )}
 
@@ -299,7 +299,7 @@ const ReviewForm = () => {
               to="/user/history"
               className="flex-1 rounded-md bg-gray-100 px-4 py-3 text-center font-bold text-gray-700 hover:bg-gray-200"
             >
-              Quay lai
+              Quay lại
             </Link>
           </div>
         </form>
