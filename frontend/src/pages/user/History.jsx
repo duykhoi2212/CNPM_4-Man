@@ -3,8 +3,8 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import axiosInstance from '../../api/axios';
 
 const HISTORY_TABS = [
-  { key: 'booking', label: 'Lich su dat san' },
-  { key: 'match', label: 'Lich su giao luu' },
+  { key: 'booking', label: 'Lịch sử đặt sân' },
+  { key: 'match', label: 'Lịch sử giao lưu' },
 ];
 
 const bookingStatusStyles = {
@@ -131,10 +131,10 @@ const History = () => {
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Lich su</p>
-          <h2 className="mt-3 text-3xl font-black text-gray-900">Lich su hoat dong cua ban</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">ịch sử</p>
+          <h2 className="mt-3 text-3xl font-black text-gray-900">Lịch sử hoạt động của bạn</h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500">
-            Theo doi booking da tao va cac tran giao luu da ket noi thanh cong trong cung mot khu vuc lich su.
+            Tại đây bạn có thể xem lại lịch sử đặt sân và giao lưu của mình. Hãy kiểm tra chi tiết các booking đã thực hiện, các trận giao lưu đã tham gia, và đừng quên đánh giá sau mỗi trải nghiệm để giúp cộng đồng ngày càng phát triển hơn!
           </p>
         </div>
         {location.state?.successMessage && (
@@ -160,7 +160,7 @@ const History = () => {
                 }`}
               >
                 <p className={`text-xs font-semibold uppercase tracking-[0.24em] ${isActive ? 'text-primary' : 'text-slate-400'}`}>
-                  Lich su
+                  Lịch sử
                 </p>
                 <h3 className={`mt-3 text-xl font-black tracking-tight ${isActive ? 'text-slate-950' : 'text-slate-800'}`}>
                   {tab.label}
@@ -204,12 +204,12 @@ const History = () => {
                       <div className="mt-2 sm:flex sm:justify-between">
                         <div className="sm:flex">
                           <p className="flex items-center text-sm text-gray-500">
-                            Ngay: {booking.booking_date} | Tong tien: {formatCurrency(booking.total_amount)}
+                            Ngày: {booking.booking_date} | Tổng tiền: {formatCurrency(booking.total_amount)}
                           </p>
                         </div>
                         <div className="mt-2 space-y-1 text-sm text-gray-500 sm:mt-0 sm:text-right">
-                          <p>Coc: {formatCurrency(booking.deposit_amount)}</p>
-                          <p>Con lai: {formatCurrency(booking.remaining_amount || 0)}</p>
+                          <p>Đặt cọc: {formatCurrency(booking.deposit_amount)}</p>
+                          <p> Còn lại: {formatCurrency(booking.remaining_amount || 0)}</p>
                         </div>
                       </div>
                       <div className="mt-3">
@@ -217,7 +217,7 @@ const History = () => {
                           to={`/user/history/${booking.id}`}
                           className="inline-flex items-center justify-center rounded-md bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
                         >
-                          Chi tiet lich dat
+                          Chi tiết lịch đặt
                         </Link>
                       </div>
                       {reviewInfo && (
@@ -229,7 +229,7 @@ const History = () => {
                                 to={`/user/reviews/new/${booking.id}`}
                                 className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-teal-600"
                               >
-                                Viet danh gia
+                                Viết đánh giá
                               </Link>
                             )}
                             {booking.has_review && booking.review && (
@@ -238,7 +238,7 @@ const History = () => {
                                 state={{ review: booking.review }}
                                 className="inline-flex items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
                               >
-                                Sua danh gia
+                                Sửa đánh giá
                               </Link>
                             )}
                           </div>
