@@ -395,11 +395,11 @@ const PitchList = () => {
                 <div className="mb-3">
                   {pitch.is_open_today ? (
                     <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">
-                      Mo hom nay: {formatTime(pitch.today_open_time)} - {formatTime(pitch.today_close_time)}
+                      Mở hôm nay: {formatTime(pitch.today_open_time)} - {formatTime(pitch.today_close_time)}
                     </span>
                   ) : (
                     <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-800">
-                      Dong hom nay
+                      Đóng hôm nay
                     </span>
                   )}
                 </div>
