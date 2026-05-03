@@ -156,12 +156,12 @@ const Profile = () => {
       <div className="rounded-2xl bg-white p-8 shadow-lg">
         <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Thong tin tai khoan</h2>
+            <h2 className="text-3xl font-bold text-gray-900">Thông tin tài khoản</h2>
             <p className="mt-2 text-gray-500">Bạn có thể cập nhật thông tin cá nhân, avatar và quản lý bảo mật tại đây.</p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <Link to="/change-password" className="rounded-md border border-primary px-4 py-2 font-semibold text-primary hover:bg-teal-50">
-              Doi mat khau
+              Đổi mật khẩu
             </Link>
             <Link to={storedUser?.is_staff ? '/admin/pitches' : '/pitches'} className="text-primary font-semibold hover:underline">
               {storedUser?.is_staff ? 'Về khu quản lý' : 'Về danh sách sân'}
@@ -212,7 +212,7 @@ const Profile = () => {
               </div>
 
               <label className="block text-sm font-medium text-gray-700">
-                Anh doi bong
+                Ảnh đội bóng
                 <input
                   type="file"
                   name="team_image"
@@ -235,7 +235,7 @@ const Profile = () => {
               </label>
 
               <label className="block text-sm font-medium text-gray-700">
-                Ho
+                Họ
                 <input
                   type="text"
                   name="first_name"
@@ -246,7 +246,7 @@ const Profile = () => {
               </label>
 
               <label className="block text-sm font-medium text-gray-700">
-                Ten
+                Tên
                 <input
                   type="text"
                   name="last_name"
@@ -268,7 +268,7 @@ const Profile = () => {
               </label>
 
               <label className="block text-sm font-medium text-gray-700">
-                So dien thoai
+                Số điện thoại
                 <input
                   type="tel"
                   name="phone"
@@ -279,7 +279,7 @@ const Profile = () => {
               </label>
 
               <label className="block text-sm font-medium text-gray-700">
-                Ten doi bong
+                Tên đội bóng
                 <input
                   type="text"
                   name="team_name"
@@ -291,7 +291,7 @@ const Profile = () => {
               </label>
 
               <label className="block text-sm font-medium text-gray-700 md:col-span-2">
-                Dia chi
+                Địa chỉ
                 <textarea
                   name="address"
                   value={formData.address}
