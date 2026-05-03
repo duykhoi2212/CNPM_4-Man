@@ -9,10 +9,10 @@ class Booking(models.Model):
     id = models.AutoField(primary_key=True)
 
     STATUS_CHOICES = [
-        ('pending_payment', 'Cho thanh toan coc'),
-        ('confirmed', 'Da xac nhan'),
-        ('completed', 'Hoan thanh'),
-        ('cancelled', 'Da huy'),
+        ('pending_payment', 'Chờ thanh toán cập'),
+        ('confirmed', 'Đã xác nhận'),
+        ('completed', 'Hoàn thành'),
+        ('cancelled', 'Đã hủy'),
     ]
 
     user = models.ForeignKey(

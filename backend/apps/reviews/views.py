@@ -112,10 +112,10 @@ def review_add_image_view(request, pk):
     try:
         review = Review.objects.get(pk=pk)
     except Review.DoesNotExist:
-        return Response({'error': 'Khong tim thay danh gia'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy đánh giá'}, status=status.HTTP_404_NOT_FOUND)
 
     if review.user != request.user:
-        return Response({'error': 'Ban chi co the them anh vao danh gia cua chinh minh'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn chỉ có thể thêm ảnh vào đánh giá của chính mình'}, status=status.HTTP_403_FORBIDDEN)
 
     if review.images.count() >= 5:
         return Response({'error': 'Moi danh gia chi duoc toi da 5 anh'}, status=status.HTTP_400_BAD_REQUEST)
@@ -148,13 +148,13 @@ def review_delete_image_view(request, pk, image_id):
         review = Review.objects.get(pk=pk)
         review_image = ReviewImage.objects.get(pk=image_id, review=review)
     except (Review.DoesNotExist, ReviewImage.DoesNotExist):
-        return Response({'error': 'Khong tim thay danh gia hoac anh'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy đánh giá hoặc ảnh'}, status=status.HTTP_404_NOT_FOUND)
 
     if review.user != request.user and not request.user.is_staff:
-        return Response({'error': 'Ban khong co quyen xoa anh cua danh gia nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền xoá ảnh của đánh giá này'}, status=status.HTTP_403_FORBIDDEN)
     if request.user.is_staff and not request.user.is_superuser and review.user != request.user and review.field.owner_id != request.user.id:
-        return Response({'error': 'Ban khong co quyen xoa anh cua danh gia nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền xoá ảnh của đánh giá này'}, status=status.HTTP_403_FORBIDDEN)
 
     review_image.delete()
     serializer = ReviewDetailSerializer(review, context={'request': request})
-    return Response({'message': 'Da xoa anh thanh cong', 'review': serializer.data}, status=status.HTTP_200_OK)
+    return Response({'message': 'Đã xoá ảnh thành công', 'review': serializer.data}, status=status.HTTP_200_OK)

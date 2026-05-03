@@ -120,12 +120,12 @@ def booking_cancel_view(request, pk):
     try:
         booking = Booking.objects.get(pk=pk)
     except Booking.DoesNotExist:
-        return Response({'error': 'Khong tim thay booking'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy booking'}, status=status.HTTP_404_NOT_FOUND)
 
     if booking.user != request.user and not request.user.is_staff:
-        return Response({'error': 'Ban khong co quyen huy booking nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền hủy booking này'}, status=status.HTTP_403_FORBIDDEN)
     if request.user.is_staff and not request.user.is_superuser and booking.user != request.user and booking.field.owner_id != request.user.id:
-        return Response({'error': 'Ban khong co quyen huy booking nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền hủy booking này'}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = BookingCancelSerializer(instance=booking, data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -134,7 +134,7 @@ def booking_cancel_view(request, pk):
     detail_serializer = BookingDetailSerializer(booking, context={'request': request})
 
     return Response({
-        'message': 'Da huy booking thanh cong',
+        'message': 'Đã hủy booking thành công',
         'booking': detail_serializer.data
     }, status=status.HTTP_200_OK)
 
@@ -161,13 +161,13 @@ def booking_complete_view(request, pk):
     try:
         booking = Booking.objects.get(pk=pk)
     except Booking.DoesNotExist:
-        return Response({'error': 'Khong tim thay booking'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy booking'}, status=status.HTTP_404_NOT_FOUND)
 
     if not request.user.is_superuser and booking.field.owner_id != request.user.id:
-        return Response({'error': 'Ban khong co quyen quan ly booking nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền quản lý booking này'}, status=status.HTTP_403_FORBIDDEN)
 
     if booking.status != 'confirmed':
-        return Response({'error': 'Chi booking da xac nhan moi co the hoan thanh'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Chỉ booking đã xác nhận mới có thể hoàn thành'}, status=status.HTTP_400_BAD_REQUEST)
 
     booking.status = 'completed'
     booking.save(update_fields=['status', 'updated_at'])
@@ -175,6 +175,6 @@ def booking_complete_view(request, pk):
     detail_serializer = BookingDetailSerializer(booking, context={'request': request})
 
     return Response({
-        'message': 'Da cap nhat booking hoan thanh',
+        'message': 'Đã cập nhật booking hoàn thành',
         'booking': detail_serializer.data
     }, status=status.HTTP_200_OK)

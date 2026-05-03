@@ -28,7 +28,7 @@ class PaymentCreateView(generics.CreateAPIView):
         response_serializer = PaymentSerializer(payment, context={'request': request})
 
         return Response({
-            'message': 'Tao thanh toan tien coc thanh cong. Vui long tiep tuc thanh toan.',
+            'message': 'Tạo thanh toán tiền cập thành công. Vui lòng tiếp tục thanh toán.',
             'payment': response_serializer.data
         }, status=status.HTTP_201_CREATED)
 
@@ -45,10 +45,10 @@ def payment_confirm_view(request, pk):
     try:
         payment = Payment.objects.select_related('booking').get(pk=pk)
     except Payment.DoesNotExist:
-        return Response({'error': 'Khong tim thay thanh toan'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy thanh toán'}, status=status.HTTP_404_NOT_FOUND)
 
     if payment.booking.user != request.user and not request.user.is_staff:
-        return Response({'error': 'Ban khong co quyen xac nhan thanh toan nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền xác nhận thanh toán này'}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = PaymentConfirmSerializer(instance=payment, data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -57,7 +57,7 @@ def payment_confirm_view(request, pk):
     response_serializer = PaymentSerializer(payment, context={'request': request})
 
     return Response({
-        'message': 'Thanh toan coc thanh cong, booking da duoc xac nhan',
+        'message': 'Thanh toán cập thành công, booking đã được xác nhận',
         'payment': response_serializer.data
     }, status=status.HTTP_200_OK)
 
@@ -68,10 +68,10 @@ def payment_by_booking_view(request, booking_id):
     try:
         payment = Payment.objects.select_related('booking', 'booking__field').get(booking_id=booking_id)
     except Payment.DoesNotExist:
-        return Response({'error': 'Khong tim thay thanh toan cho booking nay'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy thanh toán cho booking này'}, status=status.HTTP_404_NOT_FOUND)
 
     if payment.booking.user != request.user and not request.user.is_staff:
-        return Response({'error': 'Ban khong co quyen xem thanh toan nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền xem thanh toán này'}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = PaymentSerializer(payment, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)

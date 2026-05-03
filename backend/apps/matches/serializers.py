@@ -155,7 +155,7 @@ class MatchRequestCreateSerializer(serializers.Serializer):
         timeslot_ids = attrs['timeslot_ids']
 
         if booking_date < timezone.localdate():
-            raise serializers.ValidationError({'booking_date': 'Ngay dat san khong duoc nam trong qua khu'})
+            raise serializers.ValidationError({'booking_date': 'Ngày đặt sân không được nằm trong quá khứ'})
 
         selected_timeslots = list(
             TimeSlot.objects.filter(
@@ -166,7 +166,7 @@ class MatchRequestCreateSerializer(serializers.Serializer):
         )
 
         if len(selected_timeslots) != len(set(timeslot_ids)):
-            raise serializers.ValidationError({'timeslot_ids': 'Khung gio khong hop le'})
+            raise serializers.ValidationError({'timeslot_ids': 'Khung giờ không hợp lệ'})
 
         booked_timeslot_ids = set(
             MatchRequestTimeSlot.objects.filter(

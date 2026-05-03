@@ -100,18 +100,18 @@ def match_request_accept_view(request, pk):
     try:
         match_request = MatchRequest.objects.select_related('created_by', 'field').get(pk=pk)
     except MatchRequest.DoesNotExist:
-        return Response({'error': 'Khong tim thay yeu cau giao luu'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy yêu cầu giao lưu'}, status=status.HTTP_404_NOT_FOUND)
 
     if match_request.created_by_id == request.user.id:
-        return Response({'error': 'Ban khong the tu chap nhan yeu cau cua chinh minh'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Bạn không thể tự chấp nhận yêu cầu của chính mình'}, status=status.HTTP_400_BAD_REQUEST)
 
     if match_request.status != MatchRequest.STATUS_WAITING_OPPONENT:
-        return Response({'error': 'Yeu cau giao luu nay khong con hop le de chap nhan'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Yêu cầu giao lưu này không còn hợp lệ để chấp nhận'}, status=status.HTTP_400_BAD_REQUEST)
 
     team_name, team_image_url = _team_snapshot_for_user(request.user)
     if not team_name or not team_image_url:
         return Response(
-            {'error': 'Ban can cap nhat ten doi bong va anh doi bong trong profile truoc khi chap nhan giao luu'},
+            {'error': 'Bạn cần cập nhật tên đội bóng và ảnh đội bóng trong profile trước khi chấp nhận giao lưu'},
             status=status.HTTP_400_BAD_REQUEST,
         )
     if team_image_url:
@@ -149,13 +149,13 @@ def match_request_complete_deposit_view(request, pk):
     try:
         match_request = MatchRequest.objects.select_related('created_by', 'field').prefetch_related('match_timeslots__timeslot').get(pk=pk)
     except MatchRequest.DoesNotExist:
-        return Response({'error': 'Khong tim thay yeu cau giao luu'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy yêu cầu giao lưu'}, status=status.HTTP_404_NOT_FOUND)
 
     if match_request.created_by_id != request.user.id and not request.user.is_staff:
-        return Response({'error': 'Ban khong co quyen thao tac yeu cau nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền thao tác yêu cầu này'}, status=status.HTTP_403_FORBIDDEN)
 
     if match_request.status != MatchRequest.STATUS_ACCEPTED_WAITING_DEPOSIT:
-        return Response({'error': 'Yeu cau giao luu khong o trang thai cho thanh toan coc'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Yêu cầu giao lưu không ở trạng thái chờ thanh toán cập'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not match_request.reserved_until or match_request.reserved_until <= timezone.now():
         match_request.status = MatchRequest.STATUS_EXPIRED
@@ -213,15 +213,15 @@ def match_request_pay_deposit_view(request, pk):
         return Response({'error': 'Khong tim thay yeu cau giao luu'}, status=status.HTTP_404_NOT_FOUND)
 
     if match_request.created_by_id != request.user.id:
-        return Response({'error': 'Ban khong co quyen thanh toan yeu cau nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền thanh toán yêu cầu này'}, status=status.HTTP_403_FORBIDDEN)
 
     if match_request.status != MatchRequest.STATUS_ACCEPTED_WAITING_DEPOSIT:
-        return Response({'error': 'Yeu cau giao luu khong o trang thai cho thanh toan coc'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Yêu cầu giao lưu không ở trạng thái chờ thanh toán cập'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not match_request.reserved_until or match_request.reserved_until <= timezone.now():
         match_request.status = MatchRequest.STATUS_EXPIRED
         match_request.save(update_fields=['status', 'updated_at'])
-        return Response({'error': 'Thoi gian giu cho da het han'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Thời gian giữ chỗ đã hết hạn'}, status=status.HTTP_400_BAD_REQUEST)
 
     if match_request.booking_id:
         return Response({'error': 'Yeu cau giao luu nay da duoc thanh toan'}, status=status.HTTP_400_BAD_REQUEST)

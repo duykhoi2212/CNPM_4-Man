@@ -188,7 +188,7 @@ def change_password_view(request):
 
     return Response(
         {
-            'message': 'Doi mat khau thanh cong',
+            'message': 'Đổi mậ t khẩu thành công',
             'token': token.key,
             'user': _serialize_auth_user(request.user, request),
         },
@@ -249,7 +249,7 @@ class AdminUserUpdateView(generics.UpdateAPIView):
         detail_serializer = AdminUserListSerializer(user, context={'request': request})
         return Response(
             {
-                'message': 'Da cap nhat tai khoan thanh cong',
+                'message': 'Đã cập nhật tài khoản thành công',
                 'user': detail_serializer.data,
             },
             status=status.HTTP_200_OK,
@@ -310,7 +310,7 @@ def admin_mark_nav_section_read_view(request):
     }
 
     if section not in allowed_sections:
-        return Response({'error': 'Muc thong bao khong hop le'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Mục thông báo không hợp lệ'}, status=status.HTTP_400_BAD_REQUEST)
 
     profile, _ = UserProfile.objects.get_or_create(
         user=request.user,
@@ -320,7 +320,7 @@ def admin_mark_nav_section_read_view(request):
     setattr(profile, field_name, timezone.now())
     profile.save(update_fields=[field_name, 'updated_at'])
 
-    return Response({'message': 'Da danh dau da xem thong bao'}, status=status.HTTP_200_OK)
+    return Response({'message': 'Đã đánh dấu đã xem thông báo'}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

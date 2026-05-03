@@ -40,10 +40,10 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         try:
             booking = Booking.objects.get(pk=value)
         except Booking.DoesNotExist:
-            raise serializers.ValidationError('Khong tim thay booking')
+            raise serializers.ValidationError('Không tìm thấy booking')
 
         if booking.user != user and not user.is_staff:
-            raise serializers.ValidationError('Ban chi co the tao thanh toan cho booking cua minh')
+            raise serializers.ValidationError('Bạn chỉ có thể tạo thanh toán cho booking của mình')
 
         if booking.status != 'pending_payment':
             raise serializers.ValidationError(

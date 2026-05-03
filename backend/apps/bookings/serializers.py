@@ -219,13 +219,13 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         timeslots = TimeSlot.objects.filter(id__in=timeslot_ids, field=field)
         if timeslots.count() != len(timeslot_ids):
             raise serializers.ValidationError({
-                'timeslot_ids': 'Mot hoac nhieu khung gio khong hop le cho san da chon'
+                'timeslot_ids': 'Một hoặc nhiều khung giờ không hợp lệ cho sân đã chọn'
             })
 
         inactive_slots = timeslots.filter(is_active=False)
         if inactive_slots.exists():
             raise serializers.ValidationError({
-                'timeslot_ids': 'Khung gio da chon hien khong con hoat dong'
+                'timeslot_ids': 'Khung giờ đã chọn hiện không còn hoạt động'
             })
 
         conflicting_bookings = BookingTimeSlot.objects.filter(
@@ -237,7 +237,7 @@ class BookingCreateSerializer(serializers.ModelSerializer):
 
         if conflicting_bookings.exists():
             raise serializers.ValidationError({
-                'timeslot_ids': 'Khung gio nay da duoc dat, vui long chon khung gio khac'
+                'timeslot_ids': 'Khung giờ này đã được đặt, vui lòng chọn khung giờ khác'
             })
 
         from apps.matches.models import MatchRequestTimeSlot
@@ -253,18 +253,18 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         )
         if reserved_timeslots.exists():
             raise serializers.ValidationError({
-                'timeslot_ids': 'Khung gio nay dang duoc giu cho giao luu, vui long chon khung gio khac'
+                'timeslot_ids': 'Khung giờ này đang được giữ chờ giao lưu, vui lòng chọn khung giờ khác'
             })
 
         service_items = attrs.get('service_items') or []
         if service_items:
             service_ids = [item['service_id'] for item in service_items]
             if len(service_ids) != len(set(service_ids)):
-                raise serializers.ValidationError({'service_items': 'Khong duoc chon trung mot dich vu nhieu lan'})
+                raise serializers.ValidationError({'service_items': 'Không được chọn trùng một dịch vụ nhiều lần'})
 
             products = ServiceProduct.objects.filter(id__in=service_ids, is_active=True)
             if products.count() != len(service_ids):
-                raise serializers.ValidationError({'service_items': 'Mot hoac nhieu dich vu khong hop le hoac da ngung ban'})
+                raise serializers.ValidationError({'service_items': 'Một hoặc nhiều dịch vụ không hợp lệ hoặc đã ngừng bán'})
 
             attrs['_service_products'] = {product.id: product for product in products}
         else:

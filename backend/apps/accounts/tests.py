@@ -242,14 +242,14 @@ class AccountsApiTests(APITestCase):
             field=field,
             booking=None,
             rating=5,
-            comment='Rat tot'
+            comment='Rất tốt'
         )
 
         ContactMessage.objects.create(
             name='Guest',
             email='guest@example.com',
-            subject='Ho tro',
-            message='Can ho tro dat san',
+            subject='Hỗ trợ',
+            message='Cần hỗ trợ đặt sân',
             is_resolved=False,
         )
 

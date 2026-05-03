@@ -251,9 +251,9 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
 
         if target_user == request_user:
             if attrs.get('is_active') is False:
-                raise serializers.ValidationError({'is_active': 'Ban khong the tu khoa tai khoan cua chinh minh'})
+                raise serializers.ValidationError({'is_active': 'Bạn không thể tự khóa tài khoản của chính mình'})
             if attrs.get('is_staff') is False:
-                raise serializers.ValidationError({'is_staff': 'Ban khong the tu go quyen quan tri cua chinh minh'})
+                raise serializers.ValidationError({'is_staff': 'Bạn không thể tự gỏ quyền quản trị của chính mình'})
 
         return attrs
 
@@ -272,10 +272,10 @@ class ChangePasswordSerializer(serializers.Serializer):
         user = self.context['request'].user
 
         if not user.check_password(attrs['old_password']):
-            raise serializers.ValidationError({'old_password': 'Mat khau hien tai khong chinh xac'})
+            raise serializers.ValidationError({'old_password': 'Mật khẩu hiện tại không chính xác'})
 
         if attrs['new_password'] != attrs['new_password2']:
-            raise serializers.ValidationError({'new_password2': 'Xac nhan mat khau moi khong khop'})
+            raise serializers.ValidationError({'new_password2': 'Xác nhận mật khẩu mới không khớp'})
 
         if attrs['old_password'] == attrs['new_password']:
             raise serializers.ValidationError({'new_password': 'Mat khau moi phai khac mat khau hien tai'})

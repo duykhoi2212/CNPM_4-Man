@@ -77,12 +77,12 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
                 booking = Booking.objects.get(pk=booking_id, user=user)
             except Booking.DoesNotExist:
                 raise serializers.ValidationError({
-                    'booking_id': 'Khong tim thay booking hoac booking khong thuoc ve ban'
+                    'booking_id': 'Không tìm thấy booking hoặc booking không thuộc về bạn'
                 })
 
             if booking.field != field:
                 raise serializers.ValidationError({
-                    'field': 'Booking nay khong thuoc san bong da chon'
+                    'field': 'Booking này không thuộc sân bóng đã chọn'
                 })
 
             if booking.status != 'completed':

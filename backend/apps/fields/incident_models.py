@@ -4,42 +4,42 @@ from django.contrib.auth.models import User
 
 class IncidentReport(models.Model):
     """
-    Bao cao su co khi dang su dung san
+    Báo cáo sự cố khi đang sử dụng sân
     """
     STATUS_CHOICES = [
-        ('pending', 'Cho xu ly'),
-        ('investigating', 'Dang dieu tra'),
-        ('resolving', 'Dang giai quyet'),
-        ('resolved', 'Da giai quyet'),
-        ('cancelled', 'Da huy'),
+        ('pending', 'Chờ xử lý'),
+        ('investigating', 'Đang điều tra'),
+        ('resolving', 'Đang giải quyết'),
+        ('resolved', 'Đã giải quyết'),
+        ('cancelled', 'Đã hủy'),
     ]
 
     ISSUE_TYPE_CHOICES = [
-        ('field_damage', 'San bi hu hong (den, co, mat san, ...)'),
-        ('weather', 'Thoi tiet xau'),
-        ('emergency', 'Su co khan cap'),
-        ('equipment', 'Thiet bi hu hong'),
-        ('safety', 'Van de an toan'),
-        ('other', 'Khac'),
+        ('field_damage', 'Sân bị hư hỏng (đèn, cỏ, mặt sân, ...)'),
+        ('weather', 'Thời tiết xấu'),
+        ('emergency', 'Sự cố khẩn cấp'),
+        ('equipment', 'Thiết bị hư hỏng'),
+        ('safety', 'Vấn đề an toàn'),
+        ('other', 'Khác'),
     ]
 
     SEVERITY_CHOICES = [
-        ('low', 'Thap - Co the tiep tuc choi'),
-        ('medium', 'Trung binh - Nen doi san'),
-        ('high', 'Cao - Buoc phai dung choi'),
+        ('low', 'Thấp - Có thể tiếp tục chơi'),
+        ('medium', 'Trung bình - Nên đổi sân'),
+        ('high', 'Cao - Buộc phải dừng chơi'),
     ]
 
     field = models.ForeignKey(
         'fields.Field',
         on_delete=models.CASCADE,
         related_name='incidents',
-        verbose_name='San bong'
+        verbose_name='Sân bóng'
     )
     booking = models.ForeignKey(
         'bookings.Booking',
         on_delete=models.CASCADE,
         related_name='incidents',
-        verbose_name='Booking lien quan'
+        verbose_name='Booking liên quan'
     )
     reported_by = models.ForeignKey(
         User,
@@ -47,52 +47,52 @@ class IncidentReport(models.Model):
         null=True,
         blank=True,
         related_name='reported_incidents',
-        verbose_name='Nguoi bao cao'
+        verbose_name='Người báo cáo'
     )
     issue_type = models.CharField(
         max_length=20,
         choices=ISSUE_TYPE_CHOICES,
-        verbose_name='Loai su co'
+        verbose_name='Loại sự cố'
     )
     severity = models.CharField(
         max_length=10,
         choices=SEVERITY_CHOICES,
         default='medium',
-        verbose_name='Muc do nghiem trong'
+        verbose_name='Mức độ nghiêm trọng'
     )
-    description = models.TextField(verbose_name='Mo ta chi tiet')
-    photos = models.JSONField(blank=True, default=list, verbose_name='URL anh su co')
+    description = models.TextField(verbose_name='Mô tả chi tiết')
+    photos = models.JSONField(blank=True, default=list, verbose_name='URL ảnh sự cố')
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default='pending',
-        verbose_name='Trang thai'
+        verbose_name='Trạng thái'
     )
-    admin_notes = models.TextField(blank=True, default='', verbose_name='Ghi chu admin')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngay tao')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Ngay cap nhat')
-    resolved_at = models.DateTimeField(null=True, blank=True, verbose_name='Ngay giai quyet')
+    admin_notes = models.TextField(blank=True, default='', verbose_name='Ghi chú admin')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Ngày cập nhật')
+    resolved_at = models.DateTimeField(null=True, blank=True, verbose_name='Ngày giải quyết')
 
     class Meta:
         db_table = 'incident_reports'
-        verbose_name = 'Bao cao su co'
-        verbose_name_plural = 'Bao cao su co'
+        verbose_name = 'Báo cáo sự cố'
+        verbose_name_plural = 'Báo cáo sự cố'
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Su co {self.get_issue_type_display()} - {self.field.name} ({self.status})"
+        return f"Sự cố {self.get_issue_type_display()} - {self.field.name} ({self.status})"
 
 
 class FieldSwap(models.Model):
     """
-    Xu ly doi san khi co su co
+    Xử lý đổi sân khi có sự cố
     """
     STATUS_CHOICES = [
-        ('pending', 'Cho xac nhan'),
-        ('searching', 'Dang tim san thay the'),
-        ('proposed', 'Da de xuat'),
-        ('confirmed', 'Da xac nhan'),
-        ('completed', 'Da hoan thanh'),
+        ('pending', 'Chờ xác nhận'),
+        ('searching', 'Đang tìm sân thay thế'),
+        ('proposed', 'Đã đề xuất'),
+        ('confirmed', 'Đã xác nhận'),
+        ('completed', 'Đã hoàn thành'),
         ('cancelled', 'Da huy'),
         ('failed', 'Khong the doi'),
     ]
@@ -160,9 +160,9 @@ class FieldSwap(models.Model):
 
     class Meta:
         db_table = 'field_swaps'
-        verbose_name = 'Doi san'
-        verbose_name_plural = 'Doi san'
+        verbose_name = 'Đổi sân'
+        verbose_name_plural = 'Đổi sân'
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Doi san: {self.original_field.name} -> {self.new_field.name if self.new_field else 'Chua co'} ({self.status})"
+        return f"Đổi sân: {self.original_field.name} -> {self.new_field.name if self.new_field else 'Chưa có'} ({self.status})"

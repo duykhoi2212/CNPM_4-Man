@@ -12,12 +12,12 @@ class UserProfile(models.Model):
     phone = models.CharField(
         max_length=20,
         unique=True,
-        verbose_name='So dien thoai',
+        verbose_name='Số điện thoại',
     )
     address = models.TextField(
         blank=True,
         null=True,
-        verbose_name='Dia chi',
+        verbose_name='Địa chỉ',
     )
     avatar = models.ImageField(
         upload_to='avatars/',

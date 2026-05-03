@@ -216,14 +216,14 @@ class TimeSlotAdminListCreateView(generics.ListCreateAPIView):
             return super().create(request, *args, **kwargs)
         except IntegrityError:
             return Response(
-                {'error': 'Khung gio nay da ton tai cho san da chon'},
+                {'error': 'Khung giờ này đã tồn tại cho sân đã chọn'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
     def perform_create(self, serializer):
         field = serializer.validated_data['field']
         if not can_manage_field(self.request.user, field):
-            raise PermissionDenied('Ban khong co quyen quan ly san nay')
+            raise PermissionDenied('Bạn không có quyền quản lý sân này')
         serializer.save()
 
 
@@ -246,7 +246,7 @@ class TimeSlotAdminUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
             return super().update(request, *args, **kwargs)
         except IntegrityError:
             return Response(
-                {'error': 'Khung gio nay da ton tai cho san da chon'},
+                {'error': 'Khung giờ này đã tồn tại cho sân đã chọn'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -260,7 +260,7 @@ def field_image_upload_view(request, pk):
         return Response({'error': 'Field not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if not can_manage_field(request.user, field):
-        return Response({'error': 'Ban khong co quyen quan ly san nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền quản lý sân này'}, status=status.HTTP_403_FORBIDDEN)
 
     image_file = request.FILES.get('image')
     if not image_file:
@@ -295,7 +295,7 @@ def field_image_set_primary_view(request, pk, image_id):
         return Response({'error': 'Field image not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if not can_manage_field(request.user, field_image.field):
-        return Response({'error': 'Ban khong co quyen quan ly san nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền quản lý sân này'}, status=status.HTTP_403_FORBIDDEN)
 
     field_image.is_primary = True
     field_image.save()
@@ -319,7 +319,7 @@ def field_image_delete_view(request, pk, image_id):
         return Response({'error': 'Field image not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if not can_manage_field(request.user, field_image.field):
-        return Response({'error': 'Ban khong co quyen quan ly san nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền quản lý sân này'}, status=status.HTTP_403_FORBIDDEN)
 
     field_image.delete()
     return Response({'message': 'Field image deleted successfully'}, status=status.HTTP_200_OK)
@@ -373,37 +373,37 @@ def recommended_fields_view(request):
 
         if preferred_field_type_id and field.field_type_id == preferred_field_type_id:
             score += 3.5
-            reasons.append('Phu hop voi lich su dat san cua ban')
+            reasons.append('Phù hợp với lịch sử đặt sân của bạn')
 
         if avg_rating >= 4.5:
             score += 3
-            reasons.append('Danh gia rat cao tu nguoi choi')
+            reasons.append('Đánh giá rất cao từ người chơi')
         elif avg_rating >= 4:
             score += 2
-            reasons.append('Danh gia cao va on dinh')
+            reasons.append('Đánh giá cao và ổn định')
         elif avg_rating > 0:
             score += 1
 
         if completed_bookings >= 5:
             score += 2.5
-            reasons.append('San duoc dat nhieu gan day')
+            reasons.append('Sân được đặt nhiều gần đây')
         elif completed_bookings >= 2:
             score += 1.5
 
         if active_slots >= 6:
             score += 2
-            reasons.append('Con nhieu khung gio de chon')
+            reasons.append('Còn nhiều khung giờ để chọn')
         elif active_slots >= 3:
             score += 1
 
         if regular_price and regular_price <= 300000:
             score += 1.5
-            reasons.append('Gia hop ly de dat nhanh')
+            reasons.append('Giá hợp lý để đặt nhanh')
         elif regular_price and regular_price <= 500000:
             score += 0.5
 
         if not reasons:
-            reasons.append('San phu hop de dat nhanh')
+            reasons.append('Sân phù hợp để đặt nhanh')
 
         recommendation_reasons[field.id] = reasons[0]
         recommendation_scores[field.id] = round(score, 2)
@@ -443,7 +443,7 @@ def nearby_fields_view(request):
     limit = request.query_params.get('limit', 6)
 
     if latitude is None or longitude is None:
-        return Response({'error': 'latitude va longitude la bat buoc'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'latitude và longitude là bắt buộc'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         latitude = float(latitude)
@@ -451,7 +451,7 @@ def nearby_fields_view(request):
         radius_km = max(1, min(float(radius_km), 100))
         limit = max(1, min(int(limit), 12))
     except (TypeError, ValueError):
-        return Response({'error': 'Gia tri toa do hoac ban kinh khong hop le'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Giá trị tọa độ hoặc bán kính không hợp lệ'}, status=status.HTTP_400_BAD_REQUEST)
 
     queryset = Field.objects.filter(
         is_active=True,

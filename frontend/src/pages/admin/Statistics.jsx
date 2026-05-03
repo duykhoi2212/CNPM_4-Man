@@ -660,28 +660,28 @@ const Statistics = () => {
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">Operations</p>
                 <h2 className="text-2xl font-bold text-gray-950">Hiệu suất theo sân</h2>
                 <p className="mt-2 text-sm text-gray-500">
-                  Tong hop nhanh theo tung san trong bo loc hien tai de doi chieu doanh thu, tien coc va trang thai booking.
+                  Tổng hợp nhanh theo từng sân trong bộ lọc hiện tại để đối chiếu doanh thu, tiền cọc và trạng thái booking.
                 </p>
               </div>
 
               {fieldPerformance.length === 0 ? (
-                <p className="text-gray-500">Chua co du lieu hieu suat theo san trong bo loc hien tai.</p>
+                <p className="text-gray-500">Chưa có dữ liệu hiệu suất theo sân trong bộ lọc hiện tại.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">San</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tong booking</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Cho coc</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Da xac nhan</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Da hoan thanh</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Da huy</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tien coc da thu</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Doanh thu tien san</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Doanh thu dich vu</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tong doanh thu</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Ty le hoan thanh</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Sân</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tổng booking</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Chờ cọc</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Đã xác nhận</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Đã hoàn thành</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Đã hủy</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tiền cọc đã thu</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Doanh thu tiền sân</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Doanh thu dịch vụ</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tổng doanh thu</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Tỷ lệ hoàn thành</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
