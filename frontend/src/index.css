@@ -1,8 +1,10 @@
+/* stylelint-disable at-rule-no-unknown */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=vietnamese');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* stylelint-enable at-rule-no-unknown */
 
 html {
   font-family: 'Inter', 'Roboto', 'Noto Sans', sans-serif;
