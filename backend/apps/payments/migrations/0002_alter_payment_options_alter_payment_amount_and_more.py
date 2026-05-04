@@ -14,36 +14,36 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='payment',
-            options={'ordering': ['-created_at'], 'verbose_name': 'Thanh toan', 'verbose_name_plural': 'Thanh toan'},
+            options={'ordering': ['-created_at'], 'verbose_name': 'Thanh toán', 'verbose_name_plural': 'Thanh toán'},
         ),
         migrations.AlterField(
             model_name='payment',
             name='amount',
-            field=models.DecimalField(decimal_places=2, max_digits=10, verbose_name='So tien'),
+            field=models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Số tiền'),
         ),
         migrations.AlterField(
             model_name='payment',
             name='booking',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='payment', to='bookings.booking', verbose_name='Don dat san'),
+            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='payment', to='bookings.booking', verbose_name='Đơn đặt sân'),
         ),
         migrations.AlterField(
             model_name='payment',
             name='paid_at',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Thoi gian thanh toan'),
+            field=models.DateTimeField(blank=True, null=True, verbose_name='Thời gian thanh toán'),
         ),
         migrations.AlterField(
             model_name='payment',
             name='payment_method',
-            field=models.CharField(choices=[('vnpay', 'VNPay')], max_length=20, verbose_name='Phuong thuc thanh toan'),
+            field=models.CharField(choices=[('vnpay', 'VNPay')], max_length=20, verbose_name='Phương thức thanh toán'),
         ),
         migrations.AlterField(
             model_name='payment',
             name='status',
-            field=models.CharField(choices=[('pending', 'Cho thanh toan'), ('completed', 'Da thanh toan'), ('failed', 'That bai'), ('refunded', 'Da hoan tien')], default='pending', max_length=20, verbose_name='Trang thai'),
+            field=models.CharField(choices=[('pending', 'Chờ thanh toán'), ('completed', 'Đã thanh toán'), ('failed', 'Thất bại'), ('refunded', 'Đã hoàn tiền')], default='pending', max_length=20, verbose_name='Trạng thái'),
         ),
         migrations.AlterField(
             model_name='payment',
             name='transaction_id',
-            field=models.CharField(blank=True, max_length=100, null=True, verbose_name='Ma giao dich'),
+            field=models.CharField(blank=True, max_length=100, null=True, verbose_name='Mã giao dịch'),
         ),
     ]

@@ -13,21 +13,21 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='userprofile',
             name='address',
-            field=models.TextField(blank=True, null=True, verbose_name='Dia chi'),
+            field=models.TextField(blank=True, null=True, verbose_name='Địa chỉ'),
         ),
         migrations.AlterField(
             model_name='userprofile',
             name='created_at',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='Ngay tao'),
+            field=models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo'),
         ),
         migrations.AlterField(
             model_name='userprofile',
             name='phone',
-            field=models.CharField(max_length=20, unique=True, verbose_name='So dien thoai'),
+            field=models.CharField(max_length=20, unique=True, verbose_name='Số điện thoại'),
         ),
         migrations.AlterField(
             model_name='userprofile',
             name='updated_at',
-            field=models.DateTimeField(auto_now=True, verbose_name='Ngay cap nhat'),
+            field=models.DateTimeField(auto_now=True, verbose_name='Ngày cập nhật'),
         ),
     ]

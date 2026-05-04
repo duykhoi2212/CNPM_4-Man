@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='field',
             name='latitude',
-            field=models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True, verbose_name='Vi do'),
+            field=models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True, verbose_name='Vĩ độ'),
         ),
         migrations.AddField(
             model_name='field',
             name='longitude',
-            field=models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True, verbose_name='Kinh do'),
+            field=models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True, verbose_name='Kinh độ'),
         ),
     ]

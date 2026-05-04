@@ -17,51 +17,51 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='fieldclosure',
             name='field',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='closures', to='fields.field', verbose_name='San bong'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='closures', to='fields.field', verbose_name='Sân bóng'),
         ),
         migrations.AlterField(
             model_name='fieldschedule',
             name='field',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='schedules', to='fields.field', verbose_name='San bong'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='schedules', to='fields.field', verbose_name='Sân bóng'),
         ),
         migrations.AlterField(
             model_name='fieldswap',
             name='incident',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='swaps', to='fields.incidentreport', verbose_name='Su co lien quan'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='swaps', to='fields.incidentreport', verbose_name='Sự cố liên quan'),
         ),
         migrations.AlterField(
             model_name='fieldswap',
             name='new_booking',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='swap_news', to='bookings.booking', verbose_name='Booking moi'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='swap_news', to='bookings.booking', verbose_name='Booking mới'),
         ),
         migrations.AlterField(
             model_name='fieldswap',
             name='new_field',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='swap_news', to='fields.field', verbose_name='San moi'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='swap_news', to='fields.field', verbose_name='Sân mới'),
         ),
         migrations.AlterField(
             model_name='fieldswap',
             name='original_booking',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='swap_originals', to='bookings.booking', verbose_name='Booking cu'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='swap_originals', to='bookings.booking', verbose_name='Booking cũ'),
         ),
         migrations.AlterField(
             model_name='fieldswap',
             name='original_field',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='swap_originals', to='fields.field', verbose_name='San cu'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='swap_originals', to='fields.field', verbose_name='Sân cũ'),
         ),
         migrations.AlterField(
             model_name='incidentreport',
             name='booking',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='incidents', to='bookings.booking', verbose_name='Booking lien quan'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='incidents', to='bookings.booking', verbose_name='Booking liên quan'),
         ),
         migrations.AlterField(
             model_name='incidentreport',
             name='field',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='incidents', to='fields.field', verbose_name='San bong'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='incidents', to='fields.field', verbose_name='Sân bóng'),
         ),
         migrations.AlterField(
             model_name='incidentreport',
             name='reported_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='reported_incidents', to=settings.AUTH_USER_MODEL, verbose_name='Nguoi bao cao'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='reported_incidents', to=settings.AUTH_USER_MODEL, verbose_name='Người báo cáo'),
         ),
     ]

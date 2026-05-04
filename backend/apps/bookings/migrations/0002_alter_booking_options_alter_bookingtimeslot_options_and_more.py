@@ -16,65 +16,65 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='booking',
-            options={'ordering': ['-created_at'], 'verbose_name': 'Don dat san', 'verbose_name_plural': 'Don dat san'},
+            options={'ordering': ['-created_at'], 'verbose_name': 'Đơn đặt sân', 'verbose_name_plural': 'Đơn đặt sân'},
         ),
         migrations.AlterModelOptions(
             name='bookingtimeslot',
-            options={'verbose_name': 'Khung gio dat', 'verbose_name_plural': 'Khung gio dat'},
+            options={'verbose_name': 'Khung giờ đặt', 'verbose_name_plural': 'Khung giờ đặt'},
         ),
         migrations.AlterField(
             model_name='booking',
             name='booking_date',
-            field=models.DateField(verbose_name='Ngay dat san'),
+            field=models.DateField(verbose_name='Ngày đặt sân'),
         ),
         migrations.AlterField(
             model_name='booking',
             name='customer_name',
-            field=models.CharField(max_length=100, verbose_name='Ten khach hang'),
+            field=models.CharField(max_length=100, verbose_name='Tên khách hàng'),
         ),
         migrations.AlterField(
             model_name='booking',
             name='customer_phone',
-            field=models.CharField(max_length=15, verbose_name='So dien thoai'),
+            field=models.CharField(max_length=15, verbose_name='Số điện thoại'),
         ),
         migrations.AlterField(
             model_name='booking',
             name='deposit_amount',
-            field=models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Tien dat coc'),
+            field=models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Tiền đặt cọc'),
         ),
         migrations.AlterField(
             model_name='booking',
             name='field',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to='fields.field', verbose_name='San bong'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to='fields.field', verbose_name='Sân bóng'),
         ),
         migrations.AlterField(
             model_name='booking',
             name='notes',
-            field=models.TextField(blank=True, null=True, verbose_name='Ghi chu'),
+            field=models.TextField(blank=True, null=True, verbose_name='Ghi chú'),
         ),
         migrations.AlterField(
             model_name='booking',
             name='status',
-            field=models.CharField(choices=[('pending_payment', 'Cho thanh toan coc'), ('confirmed', 'Da xac nhan'), ('completed', 'Hoan thanh'), ('cancelled', 'Da huy')], default='pending_payment', max_length=20, verbose_name='Trang thai'),
+            field=models.CharField(choices=[('pending_payment', 'Chờ thanh toán cọc'), ('confirmed', 'Đã xác nhận'), ('completed', 'Hoàn thành'), ('cancelled', 'Đã hủy')], default='pending_payment', max_length=20, verbose_name='Trạng thái'),
         ),
         migrations.AlterField(
             model_name='booking',
             name='total_amount',
-            field=models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Tong tien'),
+            field=models.DecimalField(decimal_places=2, max_digits=10, verbose_name='Tổng tiền'),
         ),
         migrations.AlterField(
             model_name='booking',
             name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to=settings.AUTH_USER_MODEL, verbose_name='Nguoi dat'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to=settings.AUTH_USER_MODEL, verbose_name='Người đặt'),
         ),
         migrations.AlterField(
             model_name='bookingtimeslot',
             name='booking',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='booking_timeslots', to='bookings.booking', verbose_name='Don dat'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='booking_timeslots', to='bookings.booking', verbose_name='Đơn đặt'),
         ),
         migrations.AlterField(
             model_name='bookingtimeslot',
             name='timeslot',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.RESTRICT, related_name='booking_timeslots', to='fields.timeslot', verbose_name='Khung gio'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.RESTRICT, related_name='booking_timeslots', to='fields.timeslot', verbose_name='Khung giờ'),
         ),
     ]

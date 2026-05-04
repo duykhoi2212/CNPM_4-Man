@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name='accepted_match_requests',
                 to=settings.AUTH_USER_MODEL,
-                verbose_name='Nguoi chap nhan',
+                verbose_name='Người chấp nhận',
             ),
         ),
     ]

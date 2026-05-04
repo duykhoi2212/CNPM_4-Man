@@ -11,16 +11,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='userprofile',
             name='last_seen_bookings_at',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Lan cuoi da xem booking'),
+            field=models.DateTimeField(blank=True, null=True, verbose_name='Lần cuối xem booking'),
         ),
         migrations.AddField(
             model_name='userprofile',
             name='last_seen_contacts_at',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Lan cuoi da xem lien he'),
+            field=models.DateTimeField(blank=True, null=True, verbose_name='Lần cuối xem liên hệ'),
         ),
         migrations.AddField(
             model_name='userprofile',
             name='last_seen_reviews_at',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Lan cuoi da xem review'),
+            field=models.DateTimeField(blank=True, null=True, verbose_name='Lần cuối xem review'),
         ),
     ]

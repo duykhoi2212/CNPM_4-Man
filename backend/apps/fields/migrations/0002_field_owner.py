@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name='owned_fields',
                 to=settings.AUTH_USER_MODEL,
-                verbose_name='Chu san',
+                verbose_name='Chủ sân',
             ),
         ),
     ]

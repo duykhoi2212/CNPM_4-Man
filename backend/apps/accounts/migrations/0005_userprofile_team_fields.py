@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='userprofile',
             name='team_image',
-            field=models.ImageField(blank=True, null=True, upload_to='team-images/', verbose_name='Anh doi bong'),
+            field=models.ImageField(blank=True, null=True, upload_to='team-images/', verbose_name='Ảnh đội bóng'),
         ),
         migrations.AddField(
             model_name='userprofile',
             name='team_name',
-            field=models.CharField(blank=True, max_length=120, null=True, verbose_name='Ten doi bong'),
+            field=models.CharField(blank=True, max_length=120, null=True, verbose_name='Tên đội bóng'),
         ),
     ]
