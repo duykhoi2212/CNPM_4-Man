@@ -39,10 +39,10 @@ class TimeSlotAdminSerializer(serializers.ModelSerializer):
         ]
         validators = []
         extra_kwargs = {
-            'field': {'error_messages': {'required': 'Vui long chon san bong'}},
-            'start_time': {'error_messages': {'required': 'Vui long nhap gio bat dau'}},
-            'end_time': {'error_messages': {'required': 'Vui long nhap gio ket thuc'}},
-            'price': {'error_messages': {'required': 'Vui long nhap gia khung gio'}},
+            'field': {'error_messages': {'required': 'Vui lòng chọn sân bóng'}},
+            'start_time': {'error_messages': {'required': 'Vui lòng nhập giờ bắt đầu'}},
+            'end_time': {'error_messages': {'required': 'Vui lòng nhập giờ kết thúc'}},
+            'price': {'error_messages': {'required': 'Vui lòng nhập giá khung giờ'}},
         }
 
     def validate(self, attrs):
@@ -52,7 +52,7 @@ class TimeSlotAdminSerializer(serializers.ModelSerializer):
 
         if start_time and end_time and end_time <= start_time:
             raise serializers.ValidationError({
-                'end_time': 'Gio ket thuc phai lon hon gio bat dau'
+                'end_time': 'Giờ kết thúc phải lớn hơn giờ bắt đầu'
             })
 
         if field and start_time and end_time:
@@ -66,7 +66,7 @@ class TimeSlotAdminSerializer(serializers.ModelSerializer):
 
             if queryset.exists():
                 raise serializers.ValidationError({
-                    'start_time': 'Khung gio nay da ton tai cho san da chon'
+                    'start_time': 'Khung giờ này đã tồn tại cho sân đã chọn'
                 })
 
         return attrs
@@ -135,7 +135,7 @@ class RecommendedFieldSerializer(FieldListSerializer):
 
     def get_recommendation_reason(self, obj):
         reasons = self.context.get('recommendation_reasons', {})
-        return reasons.get(obj.id, 'San phu hop de dat nhanh')
+        return reasons.get(obj.id, 'Sân phù hợp để đặt nhanh')
 
     def get_recommendation_score(self, obj):
         scores = self.context.get('recommendation_scores', {})

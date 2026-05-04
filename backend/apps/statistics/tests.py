@@ -118,7 +118,7 @@ class StatisticsOwnerScopeTests(APITestCase):
             field_type=field_type,
             owner=self.owner_admin,
             name='Owner Stats Field',
-            location='Da Nang',
+            location='Đà Nẵng',
             price_per_hour=Decimal('300000.00'),
             peak_hour_price=Decimal('400000.00'),
             deposit_percent=Decimal('30.00'),

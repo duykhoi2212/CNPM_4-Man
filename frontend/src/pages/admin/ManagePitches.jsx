@@ -886,7 +886,7 @@ const ManagePitches = () => {
 
                   {/* Filter by Owner */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Chu san</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Chủ sân</label>
                     <select
                       value={filterOwner}
                       onChange={(e) => setFilterOwner(e.target.value)}
@@ -904,7 +904,7 @@ const ManagePitches = () => {
 
                   {/* Filter by Status */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Trang thai</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
                     <select
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
@@ -919,12 +919,12 @@ const ManagePitches = () => {
                   {/* Reset Button */}
                   <div className="flex items-end">
                     {hasActiveFilters && (
-                      <button
+                        <button
                         type="button"
                         onClick={resetFilters}
                         className="w-full px-4 py-2 rounded-lg bg-red-50 text-red-700 font-medium hover:bg-red-100 transition"
                       >
-                        Xoa bo loc
+                        Xóa bộ lọc
                       </button>
                     )}
                   </div>

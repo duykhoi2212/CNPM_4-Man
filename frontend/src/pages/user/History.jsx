@@ -47,9 +47,9 @@ const getReviewInfo = (booking) => {
     return null;
   }
 
-  if (booking.has_review) {
+    if (booking.has_review) {
     return {
-      text: 'Booking nay da duoc danh gia',
+      text: 'Booking này đã được đánh giá',
       className: 'bg-green-50 text-green-700',
     };
   }
@@ -66,7 +66,7 @@ const getReviewInfo = (booking) => {
     : booking.booking_date;
 
   return {
-    text: `Ban chi co the danh gia sau ${eligibleAtText}`,
+    text: `Bạn chỉ có thể đánh giá sau ${eligibleAtText}`,
     className: 'bg-yellow-50 text-yellow-700',
   };
 };
@@ -131,7 +131,7 @@ const History = () => {
     <div className="max-w-7xl mx-auto px-4 py-12">
       <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">ịch sử</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Lịch sử</p>
           <h2 className="mt-3 text-3xl font-black text-gray-900">Lịch sử hoạt động của bạn</h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500">
             Tại đây bạn có thể xem lại lịch sử đặt sân và giao lưu của mình. Hãy kiểm tra chi tiết các booking đã thực hiện, các trận giao lưu đã tham gia, và đừng quên đánh giá sau mỗi trải nghiệm để giúp cộng đồng ngày càng phát triển hơn!
@@ -256,12 +256,12 @@ const History = () => {
           <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Bo loc ngay</p>
-                <h3 className="mt-2 text-2xl font-black tracking-tight text-slate-950">Loc lich su giao luu theo ngay thi dau</h3>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Bộ lọc ngày</p>
+                <h3 className="mt-2 text-2xl font-black tracking-tight text-slate-950">Lọc lịch sử giao lưu theo ngày thi đấu</h3>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <label className="block text-sm font-medium text-slate-700">
-                  Ngay thi dau
+                  Ngày thi đấu
                   <input
                     type="date"
                     value={matchDateFilter}
@@ -274,7 +274,7 @@ const History = () => {
                   onClick={() => setMatchDateFilter('')}
                   className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary hover:text-primary"
                 >
-                  Xoa loc
+                  Xóa lọc
                 </button>
               </div>
             </div>
@@ -314,11 +314,11 @@ const History = () => {
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2">
                         <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Tien coc</p>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Tiền cọc</p>
                           <p className="mt-2 text-lg font-bold text-slate-950">{formatCurrency(matchItem.deposit_amount)}</p>
                         </div>
                         <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Tong tien</p>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Tổng tiền</p>
                           <p className="mt-2 text-lg font-bold text-slate-950">{formatCurrency(matchItem.total_amount)}</p>
                         </div>
                       </div>
@@ -326,19 +326,19 @@ const History = () => {
                   </div>
 
                   <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-                    <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Thong tin tran giao luu</p>
+                      <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Thông tin trận giao lưu</p>
                       <div className="mt-4 grid gap-3 text-sm text-slate-600">
                         <p><span className="font-semibold text-slate-950">San:</span> {matchItem.field?.name}</p>
-                        <p><span className="font-semibold text-slate-950">Ngay:</span> {formatBookingDate(matchItem.booking_date)}</p>
-                        <p><span className="font-semibold text-slate-950">Khung gio:</span> {matchItem.timeslots?.map((slot) => `${slot.start_time} - ${slot.end_time}`).join(' • ')}</p>
+                        <p><span className="font-semibold text-slate-950">Ngày:</span> {formatBookingDate(matchItem.booking_date)}</p>
+                        <p><span className="font-semibold text-slate-950">Khung giờ:</span> {matchItem.timeslots?.map((slot) => `${slot.start_time} - ${slot.end_time}`).join(' • ')}</p>
                         <p><span className="font-semibold text-slate-950">Ghi chú:</span> {matchItem.notes || 'Không có ghi chú'}</p>
                       </div>
                     </div>
 
                     <div className="space-y-4">
                       <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Doi tao</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Đội tạo</p>
                         <div className="mt-4 flex items-center gap-4">
                           <img
                             src={matchItem.created_team_image_url}
@@ -353,7 +353,7 @@ const History = () => {
                       </div>
 
                       <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Doi chap nhan</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Đội chấp nhận</p>
                         <div className="mt-4 flex items-center gap-4">
                           <img
                             src={matchItem.accepted_team_image_url}
@@ -363,7 +363,7 @@ const History = () => {
                           <div>
                             <p className="text-base font-bold text-slate-950">{matchItem.accepted_team_name}</p>
                             <p className="text-sm text-slate-500">
-                              {matchItem.accepted_username ? `@${matchItem.accepted_username}` : 'Da chap nhan giao luu'}
+                              {matchItem.accepted_username ? `@${matchItem.accepted_username}` : 'Đã chấp nhận giao lưu'}
                             </p>
                           </div>
                         </div>

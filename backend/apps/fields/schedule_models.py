@@ -20,28 +20,28 @@ class FieldSchedule(models.Model):
         'fields.Field',
         on_delete=models.CASCADE,
         related_name='schedules',
-        verbose_name='San bong'
+        verbose_name='Sân bóng'
     )
-    day_of_week = models.IntegerField(choices=DAY_CHOICES, verbose_name='Ngay trong tuan')
-    is_open = models.BooleanField(default=True, verbose_name='Mo cua?')
-    open_time = models.TimeField(verbose_name='Gio mo cua')
-    close_time = models.TimeField(verbose_name='Gio dong cua')
-    slot_duration = models.IntegerField(default=60, verbose_name='Thoi gian moi khung (phut)')
+    day_of_week = models.IntegerField(choices=DAY_CHOICES, verbose_name='Ngày trong tuần')
+    is_open = models.BooleanField(default=True, verbose_name='Mở cửa?')
+    open_time = models.TimeField(verbose_name='Giờ mở cửa')
+    close_time = models.TimeField(verbose_name='Giờ đóng cửa')
+    slot_duration = models.IntegerField(default=60, verbose_name='Thời gian mỗi khung (phút)')
 
     class Meta:
         db_table = 'field_schedules'
-        verbose_name = 'Lich hoat dong'
-        verbose_name_plural = 'Lich hoat dong'
+        verbose_name = 'Lịch hoạt động'
+        verbose_name_plural = 'Lịch hoạt động'
         unique_together = ['field', 'day_of_week']
         ordering = ['field', 'day_of_week']
 
     def __str__(self):
-        status = 'Mo' if self.is_open else 'Dong'
+        status = 'Mở' if self.is_open else 'Đóng'
         return f"{self.field.name} - {self.get_day_of_week_display()}: {status}"
 
     def generate_time_slots(self):
         """
-        Tu dong sinh TimeSlot tu lich hoat dong
+        Tự động sinh TimeSlot từ lịch hoạt động
         """
         from apps.fields.models import TimeSlot
         from datetime import datetime, timedelta
@@ -57,14 +57,14 @@ class FieldSchedule(models.Model):
         while current_time + duration <= end_time:
             slot_end = current_time + duration
             
-            # Xac dinh gio cao diem (18:00 - 21:00)
+            # Xác định giờ cao điểm (18:00 - 21:00)
             is_peak = current_time.hour >= 18 and current_time.hour < 21
             
-            # Lay gia tu Field
+            # Lấy giá từ Field
             field = self.field
             price = field.peak_hour_price if is_peak else field.price_per_hour
 
-            # Kiem tra xem slot da ton tai chua
+            # Kiểm tra xem slot đã tồn tại chưa
             existing = TimeSlot.objects.filter(
                 field=self.field,
                 start_time=current_time.time(),
@@ -89,42 +89,42 @@ class FieldSchedule(models.Model):
 
 class FieldClosure(models.Model):
     """
-    Ngay dong cua dac biet (bao tri, le tet, su co, ...)
+    Ngày đóng cửa đặc biệt (bảo trì, lễ/tết, sự cố, ...)
     """
     CLOSURE_TYPE_CHOICES = [
-        ('maintenance', 'Bao tri'),
-        ('holiday', 'Le/Tet'),
-        ('issue', 'Su co/Sua chua'),
-        ('weather', 'Thoi tiet xau'),
-        ('other', 'Khac'),
+        ('maintenance', 'Bảo trì'),
+        ('holiday', 'Lễ/Tết'),
+        ('issue', 'Sự cố/Sửa chữa'),
+        ('weather', 'Thời tiết xấu'),
+        ('other', 'Khác'),
     ]
 
     field = models.ForeignKey(
         'fields.Field',
         on_delete=models.CASCADE,
         related_name='closures',
-        verbose_name='San bong'
+        verbose_name='Sân bóng'
     )
-    start_date = models.DateField(verbose_name='Ngay bat dau')
-    end_date = models.DateField(verbose_name='Ngay ket thuc')
-    reason = models.TextField(verbose_name='Ly do')
+    start_date = models.DateField(verbose_name='Ngày bắt đầu')
+    end_date = models.DateField(verbose_name='Ngày kết thúc')
+    reason = models.TextField(verbose_name='Lý do')
     closure_type = models.CharField(
         max_length=20,
         choices=CLOSURE_TYPE_CHOICES,
         default='maintenance',
-        verbose_name='Loai dong cua'
+        verbose_name='Loại đóng cửa'
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngay tao')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
 
     class Meta:
         db_table = 'field_closures'
-        verbose_name = 'Ngay dong cua'
-        verbose_name_plural = 'Ngay dong cua'
+        verbose_name = 'Ngày đóng cửa'
+        verbose_name_plural = 'Ngày đóng cửa'
         ordering = ['-start_date']
 
     def __str__(self):
-        return f"{self.field.name} - Dong cua: {self.start_date} den {self.end_date}"
+        return f"{self.field.name} - Đóng cửa: {self.start_date} đến {self.end_date}"
 
     def affects_date(self, check_date):
-        """Kiem tra xem ngay nao do co bi anh huong boi dong cua khong"""
+        """Kiểm tra xem ngày nào đó có bị ảnh hưởng bởi đóng cửa không"""
         return self.start_date <= check_date <= self.end_date

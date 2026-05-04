@@ -68,9 +68,9 @@ class MatchRequestListCreateView(generics.ListCreateAPIView):
         response_serializer = MatchRequestListSerializer(match_request, context={'request': request})
         return Response(
             {
-                'message': 'Tao yeu cau giao luu thanh cong',
-                'match_request': response_serializer.data,
-            },
+                    'message': 'Tạo yêu cầu giao lưu thành công',
+                    'match_request': response_serializer.data,
+                },
             status=status.HTTP_201_CREATED,
         )
 
@@ -133,7 +133,7 @@ def match_request_accept_view(request, pk):
     serializer = MatchRequestListSerializer(match_request, context={'request': request})
     return Response(
         {
-            'message': 'Da chap nhan giao luu va giu cho 1 phut',
+            'message': 'Đã chấp nhận giao lưu và giữ chỗ 1 phút',
             'match_request': serializer.data,
         },
         status=status.HTTP_200_OK,
@@ -155,12 +155,12 @@ def match_request_complete_deposit_view(request, pk):
         return Response({'error': 'Bạn không có quyền thao tác yêu cầu này'}, status=status.HTTP_403_FORBIDDEN)
 
     if match_request.status != MatchRequest.STATUS_ACCEPTED_WAITING_DEPOSIT:
-        return Response({'error': 'Yêu cầu giao lưu không ở trạng thái chờ thanh toán cập'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Yêu cầu giao lưu không ở trạng thái chờ thanh toán'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not match_request.reserved_until or match_request.reserved_until <= timezone.now():
         match_request.status = MatchRequest.STATUS_EXPIRED
         match_request.save(update_fields=['status', 'updated_at'])
-        return Response({'error': 'Thoi gian giu cho da het han'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Thời gian giữ chỗ đã hết hạn'}, status=status.HTTP_400_BAD_REQUEST)
 
     booking_id = request.data.get('booking_id')
     if not booking_id:
@@ -171,21 +171,21 @@ def match_request_complete_deposit_view(request, pk):
     try:
         booking = Booking.objects.select_related('field').get(pk=booking_id)
     except Booking.DoesNotExist:
-        return Response({'error': 'Khong tim thay booking'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy booking'}, status=status.HTTP_404_NOT_FOUND)
 
     if booking.user_id != request.user.id:
-        return Response({'error': 'Booking khong thuoc ve tai khoan cua ban'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Booking không thuộc về tài khoản của bạn'}, status=status.HTTP_403_FORBIDDEN)
 
     if booking.field_id != match_request.field_id or booking.booking_date != match_request.booking_date:
-        return Response({'error': 'Booking khong khop voi yeu cau giao luu'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Booking không khớp với yêu cầu giao lưu'}, status=status.HTTP_400_BAD_REQUEST)
 
     match_timeslot_ids = list(match_request.match_timeslots.values_list('timeslot_id', flat=True))
     booking_timeslot_ids = list(booking.booking_timeslots.values_list('timeslot_id', flat=True))
     if sorted(match_timeslot_ids) != sorted(booking_timeslot_ids):
-        return Response({'error': 'Booking khong khop khung gio giao luu'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Booking không khớp khung giờ giao lưu'}, status=status.HTTP_400_BAD_REQUEST)
 
     if booking.status != 'confirmed':
-        return Response({'error': 'Booking chua o trang thai da xac nhan'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Booking chưa ở trạng thái đã xác nhận'}, status=status.HTTP_400_BAD_REQUEST)
 
     match_request.booking = booking
     match_request.status = MatchRequest.STATUS_DEPOSIT_PAID
@@ -194,7 +194,7 @@ def match_request_complete_deposit_view(request, pk):
     serializer = MatchRequestListSerializer(match_request, context={'request': request})
     return Response(
         {
-            'message': 'Da ghi nhan thanh toan coc cho giao luu',
+            'message': 'Đã ghi nhận thanh toán cọc cho giao lưu',
             'match_request': serializer.data,
         },
         status=status.HTTP_200_OK,
@@ -210,13 +210,13 @@ def match_request_pay_deposit_view(request, pk):
     try:
         match_request = MatchRequest.objects.select_related('created_by', 'field').prefetch_related('match_timeslots__timeslot').get(pk=pk)
     except MatchRequest.DoesNotExist:
-        return Response({'error': 'Khong tim thay yeu cau giao luu'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy yêu cầu giao lưu'}, status=status.HTTP_404_NOT_FOUND)
 
     if match_request.created_by_id != request.user.id:
         return Response({'error': 'Bạn không có quyền thanh toán yêu cầu này'}, status=status.HTTP_403_FORBIDDEN)
 
     if match_request.status != MatchRequest.STATUS_ACCEPTED_WAITING_DEPOSIT:
-        return Response({'error': 'Yêu cầu giao lưu không ở trạng thái chờ thanh toán cập'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Yêu cầu giao lưu không ở trạng thái chờ thanh toán'}, status=status.HTTP_400_BAD_REQUEST)
 
     if not match_request.reserved_until or match_request.reserved_until <= timezone.now():
         match_request.status = MatchRequest.STATUS_EXPIRED
@@ -224,7 +224,7 @@ def match_request_pay_deposit_view(request, pk):
         return Response({'error': 'Thời gian giữ chỗ đã hết hạn'}, status=status.HTTP_400_BAD_REQUEST)
 
     if match_request.booking_id:
-        return Response({'error': 'Yeu cau giao luu nay da duoc thanh toan'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Yêu cầu giao lưu này đã được thanh toán'}, status=status.HTTP_400_BAD_REQUEST)
 
     customer_name = (request.data.get('customer_name') or '').strip()
     customer_phone = (request.data.get('customer_phone') or '').strip()
@@ -283,7 +283,7 @@ def match_request_pay_deposit_view(request, pk):
 
     return Response(
         {
-            'message': 'Da thanh toan coc va chot giao luu thanh cong',
+            'message': 'Đã tạo booking và thanh toán cọc thành công, yêu cầu giao lưu đã được xác nhận',
             'booking': BookingDetailSerializer(booking, context={'request': request}).data,
             'payment': PaymentSerializer(payment, context={'request': request}).data,
             'match_request': MatchRequestListSerializer(match_request, context={'request': request}).data,

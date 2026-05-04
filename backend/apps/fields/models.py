@@ -6,13 +6,13 @@ from .incident_models import IncidentReport, FieldSwap
 
 
 class FieldType(models.Model):
-    name = models.CharField(max_length=50, unique=True, verbose_name='Ten loai san')
-    description = models.TextField(blank=True, null=True, verbose_name='Mo ta')
+    name = models.CharField(max_length=50, unique=True, verbose_name='Tên loại sân')
+    description = models.TextField(blank=True, null=True, verbose_name='Mô tả')
 
     class Meta:
         db_table = 'field_types'
-        verbose_name = 'Loai san'
-        verbose_name_plural = 'Loai san'
+        verbose_name = 'Loại sân'
+        verbose_name_plural = 'Loại sân'
         ordering = ['id']
 
     def __str__(self):
@@ -20,33 +20,33 @@ class FieldType(models.Model):
 
 
 class Field(models.Model):
-    field_type = models.ForeignKey(FieldType, on_delete=models.RESTRICT, related_name='fields', verbose_name='Loai san')
+    field_type = models.ForeignKey(FieldType, on_delete=models.RESTRICT, related_name='fields', verbose_name='Loại sân')
     owner = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         related_name='owned_fields',
         blank=True,
         null=True,
-        verbose_name='Chu san',
+        verbose_name='Chủ sân',
     )
-    name = models.CharField(max_length=255, verbose_name='Ten san')
-    description = models.TextField(blank=True, null=True, verbose_name='Mo ta')
-    location = models.CharField(max_length=500, verbose_name='Dia chi')
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name='Vi do')
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name='Kinh do')
-    price_per_hour = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Gia gio thuong (VND)')
-    peak_hour_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Gia gio cao diem (VND)')
-    deposit_percent = models.DecimalField(max_digits=5, decimal_places=2, default=30.00, verbose_name='% tien coc')
-    avg_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00, verbose_name='Danh gia TB')
-    total_reviews = models.IntegerField(default=0, verbose_name='So luot review')
-    is_active = models.BooleanField(default=True, verbose_name='Con hoat dong?')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngay tao')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Ngay cap nhat')
+    name = models.CharField(max_length=255, verbose_name='Tên sân')
+    description = models.TextField(blank=True, null=True, verbose_name='Mô tả')
+    location = models.CharField(max_length=500, verbose_name='Địa chỉ')
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name='Vĩ độ')
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name='Kinh độ')
+    price_per_hour = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Giá giờ thường (VND)')
+    peak_hour_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Giá giờ cao điểm (VND)')
+    deposit_percent = models.DecimalField(max_digits=5, decimal_places=2, default=30.00, verbose_name='% tiền cọc')
+    avg_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00, verbose_name='Đánh giá TB')
+    total_reviews = models.IntegerField(default=0, verbose_name='Số lượt review')
+    is_active = models.BooleanField(default=True, verbose_name='Còn hoạt động?')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Ngày cập nhật')
 
     class Meta:
         db_table = 'fields'
-        verbose_name = 'San bong'
-        verbose_name_plural = 'San bong'
+        verbose_name = 'Sân bóng'
+        verbose_name_plural = 'Sân bóng'
         ordering = ['-avg_rating', 'name']
 
     def __str__(self):
@@ -66,16 +66,16 @@ class Field(models.Model):
 
 
 class FieldImage(models.Model):
-    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name='images', verbose_name='San bong')
-    image_url = models.ImageField(upload_to='fields/', verbose_name='Anh san')
-    is_primary = models.BooleanField(default=False, verbose_name='Anh chinh?')
-    order = models.IntegerField(default=0, verbose_name='Thu tu')
-    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngay upload')
+    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name='images', verbose_name='Sân bóng')
+    image_url = models.ImageField(upload_to='fields/', verbose_name='Ảnh sân')
+    is_primary = models.BooleanField(default=False, verbose_name='Ảnh chính?')
+    order = models.IntegerField(default=0, verbose_name='Thứ tự')
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày upload')
 
     class Meta:
         db_table = 'field_images'
-        verbose_name = 'Anh san'
-        verbose_name_plural = 'Anh san'
+        verbose_name = 'Ảnh sân'
+        verbose_name_plural = 'Ảnh sân'
         ordering = ['order']
 
     def __str__(self):
@@ -88,17 +88,17 @@ class FieldImage(models.Model):
 
 
 class TimeSlot(models.Model):
-    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name='time_slots', verbose_name='San bong')
-    start_time = models.TimeField(verbose_name='Gio bat dau')
-    end_time = models.TimeField(verbose_name='Gio ket thuc')
-    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Gia (VND)')
-    is_peak_hour = models.BooleanField(default=False, verbose_name='Gio cao diem?')
-    is_active = models.BooleanField(default=True, verbose_name='Con mo?')
+    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name='time_slots', verbose_name='Sân bóng')
+    start_time = models.TimeField(verbose_name='Giờ bắt đầu')
+    end_time = models.TimeField(verbose_name='Giờ kết thúc')
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Giá (VND)')
+    is_peak_hour = models.BooleanField(default=False, verbose_name='Giờ cao điểm?')
+    is_active = models.BooleanField(default=True, verbose_name='Còn mở?')
 
     class Meta:
         db_table = 'time_slots'
-        verbose_name = 'Khung gio'
-        verbose_name_plural = 'Khung gio'
+        verbose_name = 'Khung giờ'
+        verbose_name_plural = 'Khung giờ'
         ordering = ['start_time']
         unique_together = ['field', 'start_time', 'end_time']
 

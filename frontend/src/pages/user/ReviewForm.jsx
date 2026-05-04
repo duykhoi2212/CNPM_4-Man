@@ -184,11 +184,11 @@ const ReviewForm = () => {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="rounded-2xl bg-white p-8 shadow-lg">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">{reviewDetail?.id ? 'Chinh sua danh gia' : 'Viet danh gia'}</h2>
+          <h2 className="text-3xl font-bold text-gray-900">{reviewDetail?.id ? 'Chỉnh sửa đánh giá' : 'Viết đánh giá'}</h2>
           <p className="mt-2 text-gray-500">
             Booking #{booking.id} - {booking.field?.name}
           </p>
-          <p className="mt-1 text-sm text-gray-500">Ngay dat: {booking.booking_date}</p>
+          <p className="mt-1 text-sm text-gray-500">Ngày đặt: {booking.booking_date}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">

@@ -156,7 +156,7 @@ const Teams = () => {
       || requestItem.viewing_team_name
       || requestItem.accepted_team_name
       || requestItem.created_team_name
-      || 'Chua co du lieu doi';
+      || 'Chưa có dữ liệu đội';
     const teamImage = requestItem.counterpart_team_image_url
       || requestItem.viewing_team_image_url
       || requestItem.accepted_team_image_url
@@ -425,7 +425,7 @@ const Teams = () => {
         <div className="space-y-6">
           {filteredMatchRequests.map((requestItem) => {
             const statusBadge = getReservationBadge(requestItem);
-            const scheduleText = requestItem.timeslots?.map((slot) => `${slot.start_time} - ${slot.end_time}`).join(' • ') || 'Chua co khung gio';
+            const scheduleText = requestItem.timeslots?.map((slot) => `${slot.start_time} - ${slot.end_time}`).join(' • ') || 'Chưa có khung giờ';
             const matchTitle = requestItem.accepted_team_name
               ? `${requestItem.created_team_name} vs ${requestItem.accepted_team_name}`
               : requestItem.created_team_name;
@@ -533,7 +533,7 @@ const Teams = () => {
                           onClick={() => navigate('/login')}
                           className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary hover:text-primary"
                         >
-                          Đăng nhập để chấp nhận``
+                          Đăng nhập để chấp nhận
                         </button>
                       )}
                       {requestItem.accepted_team_name && (
@@ -696,9 +696,9 @@ const Teams = () => {
                   <div className="mt-4 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Thông tin trận giao lưu</p>
                     <div className="mt-4 grid gap-3 text-sm text-slate-600">
-                      <p><span className="font-semibold text-slate-950">San:</span> {selectedRequest.field?.name}</p>
-                      <p><span className="font-semibold text-slate-950">Ngay:</span> {formatBookingDate(selectedRequest.booking_date)}</p>
-                      <p><span className="font-semibold text-slate-950">Gio:</span> {scheduleText}</p>
+                      <p><span className="font-semibold text-slate-950">Sân:</span> {selectedRequest.field?.name}</p>
+                      <p><span className="font-semibold text-slate-950">Ngày:</span> {formatBookingDate(selectedRequest.booking_date)}</p>
+                      <p><span className="font-semibold text-slate-950">Giờ:</span> {scheduleText}</p>
                     </div>
                   </div>
                 </div>

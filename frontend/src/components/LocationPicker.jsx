@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Fix cho marker icon của Leaflet trong React
+// Fix cho icon marker của Leaflet trong React
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -11,7 +11,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// Icon custom cho marker
+// Icon tùy chỉnh cho marker
 const createCustomIcon = (color = '#14b8a6') => {
   return L.divIcon({
     html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="30" height="45">
@@ -55,7 +55,7 @@ const LocationPicker = ({
   value = {}, 
   onChange, 
   height = '400px',
-  defaultLocation = { lat: 16.054407, lng: 108.202164 } // Default: Da Nang
+  defaultLocation = { lat: 16.054407, lng: 108.202164 } // Default: Đà Nẵng
 }) => {
   const [mapCenter, setMapCenter] = useState(defaultLocation);
   const [markerPosition, setMarkerPosition] = useState(null);
@@ -65,7 +65,7 @@ const LocationPicker = ({
   const [showResults, setShowResults] = useState(false);
   const searchTimeoutRef = useRef(null);
 
-  // Khi co vi tri tu form (edit mode), cap nhat marker
+  // Khi có vị trí từ form (chế độ sửa), cập nhật marker
   useEffect(() => {
     if (value.latitude && value.longitude) {
       const lat = parseFloat(value.latitude);
@@ -77,12 +77,12 @@ const LocationPicker = ({
     }
   }, [value.latitude, value.longitude]);
 
-  // Xu ly khi chon vi tri tren ban do
+  // Xử lý khi chọn vị trí trên bản đồ
   const handleLocationSelect = (location) => {
     onChange(location);
   };
 
-  // Tim kiem dia chi qua Nominatim API
+  // Tìm kiếm địa chỉ qua Nominatim API
   const handleSearch = async (query) => {
     setSearchQuery(query);
     
@@ -113,7 +113,7 @@ const LocationPicker = ({
     }, 500); // Debounce 500ms
   };
 
-  // Chon ket qua tim kiem
+  // Chọn kết quả tìm kiếm
   const handleSelectResult = (result) => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
@@ -125,7 +125,7 @@ const LocationPicker = ({
     setShowResults(false);
   };
 
-  // Lay vi tri hien tai cua nguoi dung
+  // Lấy vị trí hiện tại của người dùng
   const handleGetCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -138,12 +138,12 @@ const LocationPicker = ({
         },
         (error) => {
           console.error('Geolocation error:', error);
-          alert('Khong the lay vi tri hien tai. Vui long kiem tra quyen truy cap.');
+          alert('Không thể lấy vị trí hiện tại. Vui lòng kiểm tra quyền truy cập.');
         },
         { enableHighAccuracy: true }
       );
     } else {
-      alert('Trinh duyet khong ho tro lay vi tri.');
+      alert('Trình duyệt không hỗ trợ lấy vị trí.');
     }
   };
 
@@ -159,7 +159,7 @@ const LocationPicker = ({
               onChange={(e) => handleSearch(e.target.value)}
               onFocus={() => searchResults.length > 0 && setShowResults(true)}
               onBlur={() => setTimeout(() => setShowResults(false), 200)}
-              placeholder="Nhap dia chi de tim kiem (VD: 123 Nguyen Van Linh, Da Nang)..."
+              placeholder="Nhập địa chỉ để tìm kiếm (VD: 123 Nguyễn Văn Linh, Đà Nẵng)..."
               className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-primary"
             />
             {isSearching && (
@@ -224,7 +224,7 @@ const LocationPicker = ({
               <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.5l-4.95-4.45a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
             </svg>
             <span className="text-sm font-medium text-teal-900">
-              Da chon: <span className="font-bold">{value.latitude}, {value.longitude}</span>
+              Đã chọn: <span className="font-bold">{value.latitude}, {value.longitude}</span>
             </span>
           </div>
         </div>
@@ -232,7 +232,7 @@ const LocationPicker = ({
 
       {/* Helper Text */}
       <p className="text-xs text-gray-500">
-        💡 <strong>Mẹo:</strong> Click vao ban do de chon vi tri chinh xac, hoac nhap dia chi de tim kiem
+        💡 <strong>Mẹo:</strong> Click vào bản đồ để chọn vị trí chính xác, hoặc nhập địa chỉ để tìm kiếm
       </p>
     </div>
   );

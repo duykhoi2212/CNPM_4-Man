@@ -515,7 +515,7 @@ def confirm_field_swap(request, swap_id):
             new_timeslots.append(new_ts)
 
     if len(new_timeslots) != original_timeslots.count():
-        return Response({'error': 'San moi khong co day du khung gio tuong ung'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Sân mới không có đầy đủ khung giờ tương ứng'}, status=status.HTTP_400_BAD_REQUEST)
 
     conflicting_bookings = Booking.objects.filter(
         booking_date=original_booking.booking_date,
@@ -536,7 +536,7 @@ def confirm_field_swap(request, swap_id):
     if (conflicting_bookings.exists() or conflicting_match_request_ids) and not force_cancel_conflicts:
         return Response(
             {
-                'error': 'San moi dang co booking trung khung gio',
+                'error': 'Sân mới đang có booking trùng khung giờ',
                 'conflicting_booking_ids': list(conflicting_bookings.values_list('id', flat=True)),
                 'conflicting_match_request_ids': conflicting_match_request_ids,
             },
@@ -570,8 +570,8 @@ def confirm_field_swap(request, swap_id):
         swap.customer_notified = False
         swap.customer_accepted = None
         swap.admin_notes = (
-            f"Da doi truc tiep booking #{original_booking.id} sang {new_field.name}."
-            + (" Da huy booking xung dot." if conflicting_bookings.exists() and force_cancel_conflicts else "")
+            f"Đã đổi trực tiếp booking #{original_booking.id} sang {new_field.name}."
+            + (" Đã hủy booking xung đột." if conflicting_bookings.exists() and force_cancel_conflicts else "")
         )
         swap.save()
 
@@ -582,7 +582,7 @@ def confirm_field_swap(request, swap_id):
         swap.incident.save(update_fields=['field', 'status', 'resolved_at', 'updated_at'])
     
     return Response({
-        'message': 'Da doi san thanh cong va cap nhat booking hien tai',
+        'message': 'Đã đổi sân thành công và cập nhật booking hiện tại',
         'updated_booking_id': original_booking.id,
         'cancelled_booking_ids': list(conflicting_bookings.values_list('id', flat=True)) if conflicting_bookings.exists() and force_cancel_conflicts else [],
         'conflicting_match_request_ids': conflicting_match_request_ids,

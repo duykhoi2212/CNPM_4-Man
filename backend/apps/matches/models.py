@@ -15,18 +15,18 @@ class MatchRequest(models.Model):
     STATUS_CANCELLED = 'cancelled'
 
     STATUS_CHOICES = [
-        (STATUS_WAITING_OPPONENT, 'Cho doi chap nhan'),
-        (STATUS_ACCEPTED_WAITING_DEPOSIT, 'Da co doi chap nhan, cho thanh toan coc'),
-        (STATUS_DEPOSIT_PAID, 'Da thanh toan coc'),
-        (STATUS_EXPIRED, 'Het han'),
-        (STATUS_CANCELLED, 'Da huy'),
+        (STATUS_WAITING_OPPONENT, 'Chờ đối chấp nhận'),
+        (STATUS_ACCEPTED_WAITING_DEPOSIT, 'Đã có đối chấp nhận, chờ thanh toán cọc'),
+        (STATUS_DEPOSIT_PAID, 'Đã thanh toán cọc'),
+        (STATUS_EXPIRED, 'Hết hạn'),
+        (STATUS_CANCELLED, 'Đã hủy'),
     ]
 
     created_by = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='match_requests',
-        verbose_name='Nguoi tao',
+        verbose_name='Người tạo',
     )
     accepted_by = models.ForeignKey(
         User,
@@ -34,13 +34,13 @@ class MatchRequest(models.Model):
         related_name='accepted_match_requests',
         blank=True,
         null=True,
-        verbose_name='Nguoi chap nhan',
+        verbose_name='Người chấp nhận',
     )
     field = models.ForeignKey(
         Field,
         on_delete=models.CASCADE,
         related_name='match_requests',
-        verbose_name='San bong',
+        verbose_name='Sân bóng',
     )
     booking = models.OneToOneField(
         'bookings.Booking',
@@ -49,45 +49,45 @@ class MatchRequest(models.Model):
         null=True,
         blank=True,
         db_constraint=False,
-        verbose_name='Booking lien ket',
+        verbose_name='Booking liên kết',
     )
-    booking_date = models.DateField(verbose_name='Ngay dat san')
-    created_team_name = models.CharField(max_length=120, verbose_name='Ten doi tao')
+    booking_date = models.DateField(verbose_name='Ngày đặt sân')
+    created_team_name = models.CharField(max_length=120, verbose_name='Tên đội tạo')
     created_team_image_url = models.CharField(
         max_length=500,
         blank=True,
         null=True,
-        verbose_name='Anh doi tao',
+        verbose_name='Ảnh đội tạo',
     )
     accepted_team_name = models.CharField(
         max_length=120,
         blank=True,
         null=True,
-        verbose_name='Ten doi chap nhan',
+        verbose_name='Tên đội chấp nhận',
     )
     accepted_team_image_url = models.CharField(
         max_length=500,
         blank=True,
         null=True,
-        verbose_name='Anh doi chap nhan',
+        verbose_name='Ảnh đội chấp nhận',
     )
-    notes = models.TextField(blank=True, null=True, verbose_name='Ghi chu')
+    notes = models.TextField(blank=True, null=True, verbose_name='Ghi chú')
     status = models.CharField(
         max_length=40,
         choices=STATUS_CHOICES,
         default=STATUS_WAITING_OPPONENT,
-        verbose_name='Trang thai',
+        verbose_name='Trạng thái',
     )
-    reserved_until = models.DateTimeField(blank=True, null=True, verbose_name='Giu cho den')
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Tong tien')
-    deposit_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Tien dat coc')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngay tao')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Ngay cap nhat')
+    reserved_until = models.DateTimeField(blank=True, null=True, verbose_name='Giữ chỗ đến')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Tổng tiền')
+    deposit_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Tiền đặt cọc')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Ngày cập nhật')
 
     class Meta:
         db_table = 'match_requests'
-        verbose_name = 'Yeu cau giao luu'
-        verbose_name_plural = 'Yeu cau giao luu'
+        verbose_name = 'Yêu cầu giao lưu'
+        verbose_name_plural = 'Yêu cầu giao lưu'
         ordering = ['-created_at']
 
     def __str__(self):
@@ -132,13 +132,13 @@ class MatchRequestTimeSlot(models.Model):
         TimeSlot,
         on_delete=models.RESTRICT,
         related_name='match_timeslots',
-        verbose_name='Khung gio',
+        verbose_name='Khung giờ',
     )
 
     class Meta:
         db_table = 'match_request_timeslots'
-        verbose_name = 'Khung gio giao luu'
-        verbose_name_plural = 'Khung gio giao luu'
+        verbose_name = 'Khung giờ giao luu'
+        verbose_name_plural = 'Khung giờ giao luu'
         unique_together = ['match_request', 'timeslot']
 
     def __str__(self):

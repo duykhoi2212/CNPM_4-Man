@@ -29,42 +29,42 @@ class UserProfile(models.Model):
         max_length=120,
         blank=True,
         null=True,
-        verbose_name='Ten doi bong',
+        verbose_name='Tên đội bóng',
     )
     team_image = models.ImageField(
         upload_to='team-images/',
         blank=True,
         null=True,
-        verbose_name='Anh doi bong',
+        verbose_name='Ảnh đội bóng',
     )
     last_seen_bookings_at = models.DateTimeField(
         blank=True,
         null=True,
-        verbose_name='Lan cuoi da xem booking',
+        verbose_name='Lần cuối xem booking',
     )
     last_seen_reviews_at = models.DateTimeField(
         blank=True,
         null=True,
-        verbose_name='Lan cuoi da xem review',
+        verbose_name='Lần cuối xem đánh giá',
     )
     last_seen_contacts_at = models.DateTimeField(
         blank=True,
         null=True,
-        verbose_name='Lan cuoi da xem lien he',
+        verbose_name='Lần cuối xem liên hệ',
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Ngay tao',
+        verbose_name='Ngày tạo',
     )
     updated_at = models.DateTimeField(
         auto_now=True,
-        verbose_name='Ngay cap nhat',
+        verbose_name='Ngày cập nhật',
     )
 
     class Meta:
         db_table = 'accounts_userprofile'
-        verbose_name = 'User Profile'
-        verbose_name_plural = 'User Profiles'
+        verbose_name = 'Hồ sơ người dùng'
+        verbose_name_plural = 'Hồ sơ người dùng'
         ordering = ['-created_at']
 
     def __str__(self):

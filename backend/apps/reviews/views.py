@@ -67,9 +67,9 @@ class ReviewCreateView(generics.CreateAPIView):
         detail_serializer = ReviewDetailSerializer(review, context={'request': request})
         return Response(
             {
-                'message': 'Da gui danh gia thanh cong',
-                'review': detail_serializer.data,
-            },
+                    'message': 'Đã gửi đánh giá thành công',
+                    'review': detail_serializer.data,
+                },
             status=status.HTTP_201_CREATED,
         )
 
@@ -89,7 +89,7 @@ class ReviewUpdateView(generics.UpdateAPIView):
         detail_serializer = ReviewDetailSerializer(review, context={'request': request})
         return Response(
             {
-                'message': 'Da cap nhat danh gia thanh cong',
+                'message': 'Đã cập nhật đánh giá thành công',
                 'review': detail_serializer.data,
             },
             status=status.HTTP_200_OK,
@@ -103,7 +103,7 @@ class ReviewDeleteView(generics.DestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response({'message': 'Da xoa danh gia thanh cong'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Đã xóa đánh giá thành công'}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -118,18 +118,18 @@ def review_add_image_view(request, pk):
         return Response({'error': 'Bạn chỉ có thể thêm ảnh vào đánh giá của chính mình'}, status=status.HTTP_403_FORBIDDEN)
 
     if review.images.count() >= 5:
-        return Response({'error': 'Moi danh gia chi duoc toi da 5 anh'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Mỗi đánh giá chỉ được tối đa 5 ảnh'}, status=status.HTTP_400_BAD_REQUEST)
 
     image_file = request.FILES.get('image')
     if not image_file:
-        return Response({'error': 'Vui long chon anh can tai len'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Vui lòng chọn ảnh cần tải lên'}, status=status.HTTP_400_BAD_REQUEST)
 
     review_image = ReviewImage.objects.create(review=review, image_url=image_file)
     serializer = ReviewDetailSerializer(review, context={'request': request})
 
     return Response(
         {
-            'message': 'Da them anh danh gia thanh cong',
+            'message': 'Đã thêm ảnh đánh giá thành công',
             'image': {
                 'id': review_image.id,
                 'image_url': request.build_absolute_uri(review_image.image_url.url),

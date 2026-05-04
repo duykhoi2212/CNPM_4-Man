@@ -59,12 +59,12 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
 
     def validate_rating(self, value):
         if value < 1 or value > 5:
-            raise serializers.ValidationError('Danh gia phai tu 1 den 5 sao')
+            raise serializers.ValidationError('Đánh giá phải từ 1 đến 5 sao')
         return value
 
     def validate_comment(self, value):
         if not value.strip():
-            raise serializers.ValidationError('Vui long nhap noi dung danh gia')
+            raise serializers.ValidationError('Vui lòng nhập nội dung đánh giá')
         return value.strip()
 
     def validate(self, attrs):
@@ -87,7 +87,7 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
 
             if booking.status != 'completed':
                 raise serializers.ValidationError({
-                    'booking_id': 'Chi co the danh gia booking da hoan thanh'
+                    'booking_id': 'Chỉ có thể đánh giá booking đã hoàn thành'
                 })
 
             booking_timeslots = booking.booking_timeslots.select_related('timeslot').all()
@@ -105,12 +105,12 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
 
             if timezone.localtime() < booking_end_datetime:
                 raise serializers.ValidationError({
-                    'booking_id': 'Ban chi co the danh gia sau khi ket thuc khung gio da dat'
+                    'booking_id': 'Bạn chỉ có thể đánh giá sau khi kết thúc khung giờ đã đặt'
                 })
 
             if Review.objects.filter(booking=booking).exists():
                 raise serializers.ValidationError({
-                    'booking_id': 'Booking nay da duoc danh gia roi'
+                    'booking_id': 'Booking này đã được đánh giá rồi'
                 })
 
             attrs['_booking'] = booking
@@ -137,10 +137,10 @@ class ReviewUpdateSerializer(serializers.ModelSerializer):
 
     def validate_rating(self, value):
         if value < 1 or value > 5:
-            raise serializers.ValidationError('Danh gia phai tu 1 den 5 sao')
+            raise serializers.ValidationError('Đánh giá phải từ 1 đến 5 sao')
         return value
 
     def validate_comment(self, value):
         if not value.strip():
-            raise serializers.ValidationError('Vui long nhap noi dung danh gia')
+            raise serializers.ValidationError('Vui lòng nhập nội dung đánh giá')
         return value.strip()

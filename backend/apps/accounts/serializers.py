@@ -156,7 +156,7 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
             profile = instance.profile
         except UserProfile.DoesNotExist:
             if phone is None:
-                raise serializers.ValidationError({'phone': 'Phone number is required when creating a missing profile.'})
+                raise serializers.ValidationError({'phone': 'Bạn phải cung cấp số điện thoại để tạo hồ sơ người dùng'})
             UserProfile.objects.create(
                 user=instance,
                 phone=phone,
@@ -253,7 +253,7 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
             if attrs.get('is_active') is False:
                 raise serializers.ValidationError({'is_active': 'Bạn không thể tự khóa tài khoản của chính mình'})
             if attrs.get('is_staff') is False:
-                raise serializers.ValidationError({'is_staff': 'Bạn không thể tự gỏ quyền quản trị của chính mình'})
+                raise serializers.ValidationError({'is_staff': 'Bạn không thể tự gỡ quyền quản trị của chính mình'})
 
         return attrs
 
@@ -278,7 +278,7 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({'new_password2': 'Xác nhận mật khẩu mới không khớp'})
 
         if attrs['old_password'] == attrs['new_password']:
-            raise serializers.ValidationError({'new_password': 'Mat khau moi phai khac mat khau hien tai'})
+            raise serializers.ValidationError({'new_password': 'Mật khẩu mới phải khác mật khẩu hiện tại'})
 
         return attrs
 

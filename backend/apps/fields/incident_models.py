@@ -93,21 +93,21 @@ class FieldSwap(models.Model):
         ('proposed', 'Đã đề xuất'),
         ('confirmed', 'Đã xác nhận'),
         ('completed', 'Đã hoàn thành'),
-        ('cancelled', 'Da huy'),
-        ('failed', 'Khong the doi'),
+        ('cancelled', 'Đã hủy'),
+        ('failed', 'Không thể đổi'),
     ]
 
     incident = models.ForeignKey(
         IncidentReport,
         on_delete=models.CASCADE,
         related_name='swaps',
-        verbose_name='Su co lien quan'
+        verbose_name='Sự cố liên quan'
     )
     original_field = models.ForeignKey(
         'fields.Field',
         on_delete=models.CASCADE,
         related_name='swap_originals',
-        verbose_name='San cu'
+        verbose_name='Sân cũ'
     )
     new_field = models.ForeignKey(
         'fields.Field',
@@ -115,13 +115,13 @@ class FieldSwap(models.Model):
         related_name='swap_news',
         null=True,
         blank=True,
-        verbose_name='San moi'
+        verbose_name='Sân mới'
     )
     original_booking = models.ForeignKey(
         'bookings.Booking',
         on_delete=models.CASCADE,
         related_name='swap_originals',
-        verbose_name='Booking cu'
+        verbose_name='Booking cũ'
     )
     new_booking = models.ForeignKey(
         'bookings.Booking',
@@ -129,34 +129,34 @@ class FieldSwap(models.Model):
         related_name='swap_news',
         null=True,
         blank=True,
-        verbose_name='Booking moi'
+        verbose_name='Booking mới'
     )
     price_difference = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=0,
-        verbose_name='Chenh lech gia (VND)'
+        verbose_name='Chênh lệch giá (VND)'
     )
     compensation_amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=0,
-        verbose_name='Boi thuong (VND)'
+        verbose_name='Bồi thường (VND)'
     )
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default='pending',
-        verbose_name='Trang thai'
+        verbose_name='Trạng thái'
     )
-    swap_reason = models.TextField(verbose_name='Ly do doi san')
-    customer_notified = models.BooleanField(default=False, verbose_name='Da thong bao khach?')
-    customer_accepted = models.BooleanField(null=True, verbose_name='Khach da chap nhan?')
-    admin_notes = models.TextField(blank=True, default='', verbose_name='Ghi chu admin')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngay tao')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Ngay cap nhat')
-    confirmed_at = models.DateTimeField(null=True, blank=True, verbose_name='Ngay xac nhan')
-    completed_at = models.DateTimeField(null=True, blank=True, verbose_name='Ngay hoan thanh')
+    swap_reason = models.TextField(verbose_name='Lý do đổi sân')
+    customer_notified = models.BooleanField(default=False, verbose_name='Đã thông báo khách?')
+    customer_accepted = models.BooleanField(null=True, verbose_name='Khách đã chấp nhận?')
+    admin_notes = models.TextField(blank=True, default='', verbose_name='Ghi chú admin')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Ngày cập nhật')
+    confirmed_at = models.DateTimeField(null=True, blank=True, verbose_name='Ngày xác nhận')
+    completed_at = models.DateTimeField(null=True, blank=True, verbose_name='Ngày hoàn thành')
 
     class Meta:
         db_table = 'field_swaps'

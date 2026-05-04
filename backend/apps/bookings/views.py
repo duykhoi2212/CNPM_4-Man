@@ -109,7 +109,7 @@ class BookingCreateView(generics.CreateAPIView):
         detail_serializer = BookingDetailSerializer(booking, context={'request': request})
 
         return Response({
-            'message': 'Tao booking thanh cong, vui long thanh toan tien coc',
+            'message': 'Tạo booking thành công, vui lòng thanh toán tiền cọc',
             'booking': detail_serializer.data
         }, status=status.HTTP_201_CREATED)
 
@@ -145,10 +145,10 @@ def booking_confirm_view(request, pk):
     try:
         booking = Booking.objects.get(pk=pk)
     except Booking.DoesNotExist:
-        return Response({'error': 'Khong tim thay booking'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Không tìm thấy booking'}, status=status.HTTP_404_NOT_FOUND)
 
     if not request.user.is_superuser and booking.field.owner_id != request.user.id:
-        return Response({'error': 'Ban khong co quyen quan ly booking nay'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Bạn không có quyền quản lý booking này'}, status=status.HTTP_403_FORBIDDEN)
 
     serializer = BookingConfirmSerializer(instance=booking, data=request.data)
     serializer.is_valid(raise_exception=True)

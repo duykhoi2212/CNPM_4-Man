@@ -10,17 +10,17 @@ class ContactMessageCreateSerializer(serializers.ModelSerializer):
 
     def validate_name(self, value):
         if not value.strip():
-            raise serializers.ValidationError('Vui long nhap ho ten')
+            raise serializers.ValidationError('Vui lòng nhập họ tên')
         return value.strip()
 
     def validate_subject(self, value):
         if not value.strip():
-            raise serializers.ValidationError('Vui long nhap chu de')
+            raise serializers.ValidationError('Vui lòng nhập chủ đề')
         return value.strip()
 
     def validate_message(self, value):
         if not value.strip():
-            raise serializers.ValidationError('Vui long nhap noi dung lien he')
+            raise serializers.ValidationError('Vui lòng nhập nội dung liên hệ')
         return value.strip()
 
 
@@ -35,7 +35,7 @@ class ContactMessageListSerializer(serializers.ModelSerializer):
         ]
 
     def get_status_label(self, obj):
-        return 'Da xu ly' if obj.is_resolved else 'Chua xu ly'
+        return 'Đã xử lý' if obj.is_resolved else 'Chưa xử lý'
 
 
 class ContactMessageUpdateSerializer(serializers.ModelSerializer):

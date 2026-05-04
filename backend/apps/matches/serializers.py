@@ -180,7 +180,7 @@ class MatchRequestCreateSerializer(serializers.Serializer):
             ).values_list('timeslot_id', flat=True)
         )
         if booked_timeslot_ids:
-            raise serializers.ValidationError({'timeslot_ids': 'Mot so khung gio da duoc giu hoac dat'})
+            raise serializers.ValidationError({'timeslot_ids': 'Một số khung giờ đã được giữ hoặc đặt'})
 
         from apps.bookings.models import BookingTimeSlot
 
@@ -192,7 +192,7 @@ class MatchRequestCreateSerializer(serializers.Serializer):
         ).values_list('timeslot_id', flat=True)
 
         if booking_conflicts.exists():
-            raise serializers.ValidationError({'timeslot_ids': 'Mot so khung gio da duoc dat'})
+            raise serializers.ValidationError({'timeslot_ids': 'Một số khung giờ đã được đặt'})
 
         return attrs
 
@@ -207,12 +207,12 @@ class MatchRequestCreateSerializer(serializers.Serializer):
             team_name = (profile.team_name or '').strip()
             if not team_name or not profile.team_image:
                 raise serializers.ValidationError({
-                    'team': 'Ban can cap nhat ten doi bong va anh doi bong trong profile truoc khi tao yeu cau giao luu.'
+                    'team': 'Bạn cần cập nhật tên đội bóng và ảnh đội bóng trong profile trước khi tạo yêu cầu giao lưu.'
                 })
             team_image_url = request.build_absolute_uri(profile.team_image.url)
         except UserProfile.DoesNotExist:
             raise serializers.ValidationError({
-                'team': 'Ban can tao profile va cap nhat ten doi bong, anh doi bong truoc khi tao yeu cau giao luu.'
+                'team': 'Bạn cần tạo profile và cập nhật tên đội bóng, ảnh đội bóng trước khi tạo yêu cầu giao lưu.'
             })
 
         selected_timeslots = list(

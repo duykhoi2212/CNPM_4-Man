@@ -25,7 +25,7 @@ class MatchRequestTests(TestCase):
         self.field = Field.objects.create(
             field_type=self.field_type,
             name='San giao luu',
-            location='Da Nang',
+            location='Đà Nẵng',
             price_per_hour=300000,
             peak_hour_price=400000,
             deposit_percent=30,
@@ -192,7 +192,7 @@ class MatchRequestTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data['error'], 'Yeu cau giao luu nay khong con hop le de chap nhan')
+        self.assertEqual(response.data['error'], 'Yêu cầu giao lưu này không còn hợp lệ để chấp nhận')
 
         match_request_obj = MatchRequest.objects.get(pk=match_request['id'])
         self.assertEqual(match_request_obj.status, MatchRequest.STATUS_CANCELLED)
@@ -205,7 +205,7 @@ class MatchRequestTests(TestCase):
                 'field': self.field.id,
                 'booking_date': (timezone.localdate() - timedelta(days=1)).isoformat(),
                 'timeslot_ids': [self.timeslot.id],
-                'notes': 'Da qua gio thi dau',
+                'notes': 'Đã quá giờ thi đấu',
             },
             format='json',
         )
@@ -217,7 +217,7 @@ class MatchRequestTests(TestCase):
             booking_date=timezone.localdate() - timedelta(days=1),
             created_team_name='FC Creator',
             created_team_image_url='http://testserver/media/creator-team.png',
-            notes='Da qua gio thi dau',
+            notes='Đã quá giờ thi đấu',
             total_amount=300000,
             deposit_amount=90000,
             status=MatchRequest.STATUS_WAITING_OPPONENT,

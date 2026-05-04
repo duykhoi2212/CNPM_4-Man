@@ -8,22 +8,22 @@ class Payment(models.Model):
     ]
 
     STATUS_CHOICES = [
-        ('pending', 'Cho thanh toan'),
-        ('completed', 'Da thanh toan'),
-        ('failed', 'That bai'),
-        ('refunded', 'Da hoan tien'),
+        ('pending', 'Chờ thanh toán'),
+        ('completed', 'Đã thanh toán'),
+        ('failed', 'Thất bại'),
+        ('refunded', 'Đã hoàn tiền'),
     ]
 
     booking = models.OneToOneField(
         Booking,
         on_delete=models.CASCADE,
         related_name='payment',
-        verbose_name='Don dat san'
+        verbose_name='Đơn đặt sân'
     )
     payment_method = models.CharField(
         max_length=20,
         choices=METHOD_CHOICES,
-        verbose_name='Phuong thuc thanh toan'
+        verbose_name='Phương thức thanh toán'
     )
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='So tien')
     status = models.CharField(
@@ -36,15 +36,15 @@ class Payment(models.Model):
         max_length=100,
         null=True,
         blank=True,
-        verbose_name='Ma giao dich'
+        verbose_name='Mã giao dịch'
     )
-    paid_at = models.DateTimeField(null=True, blank=True, verbose_name='Thoi gian thanh toan')
+    paid_at = models.DateTimeField(null=True, blank=True, verbose_name='Thời gian thanh toán')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'payments'
-        verbose_name = 'Thanh toan'
-        verbose_name_plural = 'Thanh toan'
+        verbose_name = 'Thanh toán'
+        verbose_name_plural = 'Thanh toán'
         ordering = ['-created_at']
 
     def __str__(self):

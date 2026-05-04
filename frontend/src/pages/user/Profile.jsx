@@ -131,7 +131,7 @@ const Profile = () => {
         team_image: null,
         currentTeamImageUrl: response.data.user.profile?.team_image_url || '',
       }));
-      setSuccessMessage('Thong tin tai khoan da duoc cap nhat thanh cong.');
+      setSuccessMessage('Thông tin tài khoản đã được cập nhật thành công.');
     } catch (requestError) {
       const responseData = requestError.response?.data;
       if (responseData?.error) {

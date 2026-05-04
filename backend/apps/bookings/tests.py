@@ -202,7 +202,7 @@ class ServiceProductAdminApiTests(APITestCase):
     def test_admin_can_create_service_product(self):
         self.client.force_authenticate(user=self.admin_user)
         payload = {
-            'name': 'Bong da',
+            'name': 'Bóng đá',
             'code': 'ball_rent',
             'unit_label': 'qua',
             'unit_price': '15000.00',

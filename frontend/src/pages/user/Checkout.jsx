@@ -116,13 +116,13 @@ const Checkout = () => {
       if (matchRequestId && returnToMatchTab) {
         navigate('/teams?tab=tim-giao-luu', {
           state: {
-            successMessage: 'Da thanh toan coc giao luu thanh cong. Danh sach da duoc cap nhat.',
+            successMessage: 'Đã thanh toán cọc giao lưu thành công. Danh sách đã được cập nhật.',
             refreshMatchesAt: Date.now(),
           },
         });
       } else {
         navigate('/user/history', {
-          state: { successMessage: 'Dat san va thanh toan tien coc qua VNPay thanh cong.' },
+          state: { successMessage: 'Đặt sân và thanh toán tiền cọc qua VNPay thành công.' },
         });
       }
     } catch (requestError) {

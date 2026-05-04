@@ -12,8 +12,8 @@ class ContactApiTests(APITestCase):
             'name': 'Duy Khoi',
             'email': 'khoi@example.com',
             'phone': '0909999999',
-            'subject': 'Can ho tro dat san',
-            'message': 'Toi muon hoi them ve lich dat san cuoi tuan.',
+            'subject': 'Cần hỗ trợ đặt sân',
+            'message': 'Tôi muốn hỏi thêm về lịch đặt sân cuối tuần.',
         }
 
         response = self.client.post('/api/contacts/', payload, format='json')
@@ -27,8 +27,8 @@ class ContactApiTests(APITestCase):
             name='Khach A',
             email='khacha@example.com',
             phone='0901111111',
-            subject='San trong',
-            message='Cho minh hoi san ngay mai con trong khong?',
+            subject='Sân trống',
+            message='Cho mình hỏi sân ngày mai còn trống không?',
         )
         self.client.force_authenticate(user=admin)
 
@@ -43,8 +43,8 @@ class ContactApiTests(APITestCase):
             name='Khach B',
             email='khachb@example.com',
             phone='0902222222',
-            subject='Can lien he gap',
-            message='Vui long goi lai cho toi som.',
+            subject='Cần liên hệ gấp',
+            message='Vui lòng gọi lại cho tôi sớm.',
         )
         self.client.force_authenticate(user=admin)
 

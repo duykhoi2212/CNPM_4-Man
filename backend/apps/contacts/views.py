@@ -23,7 +23,7 @@ class ContactMessageCreateView(generics.CreateAPIView):
         detail_serializer = ContactMessageListSerializer(message)
         return Response(
             {
-                'message': 'Da gui lien he thanh cong. Chung toi se phan hoi som nhat co the.',
+                'message': 'Đã gửi liên hệ thành công. Chúng tôi sẽ phản hồi sớm nhất có thể.',
                 'contact': detail_serializer.data,
             },
             status=status.HTTP_201_CREATED,
@@ -70,7 +70,7 @@ class AdminContactMessageUpdateView(generics.UpdateAPIView):
         detail_serializer = ContactMessageListSerializer(contact)
         return Response(
             {
-                'message': 'Da cap nhat trang thai lien he thanh cong',
+                'message': 'Đã cập nhật trạng thái liên hệ thành công',
                 'contact': detail_serializer.data,
             },
             status=status.HTTP_200_OK,

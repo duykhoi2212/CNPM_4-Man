@@ -22,7 +22,7 @@ class FieldRecommendationApiTests(APITestCase):
         self.field_a = Field.objects.create(
             field_type=san5,
             name='Fulsan-A',
-            location='Da Nang',
+            location='Đà Nẵng',
             price_per_hour=Decimal('280000.00'),
             peak_hour_price=Decimal('350000.00'),
             avg_rating=Decimal('4.80'),
@@ -32,7 +32,7 @@ class FieldRecommendationApiTests(APITestCase):
         self.field_b = Field.objects.create(
             field_type=san7,
             name='Pic-A',
-            location='Da Nang',
+            location='Đà Nẵng',
             price_per_hour=Decimal('450000.00'),
             peak_hour_price=Decimal('550000.00'),
             avg_rating=Decimal('4.10'),
@@ -88,7 +88,7 @@ class FieldAvailabilityMatchFlowTests(APITestCase):
         self.field = Field.objects.create(
             field_type=self.field_type,
             name='San giao luu',
-            location='Da Nang',
+            location='Đà Nẵng',
             price_per_hour=Decimal('300000.00'),
             peak_hour_price=Decimal('400000.00'),
             deposit_percent=Decimal('30.00'),
@@ -179,7 +179,7 @@ class FieldAdminOwnershipTests(APITestCase):
             field_type=self.field_type,
             owner=self.owner_admin,
             name='Owner Field',
-            location='Da Nang',
+            location='Đà Nẵng',
             price_per_hour=Decimal('300000.00'),
             peak_hour_price=Decimal('360000.00'),
             deposit_percent=Decimal('30.00'),
@@ -246,7 +246,7 @@ class NearbyFieldsApiTests(APITestCase):
         self.near_field = Field.objects.create(
             field_type=self.field_type,
             name='San Gan',
-            location='Da Nang',
+            location='Đà Nẵng',
             latitude=Decimal('16.054407'),
             longitude=Decimal('108.202164'),
             price_per_hour=Decimal('300000.00'),

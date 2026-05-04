@@ -50,13 +50,13 @@ class ServiceProductAdminSerializer(serializers.ModelSerializer):
     def validate_code(self, value):
         normalized = (value or '').strip().lower().replace(' ', '_')
         if not normalized:
-            raise serializers.ValidationError('Ma dich vu khong duoc de trong')
+            raise serializers.ValidationError('Mã dich vụ không được để trống')
         return normalized
 
     def validate_name(self, value):
         normalized = (value or '').strip()
         if not normalized:
-            raise serializers.ValidationError('Ten dich vu khong duoc de trong')
+            raise serializers.ValidationError('Tên dịch vụ không được để trống')
         return normalized
 
     def validate(self, attrs):
@@ -208,7 +208,7 @@ class BookingCreateSerializer(serializers.ModelSerializer):
 
     def validate_booking_date(self, value):
         if value < date.today():
-            raise serializers.ValidationError('Khong the dat san cho ngay trong qua khu')
+            raise serializers.ValidationError('Không thể đặt sân cho ngày trong quá khứ')
         return value
 
     def validate(self, attrs):
@@ -334,11 +334,11 @@ class BookingCancelSerializer(serializers.Serializer):
 
         if booking.status not in ['pending_payment', 'confirmed']:
             raise serializers.ValidationError(
-                f"Khong the huy booking o trang thai '{booking.get_status_display()}'"
+                f"Không thể hủy booking ở trạng thái '{booking.get_status_display()}'"
             )
 
         if booking.booking_date < date.today():
-            raise serializers.ValidationError('Khong the huy booking cho ngay da qua')
+            raise serializers.ValidationError('Không thể hủy booking cho ngày đã qua')
 
         return attrs
 
@@ -352,5 +352,5 @@ class BookingCancelSerializer(serializers.Serializer):
 class BookingConfirmSerializer(serializers.Serializer):
     def validate(self, attrs):
         raise serializers.ValidationError(
-            'Booking se duoc xac nhan tu dong sau khi thanh toan coc thanh cong'
+            'Booking sẽ được xác nhận tự động sau khi thanh toán cọc thành công'
         )

@@ -115,40 +115,40 @@ def admin_export_report_view(request):
     response['Content-Disposition'] = f'attachment; filename="bao-cao-thong-ke-{timestamp}.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Bao cao thong ke doanh thu'])
-    writer.writerow(['Tu ngay', data.get('date_from') or 'Tat ca'])
-    writer.writerow(['Den ngay', data.get('date_to') or 'Tat ca'])
-    writer.writerow(['San bong ID', data.get('field_id') or 'Tat ca'])
-    writer.writerow(['Nhom doanh thu theo', data.get('group_by', 'day')])
+    writer.writerow(['Báo cáo thống kê doanh thu'])
+    writer.writerow(['Từ ngày', data.get('date_from') or 'Tất cả'])
+    writer.writerow(['Đến ngày', data.get('date_to') or 'Tất cả'])
+    writer.writerow(['Sân bóng ID', data.get('field_id') or 'Tất cả'])
+    writer.writerow(['Nhóm doanh thu theo', data.get('group_by', 'day')])
     writer.writerow([])
 
-    writer.writerow(['Tong quan'])
-    writer.writerow(['Doanh thu tien san', overview['booking']['completed_field_revenue']])
-    writer.writerow(['Doanh thu dich vu kem', overview['booking']['completed_service_revenue']])
-    writer.writerow(['Doanh thu hoan tat', overview['booking']['total_revenue']])
-    writer.writerow(['Tien coc da thu', overview['payment']['completed_deposit']])
-    writer.writerow(['Tien dich vu da thu', overview['payment']['completed_service']])
-    writer.writerow(['Tong da thu qua checkout', overview['payment']['completed_collected_total']])
-    writer.writerow(['Tien coc dang cho thanh toan', overview['payment']['pending_deposit']])
-    writer.writerow(['Tien dich vu dang cho thanh toan', overview['payment']['pending_service']])
-    writer.writerow(['Tien coc that bai', overview['payment']['failed_deposit']])
-    writer.writerow(['Tong booking', overview['booking']['total_bookings']])
-    writer.writerow(['Booking cho coc', overview['booking']['pending_bookings']])
-    writer.writerow(['Booking da xac nhan', overview['booking']['confirmed_bookings']])
-    writer.writerow(['Booking da hoan thanh', overview['booking']['completed_bookings']])
-    writer.writerow(['Booking da huy', overview['booking']['cancelled_bookings']])
-    writer.writerow(['Ty le hoan thanh', overview['booking']['completion_rate_percent']])
-    writer.writerow(['Tong review tu booking', overview['total_reviews_from_bookings']])
+    writer.writerow(['Tổng quan'])
+    writer.writerow(['Doanh thu tiền sân', overview['booking']['completed_field_revenue']])
+    writer.writerow(['Doanh thu dịch vụ kèm', overview['booking']['completed_service_revenue']])
+    writer.writerow(['Doanh thu hoàn tất', overview['booking']['total_revenue']])
+    writer.writerow(['Tiền cọc đã thu', overview['payment']['completed_deposit']])
+    writer.writerow(['Tiền dịch vụ đã thu', overview['payment']['completed_service']])
+    writer.writerow(['Tổng đã thu qua checkout', overview['payment']['completed_collected_total']])
+    writer.writerow(['Tiền cọc đang chờ thanh toán', overview['payment']['pending_deposit']])
+    writer.writerow(['Tiền dịch vụ đang chờ thanh toán', overview['payment']['pending_service']])
+    writer.writerow(['Tiền cọc thất bại', overview['payment']['failed_deposit']])
+    writer.writerow(['Tổng booking', overview['booking']['total_bookings']])
+    writer.writerow(['Booking chờ cọc', overview['booking']['pending_bookings']])
+    writer.writerow(['Booking đã xác nhận', overview['booking']['confirmed_bookings']])
+    writer.writerow(['Booking đã hoàn thành', overview['booking']['completed_bookings']])
+    writer.writerow(['Booking đã hủy', overview['booking']['cancelled_bookings']])
+    writer.writerow(['Tỷ lệ hoàn thành', overview['booking']['completion_rate_percent']])
+    writer.writerow(['Tổng review từ booking', overview['total_reviews_from_bookings']])
     writer.writerow([])
 
-    writer.writerow(['Doanh thu theo thoi gian'])
-    writer.writerow(['Ky', 'Doanh thu hoan tat', 'So booking'])
+    writer.writerow(['Doanh thu theo thời gian'])
+    writer.writerow(['Kỳ', 'Doanh thu hoàn tất', 'Số booking'])
     for item in revenue['series']:
         writer.writerow([item['period'], item['total_revenue'], item['bookings_count']])
     writer.writerow([])
 
-    writer.writerow(['Top san'])
-    writer.writerow(['San', 'Luot dat', 'Doanh thu tien san', 'Doanh thu dich vu', 'Doanh thu hoan tat', 'So luot huy'])
+    writer.writerow(['Top sân'])
+    writer.writerow(['Sân', 'Lượt đặt', 'Doanh thu tiền sân', 'Doanh thu dịch vụ', 'Doanh thu hoàn tất', 'Số lượt hủy'])
     for field in top_fields['top_fields']:
         writer.writerow([
             field['field__name'],
@@ -160,19 +160,19 @@ def admin_export_report_view(request):
         ])
     writer.writerow([])
 
-    writer.writerow(['Hieu suat theo san'])
+    writer.writerow(['Hiệu suất theo sân'])
     writer.writerow([
-        'San',
-        'Tong booking',
-        'Cho coc',
-        'Da xac nhan',
-        'Da hoan thanh',
-        'Da huy',
-        'Doanh thu hoan tat',
-        'Doanh thu tien san',
-        'Doanh thu dich vu',
-        'Tien coc da thu',
-        'Ty le hoan thanh',
+        'Sân',
+        'Tổng booking',
+        'Chờ cọc',
+        'Đã xác nhận',
+        'Đã hoàn thành',
+        'Đã hủy',
+        'Doanh thu hoàn tất',
+        'Doanh thu tiền sân',
+        'Doanh thu dịch vụ',
+        'Tiền cọc đã thu',
+        'Tỷ lệ hoàn thành',
     ])
     for field in field_performance['fields']:
         writer.writerow([
@@ -190,8 +190,8 @@ def admin_export_report_view(request):
         ])
     writer.writerow([])
 
-    writer.writerow(['Booking gan day'])
-    writer.writerow(['Booking ID', 'San', 'Khach hang', 'Ngay dat', 'Trang thai', 'Tien san', 'Tien dich vu', 'Tong tien', 'Tien coc'])
+    writer.writerow(['Booking gần đây'])
+    writer.writerow(['Booking ID', 'Sân', 'Khách hàng', 'Ngày đặt', 'Trạng thái', 'Tiền sân', 'Tiền dịch vụ', 'Tổng tiền', 'Tiền cọc'])
     for booking in overview['recent_bookings']:
         writer.writerow([
             booking['id'],

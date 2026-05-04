@@ -47,11 +47,11 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
 
         if booking.status != 'pending_payment':
             raise serializers.ValidationError(
-                f"Khong the tao thanh toan cho booking o trang thai '{booking.get_status_display()}'"
+                f"Không thể tạo thanh toán cho booking ở trạng thái '{booking.get_status_display()}'"
             )
 
         if hasattr(booking, 'payment'):
-            raise serializers.ValidationError('Booking nay da co thanh toan tien coc')
+            raise serializers.ValidationError('Booking này đã có thanh toán tiền cọc')
 
         return value
 
@@ -75,7 +75,7 @@ class PaymentConfirmSerializer(serializers.Serializer):
 
         if payment.status != 'pending':
             raise serializers.ValidationError(
-                f"Khong the xac nhan thanh toan o trang thai '{payment.get_status_display()}'"
+                f"Không thể xác nhận thanh toán ở trạng thái '{payment.get_status_display()}'"
             )
 
         return attrs

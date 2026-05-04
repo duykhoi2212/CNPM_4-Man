@@ -117,7 +117,7 @@ class AccountsApiTests(APITestCase):
             password='StrongPass123!',
             email='normal@example.com'
         )
-        UserProfile.objects.create(user=normal_user, phone='0900000005', address='Da Nang')
+        UserProfile.objects.create(user=normal_user, phone='0900000005', address='Đà Nẵng')
         self.client.force_authenticate(user=admin)
 
         response = self.client.get('/api/auth/admin/users/')
@@ -220,7 +220,7 @@ class AccountsApiTests(APITestCase):
         field = Field.objects.create(
             field_type=field_type,
             name='Summary Field',
-            location='Da Nang',
+            location='Đà Nẵng',
             price_per_hour=300000,
             peak_hour_price=400000,
         )
@@ -350,11 +350,11 @@ class AccountsApiTests(APITestCase):
             team_name='Red Phoenix',
         )
 
-        field_type = FieldType.objects.create(name='San 11 nguoi')
+        field_type = FieldType.objects.create(name='Sân 11 người')
         field = Field.objects.create(
             field_type=field_type,
             name='Ranking Field',
-            location='Da Nang',
+            location='Đà Nẵng',
             price_per_hour=500000,
             peak_hour_price=600000,
         )
