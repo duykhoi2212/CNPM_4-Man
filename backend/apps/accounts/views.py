@@ -104,7 +104,7 @@ class RegisterView(generics.CreateAPIView):
             {
                 'user': _serialize_auth_user(user, request),
                 'token': token.key,
-                'message': 'User created successfully',
+                'message': 'Tạo tài khoản thành công',
             },
             status=status.HTTP_201_CREATED,
         )
@@ -121,17 +121,17 @@ def login_view(request):
     user = authenticate(username=username, password=password)
 
     if user is None:
-        return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'Tên người dùng hoặc mật khẩu không đúng'}, status=status.HTTP_401_UNAUTHORIZED)
 
     if not user.is_active:
-        return Response({'error': 'Account is disabled'}, status=status.HTTP_403_FORBIDDEN)
+        return Response({'error': 'Tài khoản đã bị vô hiệu hóa'}, status=status.HTTP_403_FORBIDDEN)
 
     token, _ = Token.objects.get_or_create(user=user)
     return Response(
         {
             'user': _serialize_auth_user(user, request),
             'token': token.key,
-            'message': 'Login successful',
+            'message': 'Đăng nhập thành công',
         },
         status=status.HTTP_200_OK,
     )
@@ -141,7 +141,7 @@ def login_view(request):
 @permission_classes([permissions.IsAuthenticated])
 def logout_view(request):
     request.user.auth_token.delete()
-    return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
+    return Response({'message': 'Đăng xuất thành công'}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -168,7 +168,7 @@ def update_profile_view(request):
     return Response(
         {
             'user': response_serializer.data,
-            'message': 'Profile updated successfully',
+            'message': 'Cập nhật hồ sơ thành công',
         },
         status=status.HTTP_200_OK,
     )
@@ -188,7 +188,7 @@ def change_password_view(request):
 
     return Response(
         {
-            'message': 'Đổi mậ t khẩu thành công',
+            'message': 'Đổi mật khẩu thành công',
             'token': token.key,
             'user': _serialize_auth_user(request.user, request),
         },

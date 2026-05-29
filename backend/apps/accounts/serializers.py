@@ -85,12 +85,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({'password': "Password fields didn't match."})
+            raise serializers.ValidationError({'password': "Mật khẩu không khớp."})
         return attrs
 
     def validate_phone(self, value):
         if UserProfile.objects.filter(phone=value).exists():
-            raise serializers.ValidationError('This phone number is already registered.')
+            raise serializers.ValidationError('Số điện thoại này đã được sử dụng.')
         return value
 
     def create(self, validated_data):
