@@ -137,7 +137,7 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     def validate_phone(self, value):
         user = self.context['request'].user
         if UserProfile.objects.filter(phone=value).exclude(user=user).exists():
-            raise serializers.ValidationError('This phone number is already in use.')
+            raise serializers.ValidationError('Số điện thoại này đã được sử dụng.')
         return value
 
     def update(self, instance, validated_data):
